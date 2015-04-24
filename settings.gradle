@@ -1,1 +1,1 @@
-include 'uapi.kernel'
+include 'uapi.kernel', 'uapi.sample'
