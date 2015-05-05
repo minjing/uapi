@@ -7,9 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Inherited
-public @interface Inject {
+public @interface Attribute {
 
-    public String sid() default "";
+    public String sid();
 }
