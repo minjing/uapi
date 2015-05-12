@@ -3,6 +3,11 @@ package uapi.kernel.internal;
 public enum ServiceState {
 
     /**
+     * The service was not defined.
+     */
+    UNDEFINED,
+
+    /**
      * The service has been resolved
      * but all dependencies is not checked.
      */
@@ -17,5 +22,10 @@ public enum ServiceState {
      * The service has been initialized which mean
      * the initial method has been invoked if it has
      */
-    INITIALIZED
+    INITIALIZED,
+
+    /**
+     * The service has been destroyed.
+     */
+    DESTROYED
 }

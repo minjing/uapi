@@ -12,7 +12,7 @@ public final class Main {
         for (IService svr : svrLoaders) {
             svrRepo.addService(svr);
         }
-        svrRepo.outputServices();
+//        svrRepo.outputServices();
 
         System.exit(0);
     }

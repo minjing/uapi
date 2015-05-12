@@ -1,25 +1,55 @@
 package uapi.kernel.internal;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.common.base.Strings;
 
 import uapi.kernel.IService;
+import uapi.kernel.InvalidArgumentException;
+import uapi.kernel.InvalidArgumentException.InvalidArgumentType;
+import uapi.kernel.KernelException;
 
 public final class ServiceRepository {
 
-    private final List<IService> services;
+    private final Map<String, StatefulService> _unSatisfiedServices;
+    private final Map<String, StatefulService> _satisfiedServices;
 
     public ServiceRepository() {
-        this.services = new ArrayList<>();
+        this._unSatisfiedServices = new HashMap<>();
+        this._satisfiedServices = new HashMap<>();
     }
 
     public void addService(IService service) {
-        this.services.add(service);
+        if (service == null) {
+            throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);
+        }
+        StatefulService svc = new StatefulService(this, service);
+        if (this._unSatisfiedServices.containsKey(svc.getId())) {
+            throw new KernelException("The service whit the sid {} was registered in the repository.", svc.getId());
+        }
+        this._unSatisfiedServices.put(svc.getId(), svc);
     }
 
-    public void outputServices() {
-        for (IService svr : this.services) {
-            System.out.println(svr);
+    IService getService(Class<?> serviceType) {
+        if (serviceType == null) {
+            throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
+        return getService(serviceType.getName());
+    }
+
+    IService getService(String serviceId) {
+        if (Strings.isNullOrEmpty(serviceId)) {
+            throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
+        }
+        StatefulService service = this._satisfiedServices.get(serviceId);
+        if (service != null) {
+            return service.getInstance();
+        }
+        service = this._unSatisfiedServices.get(serviceId);
+        if (service == null) {
+            throw new KernelException("Can't found specific service in the repository - ", serviceId);
+        }
+        return service.getInstance();
     }
 }
