@@ -9,5 +9,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Attribute {
 
-    public String sid();
+    /**
+     * Custom service identify
+     * 
+     * @return Service identify
+     */
+    public String sid() default "";
+    
+    /**
+     * Indicate the service should be initialized at launch time
+     * 
+     * @return
+     */
+    public boolean initAtLaunching() default false;
 }

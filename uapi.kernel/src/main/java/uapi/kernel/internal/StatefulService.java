@@ -28,6 +28,7 @@ final class StatefulService {
     private final Lifecycle                 _lifecycle;
 
     private String      _sid;
+    private boolean     _initAtLaunching;
     private Method      _initMethod;
 
     StatefulService(ServiceRepository serviceRepository, IService instance) {
@@ -52,6 +53,10 @@ final class StatefulService {
 
     Class<? extends IService> getType() {
         return this._type;
+    }
+
+    boolean initAtLaunching() {
+        return this._initAtLaunching;
     }
 
     IService getInstance() {
@@ -126,7 +131,12 @@ final class StatefulService {
             } else {
                 StatefulService.this._sid = StatefulService.this._type.getName();
             }
-
+            // Set initAtLaunching tag
+            if (attr != null && attr.initAtLaunching()) {
+                StatefulService.this._initAtLaunching = true;
+            } else {
+                StatefulService.this._initAtLaunching = false;
+            }
             // Resolve dependencies
             Field[] fields = StatefulService.this._type.getDeclaredFields();
             for (Field field : fields) {
