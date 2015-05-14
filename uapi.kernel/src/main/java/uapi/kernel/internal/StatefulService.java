@@ -59,6 +59,10 @@ final class StatefulService {
         return this._initAtLaunching;
     }
 
+    boolean hasInitMethod() {
+    	return this._initMethod != null;
+    }
+
     IService getInstance() {
         this._lifecycle.satisfy();
         this._lifecycle.initialize();

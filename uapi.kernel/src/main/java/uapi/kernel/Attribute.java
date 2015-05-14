@@ -15,7 +15,7 @@ public @interface Attribute {
      * @return Service identify
      */
     public String sid() default "";
-    
+
     /**
      * Indicate the service should be initialized at launch time
      * 
