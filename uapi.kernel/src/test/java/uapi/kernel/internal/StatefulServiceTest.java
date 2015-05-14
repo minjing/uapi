@@ -1,6 +1,7 @@
 package uapi.kernel.internal;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,23 +40,45 @@ public class StatefulServiceTest {
 
     @Test
     public void testServiceWithDependency() {
+        when(this._svcRepo.getService(String.class.getName())).thenReturn("Hello");
+
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getId());
+        assertEquals("Hello", ((TestService) stateService.getInstance())._message);
+
+        verify(this._svcRepo, times(1)).getService(String.class.getName());
     }
 
     @Test
     public void testServiceInit() {
-        
+        when(this._svcRepo.getService(String.class.getName())).thenReturn("Hello");
+
+        TestService svcInst = new TestService();
+        StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
+        assertEquals(TestService.class.getName(), stateService.getId());
+        assertTrue(((TestService) stateService.getInstance()).isInit());
     }
 
     final class TestService implements IService {
 
+        private boolean _initialized = false;
+
         @Inject
         private String _message;
 
+        public void setMessage(String msg) {
+            this._message = msg;
+        }
+
         @Init
-        public void init() { }
+        public void init() {
+            this._initialized = true;
+        }
+
+        boolean isInit() {
+            return this._initialized;
+        }
     }
 
     @Attribute(sid="TestServiceWithId")

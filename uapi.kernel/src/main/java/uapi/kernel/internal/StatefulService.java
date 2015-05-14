@@ -9,7 +9,6 @@ import java.util.HashMap;
 import com.google.common.base.Strings;
 
 import uapi.kernel.Attribute;
-import uapi.kernel.IService;
 import uapi.kernel.Init;
 import uapi.kernel.Inject;
 import uapi.kernel.InvalidArgumentException;
@@ -22,8 +21,8 @@ import uapi.kernel.KernelException;
 final class StatefulService {
 
     private final ServiceRepository         _serviceRepo;
-    private final Class<? extends IService> _type;
-    private final IService                  _instance;
+    private final Class<?>                  _type;
+    private final Object                   _instance;
     private final Map<String, Dependency>   _dependencies;
     private final Lifecycle                 _lifecycle;
 
@@ -31,7 +30,7 @@ final class StatefulService {
     private boolean     _initAtLaunching;
     private Method      _initMethod;
 
-    StatefulService(ServiceRepository serviceRepository, IService instance) {
+    StatefulService(ServiceRepository serviceRepository, Object instance) {
         if (serviceRepository == null) {
             throw new InvalidArgumentException("serviceRepository", InvalidArgumentType.EMPTY);
         }
@@ -51,7 +50,7 @@ final class StatefulService {
         return this._sid;
     }
 
-    Class<? extends IService> getType() {
+    Class<?> getType() {
         return this._type;
     }
 
@@ -63,10 +62,11 @@ final class StatefulService {
     	return this._initMethod != null;
     }
 
-    IService getInstance() {
+    @SuppressWarnings("unchecked")
+    <T> T getInstance() {
         this._lifecycle.satisfy();
         this._lifecycle.initialize();
-        return this._instance;
+        return (T) this._instance;
     }
 
     final class Dependency {
@@ -156,7 +156,8 @@ final class StatefulService {
                     setter = StatefulService.this._type.getMethod(setterName, fieldType);
                 } catch (NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException(
-                            StringHelper.makeString("Can't found setter for field {} in class {}", fieldName, StatefulService.this._type.getName()));
+                            StringHelper.makeString("Can't found setter for field {} in class {}, expect the setter name is {}",
+                                    fieldName, StatefulService.this._type.getName(), setterName));
                 }
                 String dependSid = inject.sid();
                 if (Strings.isNullOrEmpty(dependSid)) {
@@ -199,7 +200,7 @@ final class StatefulService {
             }
 
             for (Map.Entry<String, Dependency> dependEntry : StatefulService.this._dependencies.entrySet()) {
-                IService dependSvc = StatefulService.this._serviceRepo.getService(dependEntry.getKey());
+                Object dependSvc = StatefulService.this._serviceRepo.getService(dependEntry.getKey());
                 if (dependSvc == null) {
                     throw new KernelException("Can't retrieve service instance - {}", dependEntry.getKey());
                 }
