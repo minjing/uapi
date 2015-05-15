@@ -40,6 +40,15 @@ public class ServiceRepository {
         svcs.add(instance);
     }
 
+    public void addService(String sid, Object service) {
+        if (Strings.isNullOrEmpty(sid)) {
+            throw new InvalidArgumentException("sid", InvalidArgumentType.EMPTY);
+        }
+        if (service == null) {
+            throw new InvalidArgumentException("instance", InvalidArgumentType.EMPTY);
+        }
+    }
+
     public void addService(IService service) {
         if (service == null) {
             throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);

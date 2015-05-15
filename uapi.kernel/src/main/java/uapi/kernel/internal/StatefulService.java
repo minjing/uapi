@@ -31,6 +31,10 @@ final class StatefulService {
     private Method      _initMethod;
 
     StatefulService(ServiceRepository serviceRepository, Object instance) {
+        this(serviceRepository, instance, null);
+    }
+
+    StatefulService(ServiceRepository serviceRepository, Object instance, String sid) {
         if (serviceRepository == null) {
             throw new InvalidArgumentException("serviceRepository", InvalidArgumentType.EMPTY);
         }
@@ -38,6 +42,9 @@ final class StatefulService {
             throw new InvalidArgumentException("type", InvalidArgumentType.EMPTY);
         }
 
+        if (! Strings.isNullOrEmpty(sid)) {
+            this._sid = sid;
+        }
         this._serviceRepo = serviceRepository;
         this._type = instance.getClass();
         this._instance = instance;
@@ -130,10 +137,12 @@ final class StatefulService {
 
             // Generate service id
             Attribute attr = StatefulService.this._type.getAnnotation(Attribute.class);
-            if (attr != null && ! Strings.isNullOrEmpty(attr.sid())) {
-                StatefulService.this._sid = attr.sid();
-            } else {
-                StatefulService.this._sid = StatefulService.this._type.getName();
+            if (Strings.isNullOrEmpty(StatefulService.this._sid)) {
+                if (attr != null && ! Strings.isNullOrEmpty(attr.sid())) {
+                    StatefulService.this._sid = attr.sid();
+                } else {
+                    StatefulService.this._sid = StatefulService.this._type.getName();
+                }
             }
             // Set initAtLaunching tag
             if (attr != null && attr.initAtLaunching()) {
