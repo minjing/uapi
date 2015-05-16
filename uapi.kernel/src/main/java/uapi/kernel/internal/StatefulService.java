@@ -136,7 +136,7 @@ final class StatefulService {
         }
 
         private void resolve() {
-            if (this._state == ServiceState.RESOLVED) {
+            if (this._state == ServiceState.RESOLVED || this._state == ServiceState.INITIALIZED) {
                 return;
             }
             if (this._state != ServiceState.UNDEFINED) {
@@ -213,7 +213,7 @@ final class StatefulService {
         }
 
         private void satisfy() {
-            if (this._state == ServiceState.SATISFIED) {
+            if (this._state == ServiceState.SATISFIED || this._state == ServiceState.INITIALIZED) {
                 return;
             }
             if (this._state != ServiceState.RESOLVED) {

@@ -3,24 +3,18 @@ package uapi.kernel.internal;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import uapi.kernel.Attribute;
 import uapi.kernel.IService;
 import uapi.kernel.Init;
 import uapi.kernel.Inject;
+import uapi.kernel.TestBase;
 
-public class StatefulServiceTest {
+public class StatefulServiceTest extends TestBase {
 
     @Mock ServiceRepository _svcRepo;
-
-    @Before
-    public void initMock() {
-        MockitoAnnotations.initMocks(this);
-    }
 
     @Test
     public void testServiceWithoutId() {

@@ -27,7 +27,7 @@ public class ServiceRepository {
     }
 
     public void addService(Object service) {
-        addService(null, service);
+        addService(service, null);
     }
 
     /**
@@ -36,26 +36,28 @@ public class ServiceRepository {
      * @param sid
      * @param service
      */
-    public void addService(String sid, Object service) {
+    public void addService(Object service, String sid) {
         if (service == null) {
             throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);
         }
         StatefulService svc = new StatefulService(this, service, sid);
         if (svc.isInitialized()) {
-            storeService(sid, svc, this._initializedServices);
+            storeService(svc, this._initializedServices);
         } else {
-            storeService(sid, svc, this._uninitializedServices);
+            storeService(svc, this._uninitializedServices);
         }
     }
 
-    Object getService(Class<?> serviceType) {
+    @SuppressWarnings("unchecked")
+    <T> T getService(Class<?> serviceType) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
-        return getService(serviceType.getName());
+        return (T) getService(serviceType.getName());
     }
 
-    Object getService(String serviceId) {
+    @SuppressWarnings("unchecked")
+    <T> T getService(String serviceId) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
@@ -63,7 +65,7 @@ public class ServiceRepository {
         if (svcs.length == 0) {
             return null;
         } else if (svcs.length == 1) {
-            return svcs[0];
+            return (T) svcs[0];
         } else {
             throw new KernelException("Found more than one service associate with {}", serviceId);
         }
@@ -92,17 +94,17 @@ public class ServiceRepository {
             for (int i = 0; i < svcs.size(); i++) {
                 StatefulService svc = svcs.get(i);
                 svcInsts.add(svc.getInstance());
-                storeService(svc.getId(), svc, this._initializedServices);
+                storeService(svc, this._initializedServices);
             }
         }
         return svcInsts.toArray();
     }
 
-    private void storeService(String sid, StatefulService service, Map<String, List<StatefulService>> serviceMap) {
-        List<StatefulService> svcs = serviceMap.get(sid);
+    private void storeService(StatefulService service, Map<String, List<StatefulService>> serviceMap) {
+        List<StatefulService> svcs = serviceMap.get(service.getId());
         if (svcs == null) {
             svcs = new ArrayList<>();
-            serviceMap.put(sid, svcs);
+            serviceMap.put(service.getId(), svcs);
         }
         svcs.add(service);
     }
