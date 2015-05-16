@@ -1,6 +1,6 @@
 package uapi.kernel.helper;
 
-public final class ArrayHelper {
+public final class CollectionHelper {
 
     public static final Object[] emptyArray = new Object[0];
 

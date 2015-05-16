@@ -61,6 +61,10 @@ final class StatefulService {
         return this._type;
     }
 
+    boolean isInitialized() {
+        return this._lifecycle.isInitialized();
+    }
+
     boolean initAtLaunching() {
         return this._initAtLaunching;
     }
@@ -125,6 +129,10 @@ final class StatefulService {
 
         private Lifecycle() {
             this._state = ServiceState.UNDEFINED;
+        }
+
+        boolean isInitialized() {
+            return this._state == ServiceState.INITIALIZED;
         }
 
         private void resolve() {
@@ -197,7 +205,11 @@ final class StatefulService {
                 StatefulService.this._initMethod = method;
             }
 
-            this._state = ServiceState.RESOLVED;
+            if (StatefulService.this._dependencies.size() == 0 && StatefulService.this._initMethod == null) {
+                this._state = ServiceState.INITIALIZED;
+            } else {
+                this._state = ServiceState.RESOLVED;
+            }
         }
 
         private void satisfy() {

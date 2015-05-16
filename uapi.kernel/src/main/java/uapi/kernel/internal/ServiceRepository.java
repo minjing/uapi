@@ -1,65 +1,51 @@
 package uapi.kernel.internal;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
 
-import uapi.kernel.IService;
 import uapi.kernel.InvalidArgumentException;
 import uapi.kernel.InvalidArgumentException.InvalidArgumentType;
 import uapi.kernel.KernelException;
-import uapi.kernel.helper.ArrayHelper;
 
 public class ServiceRepository {
 
-    private final Map<String, List<StatefulService>>    _unSatisfiedServices;
-    private final Map<String, List<StatefulService>>    _satisfiedServices;
-    private final Map<String, List<Object>>             _extenalServices;
+    private final Map<String, List<StatefulService>>    _uninitializedServices;
+    private final Map<String, List<StatefulService>>    _initializedServices;
+    private final ServiceExtractor                      _serviceExtractor;
 
     public ServiceRepository() {
-        this._unSatisfiedServices = new HashMap<>();
-        this._satisfiedServices = new HashMap<>();
-        this._extenalServices = new HashMap<>();
+        this._uninitializedServices = new HashMap<>();
+        this._initializedServices   = new HashMap<>();
+        this._serviceExtractor      = new ServiceExtractor();
     }
 
-    public void addExtenalService(String sid, Object instance) {
-        if (Strings.isNullOrEmpty(sid)) {
-            throw new InvalidArgumentException("sid", InvalidArgumentType.EMPTY);
-        }
-        if (instance == null) {
-            throw new InvalidArgumentException("instance", InvalidArgumentType.EMPTY);
-        }
-        List<Object> svcs = this._extenalServices.get(sid);
-        if (svcs == null) {
-            svcs = new ArrayList<>();
-            this._extenalServices.put(sid, svcs);
-        }
-        svcs.add(instance);
+    public void addService(Object service) {
+        addService(null, service);
     }
 
+    /**
+     * Add outside service into the repository
+     * 
+     * @param sid
+     * @param service
+     */
     public void addService(String sid, Object service) {
-        if (Strings.isNullOrEmpty(sid)) {
-            throw new InvalidArgumentException("sid", InvalidArgumentType.EMPTY);
-        }
-        if (service == null) {
-            throw new InvalidArgumentException("instance", InvalidArgumentType.EMPTY);
-        }
-    }
-
-    public void addService(IService service) {
         if (service == null) {
             throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);
         }
-        StatefulService svc = new StatefulService(this, service);
-        List<StatefulService> svcs = this._unSatisfiedServices.get(svc.getId());
-        if (svcs == null) {
-            svcs = new ArrayList<>();
-            this._unSatisfiedServices.put(svc.getId(), svcs);
+        StatefulService svc = new StatefulService(this, service, sid);
+        if (svc.isInitialized()) {
+            storeService(sid, svc, this._initializedServices);
+        } else {
+            storeService(sid, svc, this._uninitializedServices);
         }
-        svcs.add(svc);
     }
 
     Object getService(Class<?> serviceType) {
@@ -73,25 +59,14 @@ public class ServiceRepository {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
-        List<Object> extenalSvcs = this._extenalServices.get(serviceId);
-        if (extenalSvcs != null) {
-            
-        }
-        List<StatefulService> svcs = this._satisfiedServices.get(serviceId);
-        if (svcs != null && svcs.size() == 1) {
-            return svcs.get(0).getInstance();
-        }
-        svcs = this._unSatisfiedServices.remove(serviceId);
-        if (svcs == null) {
-            throw new KernelException("Can't found specific service in the repository - {}", serviceId);
-        }
-        if (svcs.size() != 1) {
+        Object[] svcs = getServices(serviceId);
+        if (svcs.length == 0) {
+            return null;
+        } else if (svcs.length == 1) {
+            return svcs[0];
+        } else {
             throw new KernelException("Found more than one service associate with {}", serviceId);
         }
-        StatefulService svc = svcs.get(0);
-        Object svcInst = svc.getInstance();
-        addSatisfiedService(svc);
-        return svcInst;
     }
 
     Object[] getServices(Class<?> serviceType) {
@@ -105,29 +80,39 @@ public class ServiceRepository {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
-        List<StatefulService> svcs = this._satisfiedServices.get(serviceId);
+        Collection<Object> svcInsts;
+        List<StatefulService> svcs = this._initializedServices.get(serviceId);
         if (svcs != null) {
-            return svcs.toArray(new IService[svcs.size()]);
+            svcInsts = Collections2.transform(svcs, this._serviceExtractor);
+        } else {
+            svcInsts = new ArrayList<>();
         }
-        svcs = this._unSatisfiedServices.remove(serviceId);
-        if (svcs == null) {
-            return ArrayHelper.empty();
+        svcs = this._uninitializedServices.remove(serviceId);
+        if (svcs != null) {
+            for (int i = 0; i < svcs.size(); i++) {
+                StatefulService svc = svcs.get(i);
+                svcInsts.add(svc.getInstance());
+                storeService(svc.getId(), svc, this._initializedServices);
+            }
         }
-        Object[] svcInsts = new IService[svcs.size()];
-        for (int i = 0; i < svcs.size(); i++) {
-            StatefulService svc = svcs.get(i);
-            svcInsts[i] = svc.getInstance();
-            addSatisfiedService(svc);
-        }
-        return svcInsts;
+        return svcInsts.toArray();
     }
 
-    private void addSatisfiedService(StatefulService service) {
-        List<StatefulService> svcs = this._satisfiedServices.get(service.getId());
+    private void storeService(String sid, StatefulService service, Map<String, List<StatefulService>> serviceMap) {
+        List<StatefulService> svcs = serviceMap.get(sid);
         if (svcs == null) {
             svcs = new ArrayList<>();
-            this._satisfiedServices.put(service.getId(), svcs);
+            serviceMap.put(sid, svcs);
         }
         svcs.add(service);
+    }
+
+    private static final class ServiceExtractor implements Function<StatefulService, Object> {
+
+        @Override
+        public Object apply(StatefulService input) {
+            return input.getInstance();
+        }
+        
     }
 }
