@@ -20,7 +20,7 @@ public class StatefulServiceTest extends TestBase {
     public void testServiceWithoutId() {
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getId());
+        assertEquals(TestService.class.getName(), stateService.getName());
         assertTrue(stateService.hasInitMethod());
         assertFalse(stateService.initAtLaunching());
     }
@@ -29,7 +29,7 @@ public class StatefulServiceTest extends TestBase {
     public void testServiceWithId() {
         TestServiceWithId svcInst = new TestServiceWithId();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals("TestServiceWithId", stateService.getId());
+        assertEquals("TestServiceWithId", stateService.getName());
     }
 
     @Test
@@ -38,7 +38,7 @@ public class StatefulServiceTest extends TestBase {
 
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getId());
+        assertEquals(TestService.class.getName(), stateService.getName());
         assertEquals("Hello", ((TestService) stateService.getInstance())._message);
 
         verify(this._svcRepo, times(1)).getService(String.class.getName());
@@ -50,8 +50,15 @@ public class StatefulServiceTest extends TestBase {
 
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getId());
+        assertEquals(TestService.class.getName(), stateService.getName());
         assertTrue(((TestService) stateService.getInstance()).isInit());
+    }
+
+    @Test
+    public void testServiceWithType() {
+        TestServiceWithType svcInst = new TestServiceWithType();
+        StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
+        assertEquals(IService.class.getName(), stateService.getName());
     }
 
     final class TestService implements IService {
@@ -75,6 +82,9 @@ public class StatefulServiceTest extends TestBase {
         }
     }
 
-    @Attribute(sid="TestServiceWithId")
+    @Attribute(name="TestServiceWithId")
     final class TestServiceWithId implements IService { }
+
+    @Attribute(type=IService.class)
+    final class TestServiceWithType implements IService { }
 }

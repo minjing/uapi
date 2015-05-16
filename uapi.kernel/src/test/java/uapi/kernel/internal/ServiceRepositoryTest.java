@@ -60,15 +60,15 @@ public class ServiceRepositoryTest extends TestBase {
 
     private class NoIdService implements IService { }
 
-    @Attribute(sid="NamedService")
+    @Attribute(name="NamedService")
     private class IdService implements IService { }
 
     private class OutterService { }
 
-    @Attribute(sid="IService")
+    @Attribute(name="IService")
     private class Service1 implements IService { }
 
-    @Attribute(sid="IService")
+    @Attribute(name="IService")
     private class Service2 implements IService { }
 
     private class Service3 {

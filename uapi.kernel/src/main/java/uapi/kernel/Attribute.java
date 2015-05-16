@@ -5,16 +5,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import uapi.kernel.helper.Null;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Attribute {
 
     /**
-     * Custom service identify
+     * Custom service name
      * 
-     * @return Service identify
+     * @return Service name
      */
-    public String sid() default "";
+    public String name() default "";
+
+    public Class<?> type() default Null.class;
 
     /**
      * Indicate the service should be initialized at launch time

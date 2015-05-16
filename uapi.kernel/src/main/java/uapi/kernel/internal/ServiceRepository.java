@@ -101,10 +101,10 @@ public class ServiceRepository {
     }
 
     private void storeService(StatefulService service, Map<String, List<StatefulService>> serviceMap) {
-        List<StatefulService> svcs = serviceMap.get(service.getId());
+        List<StatefulService> svcs = serviceMap.get(service.getName());
         if (svcs == null) {
             svcs = new ArrayList<>();
-            serviceMap.put(service.getId(), svcs);
+            serviceMap.put(service.getName(), svcs);
         }
         svcs.add(service);
     }

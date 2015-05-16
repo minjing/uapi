@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.mockito.internal.matchers.Null;
+
 import com.google.common.base.Strings;
 
 import uapi.kernel.Attribute;
@@ -22,11 +24,11 @@ final class StatefulService {
 
     private final ServiceRepository         _serviceRepo;
     private final Class<?>                  _type;
-    private final Object                   _instance;
+    private final Object                    _instance;
     private final Map<String, Dependency>   _dependencies;
     private final Lifecycle                 _lifecycle;
 
-    private String      _sid;
+    private String      _name;
     private boolean     _initAtLaunching;
     private Method      _initMethod;
 
@@ -34,7 +36,7 @@ final class StatefulService {
         this(serviceRepository, instance, null);
     }
 
-    StatefulService(ServiceRepository serviceRepository, Object instance, String sid) {
+    StatefulService(ServiceRepository serviceRepository, Object instance, String name) {
         if (serviceRepository == null) {
             throw new InvalidArgumentException("serviceRepository", InvalidArgumentType.EMPTY);
         }
@@ -42,8 +44,8 @@ final class StatefulService {
             throw new InvalidArgumentException("type", InvalidArgumentType.EMPTY);
         }
 
-        if (! Strings.isNullOrEmpty(sid)) {
-            this._sid = sid;
+        if (! Strings.isNullOrEmpty(name)) {
+            this._name = name;
         }
         this._serviceRepo = serviceRepository;
         this._type = instance.getClass();
@@ -53,8 +55,8 @@ final class StatefulService {
         this._lifecycle.resolve();
     }
 
-    String getId() {
-        return this._sid;
+    String getName() {
+        return this._name;
     }
 
     Class<?> getType() {
@@ -82,7 +84,7 @@ final class StatefulService {
 
     final class Dependency {
 
-        private final String    _sid;
+        private final String    _name;
         private final Class<?>  _type;
         private final Method    _setter;
 
@@ -94,19 +96,19 @@ final class StatefulService {
                 throw new InvalidArgumentException("setter", InvalidArgumentType.EMPTY);
             }
             if (sid != null) {
-                this._sid = sid;
+                this._name = sid;
             } else {
-                this._sid = type.getName();
+                this._name = type.getName();
             }
             this._type = type;
             this._setter = setter;
         }
 
-        String getServiceId() {
-            return this._sid;
+        String getName() {
+            return this._name;
         }
 
-        Class<?> getServiceType() {
+        Class<?> getType() {
             return this._type;
         }
 
@@ -117,9 +119,9 @@ final class StatefulService {
             try {
                 this._setter.invoke(StatefulService.this._instance, instance);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                throw new KernelException(e, "Set dependency {} failed - {}", this._setter.getName(), StatefulService.this._sid);
+                throw new KernelException(e, "Set dependency {} failed - {}", this._setter.getName(), StatefulService.this._name);
             }
-            StatefulService.this._dependencies.remove(this._sid);
+            StatefulService.this._dependencies.remove(this._name);
         }
     }
 
@@ -143,13 +145,15 @@ final class StatefulService {
                 throw new InvalidStateException(ServiceState.UNDEFINED.name(), this._state.name());
             }
 
-            // Generate service id
+            // Generate service name
             Attribute attr = StatefulService.this._type.getAnnotation(Attribute.class);
-            if (Strings.isNullOrEmpty(StatefulService.this._sid)) {
-                if (attr != null && ! Strings.isNullOrEmpty(attr.sid())) {
-                    StatefulService.this._sid = attr.sid();
+            if (Strings.isNullOrEmpty(StatefulService.this._name)) {
+                if (attr != null && ! Strings.isNullOrEmpty(attr.name())) {
+                    StatefulService.this._name = attr.name();
+                } else if (attr != null && attr.type() != Null.class) {
+                    StatefulService.this._name = attr.type().getName();
                 } else {
-                    StatefulService.this._sid = StatefulService.this._type.getName();
+                    StatefulService.this._name = StatefulService.this._type.getName();
                 }
             }
             // Set initAtLaunching tag
@@ -181,10 +185,10 @@ final class StatefulService {
                     dependSid = field.getType().getName();
                 }
                 Dependency dependency = new Dependency(dependSid, fieldType, setter);
-                if (StatefulService.this._dependencies.containsKey(dependency.getServiceId())) {
-                    throw new KernelException("Duplicated dependency {} in service - {}", dependSid, StatefulService.this._sid);
+                if (StatefulService.this._dependencies.containsKey(dependency.getName())) {
+                    throw new KernelException("Duplicated dependency {} in service - {}", dependSid, StatefulService.this._name);
                 }
-                StatefulService.this._dependencies.put(dependency.getServiceId(), dependency);
+                StatefulService.this._dependencies.put(dependency.getName(), dependency);
             }
 
             // Find out init method
@@ -196,11 +200,11 @@ final class StatefulService {
                 }
                 if (StatefulService.this._initMethod != null) {
                     throw new KernelException("Do not allow two init method - {} and {} in service {}", 
-                            StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._sid);
+                            StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
                 }
                 if (method.getParameterCount() > 0) {
                     throw new KernelException("The init method {} in service {} only allow empty parameters",
-                            method.getName(), StatefulService.this._sid);
+                            method.getName(), StatefulService.this._name);
                 }
                 StatefulService.this._initMethod = method;
             }
@@ -244,7 +248,7 @@ final class StatefulService {
                     StatefulService.this._initMethod.invoke(StatefulService.this._instance);
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     throw new KernelException(e, "Invoke init method {} on service {} failed",
-                            StatefulService.this._initMethod.getName(), StatefulService.this._sid);
+                            StatefulService.this._initMethod.getName(), StatefulService.this._name);
                 }
             }
             this._state = ServiceState.INITIALIZED;
