@@ -3,10 +3,11 @@ package uapi.kernel.internal;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
-
-import org.mockito.internal.matchers.Null;
 
 import com.google.common.base.Strings;
 
@@ -17,6 +18,7 @@ import uapi.kernel.InvalidArgumentException;
 import uapi.kernel.InvalidStateException;
 import uapi.kernel.InvalidArgumentException.InvalidArgumentType;
 import uapi.kernel.helper.ClassHelper;
+import uapi.kernel.helper.Null;
 import uapi.kernel.helper.StringHelper;
 import uapi.kernel.KernelException;
 
@@ -87,8 +89,9 @@ final class StatefulService {
         private final String    _name;
         private final Class<?>  _type;
         private final Method    _setter;
+        private final boolean   _multiple;
 
-        Dependency(String sid, Class<?> type, Method setter) {
+        Dependency(String sid, Class<?> type, Method setter, boolean multiple) {
             if (type == null) {
                 throw new InvalidArgumentException("type", InvalidArgumentType.EMPTY);
             }
@@ -102,6 +105,7 @@ final class StatefulService {
             }
             this._type = type;
             this._setter = setter;
+            this._multiple = multiple;
         }
 
         String getName() {
@@ -110,6 +114,10 @@ final class StatefulService {
 
         Class<?> getType() {
             return this._type;
+        }
+
+        boolean isMultiple() {
+            return this._multiple;
         }
 
         void setInstance(Object instance) {
@@ -171,7 +179,18 @@ final class StatefulService {
                 }
                 String fieldName = field.getName();
                 Class<?> fieldType = field.getType();
-                String setterName = ClassHelper.makeSetterName(fieldName);
+                boolean isCollectionField = false;
+                if (Collection.class.isAssignableFrom(fieldType)) {
+                    // We need get the element type if the field is a collection
+                    isCollectionField = true;
+                    Type elemType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                    if (! (elemType instanceof Class<?>)) {
+                        throw new KernelException("The element type of field {} was not specified on service {}",
+                                fieldName, StatefulService.this._name);
+                    }
+                    fieldType = (Class<?>) elemType;
+                }
+                String setterName = ClassHelper.makeSetterName(fieldName, isCollectionField);
                 Method setter;
                 try {
                     setter = StatefulService.this._type.getMethod(setterName, fieldType);
@@ -184,7 +203,7 @@ final class StatefulService {
                 if (Strings.isNullOrEmpty(dependSid)) {
                     dependSid = field.getType().getName();
                 }
-                Dependency dependency = new Dependency(dependSid, fieldType, setter);
+                Dependency dependency = new Dependency(dependSid, fieldType, setter, isCollectionField);
                 if (StatefulService.this._dependencies.containsKey(dependency.getName())) {
                     throw new KernelException("Duplicated dependency {} in service - {}", dependSid, StatefulService.this._name);
                 }
@@ -225,11 +244,18 @@ final class StatefulService {
             }
 
             for (Map.Entry<String, Dependency> dependEntry : StatefulService.this._dependencies.entrySet()) {
-                Object dependSvc = StatefulService.this._serviceRepo.getService(dependEntry.getKey());
-                if (dependSvc == null) {
+                Object[] dependSvcs;
+                if (dependEntry.getValue().isMultiple()) {
+                    dependSvcs = StatefulService.this._serviceRepo.getServices(dependEntry.getKey());
+                } else {
+                    dependSvcs = new Object[] { StatefulService.this._serviceRepo.getService(dependEntry.getKey()) };
+                }
+                if (dependSvcs == null || dependSvcs.length == 0 || dependSvcs[0] == null) {
                     throw new KernelException("Can't retrieve service instance - {}", dependEntry.getKey());
                 }
-                dependEntry.getValue().setInstance(dependSvc);
+                for (Object dependSvc : dependSvcs) {
+                    dependEntry.getValue().setInstance(dependSvc);
+                }
             }
 
             this._state = ServiceState.SATISFIED;

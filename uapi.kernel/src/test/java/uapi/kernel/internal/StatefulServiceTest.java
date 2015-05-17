@@ -3,6 +3,9 @@ package uapi.kernel.internal;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -61,6 +64,14 @@ public class StatefulServiceTest extends TestBase {
         assertEquals(IService.class.getName(), stateService.getName());
     }
 
+    @Test
+    public void testMultiple() {
+        when(this._svcRepo.getService(String.class.getName())).thenReturn("Min");
+
+        MultipleDependenciesService svcInst = new MultipleDependenciesService();
+        StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
+    }
+
     final class TestService implements IService {
 
         private boolean _initialized = false;
@@ -87,4 +98,14 @@ public class StatefulServiceTest extends TestBase {
 
     @Attribute(type=IService.class)
     final class TestServiceWithType implements IService { }
+
+    final class MultipleDependenciesService {
+
+        @Inject
+        private List<String> _messages = new ArrayList<>();
+
+        public void setMessage(String msg) {
+            this._messages.add(msg);
+        }
+    }
 }
