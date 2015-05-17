@@ -66,10 +66,14 @@ public class StatefulServiceTest extends TestBase {
 
     @Test
     public void testMultiple() {
-        when(this._svcRepo.getService(String.class.getName())).thenReturn("Min");
+        when(this._svcRepo.getServices(String.class.getName())).thenReturn(new String[] { "Min", "Jing" });
 
         MultipleDependenciesService svcInst = new MultipleDependenciesService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
+        MultipleDependenciesService inst = stateService.getInstance();
+        assertEquals(svcInst, inst);
+        assertTrue(inst._messages.contains("Min"));
+        assertTrue(inst._messages.contains("Jing"));
     }
 
     final class TestService implements IService {

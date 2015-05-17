@@ -20,7 +20,7 @@ public class WordHelper {
     private WordHelper() { }
 
     private static void initialize() {
-        // 单数转复数情况
+        // singular to plural
         plural("$", "s");
         plural("s$", "s");
         plural("(ax|test)is$", "$1es");
@@ -39,7 +39,7 @@ public class WordHelper {
         plural("([m|l])ouse$", "$1ice");
         plural("(ox)$", "$1en");
         plural("(quiz)$", "$1zes");
-        // 复数转单数情况
+        // plural to singular
         singular("s$", "");
         singular("(n)ews$", "$1ews");
         singular("([ti])a$", "$1um");
@@ -64,20 +64,20 @@ public class WordHelper {
         singular("(vert|ind)ices$", "$1ex");
         singular("(matr)ices$", "$1ix");
         singular("(quiz)zes$", "$1");
-        // 不规则情况
+        // irregular
         irregular("person", "people");
         irregular("man", "men");
         irregular("child", "children");
         irregular("sex", "sexes");
         irregular("move", "moves");
-        // 没有单复数情况
+        // no singular or plural
         uncountable(new String[] { "equipment", "information", "rice", "money", "species", "series", "fish", "sheep" });
     }
 
     /**
-     * 单数转换成复数
+     * singular to plural
      * 
-     * @param word 单词
+     * @param word
      * @return
      */
     public static String pluralize(String word) {
@@ -88,9 +88,9 @@ public class WordHelper {
     }
 
     /**
-     * 复数转换成单数
+     * plural to singular
      * 
-     * @param word 单词
+     * @param word
      * @return 
      */
     public static String singularize(String word) {
@@ -101,7 +101,7 @@ public class WordHelper {
     }
 
     /**
-     * 替换
+     * replace
      * 
      * @param word
      * @param ruleAndReplacements
@@ -122,7 +122,7 @@ public class WordHelper {
     }
 
     /**
-     * 负数
+     * plural
      * 
      * @param rule
      * @param replacement
@@ -132,7 +132,7 @@ public class WordHelper {
     }
 
     /**
-     * 单数
+     * singular
      * 
      * @param rule
      * @param replacement
@@ -142,7 +142,7 @@ public class WordHelper {
     }
 
     /**
-     * 不规则
+     * irregular
      * 
      * @param singular
      * @param plural
@@ -153,7 +153,7 @@ public class WordHelper {
     }
 
     /**
-     * 没有单复数
+     * no singular or plural
      * 
      * @param words
      */
@@ -172,10 +172,7 @@ public class WordHelper {
 //    }
 
     /**
-     * 字符串替换规则对应
-     * 
-     * @author Vernon.Chen
-     * @date 2013-2-4
+     * rule replacement
      */
     static class RuleAndReplacement {
         private String rule;

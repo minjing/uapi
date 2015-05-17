@@ -177,6 +177,10 @@ final class StatefulService {
                 if (inject == null) {
                     continue;
                 }
+                String dependName = inject.sid();
+                if (Strings.isNullOrEmpty(dependName)) {
+                    dependName = field.getType().getName();
+                }
                 String fieldName = field.getName();
                 Class<?> fieldType = field.getType();
                 boolean isCollectionField = false;
@@ -189,6 +193,7 @@ final class StatefulService {
                                 fieldName, StatefulService.this._name);
                     }
                     fieldType = (Class<?>) elemType;
+                    dependName = fieldType.getName();
                 }
                 String setterName = ClassHelper.makeSetterName(fieldName, isCollectionField);
                 Method setter;
@@ -199,13 +204,9 @@ final class StatefulService {
                             StringHelper.makeString("Can't found setter for field {} in class {}, expect the setter name is {}",
                                     fieldName, StatefulService.this._type.getName(), setterName));
                 }
-                String dependSid = inject.sid();
-                if (Strings.isNullOrEmpty(dependSid)) {
-                    dependSid = field.getType().getName();
-                }
-                Dependency dependency = new Dependency(dependSid, fieldType, setter, isCollectionField);
+                Dependency dependency = new Dependency(dependName, fieldType, setter, isCollectionField);
                 if (StatefulService.this._dependencies.containsKey(dependency.getName())) {
-                    throw new KernelException("Duplicated dependency {} in service - {}", dependSid, StatefulService.this._name);
+                    throw new KernelException("Duplicated dependency {} in service - {}", dependName, StatefulService.this._name);
                 }
                 StatefulService.this._dependencies.put(dependency.getName(), dependency);
             }
