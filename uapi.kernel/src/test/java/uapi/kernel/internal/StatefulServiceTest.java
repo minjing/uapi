@@ -11,7 +11,7 @@ import org.mockito.Mock;
 
 import uapi.kernel.Attribute;
 import uapi.kernel.IService;
-import uapi.kernel.Init;
+import uapi.kernel.OnInit;
 import uapi.kernel.Inject;
 import uapi.kernel.TestBase;
 
@@ -25,7 +25,7 @@ public class StatefulServiceTest extends TestBase {
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getName());
         assertTrue(stateService.hasInitMethod());
-        assertFalse(stateService.initAtLaunching());
+        assertTrue(stateService.isLazyInit());
     }
 
     @Test
@@ -87,7 +87,7 @@ public class StatefulServiceTest extends TestBase {
             this._message = msg;
         }
 
-        @Init
+        @OnInit
         public void init() {
             this._initialized = true;
         }

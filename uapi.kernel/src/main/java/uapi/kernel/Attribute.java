@@ -19,11 +19,4 @@ public @interface Attribute {
     public String name() default "";
 
     public Class<?> type() default Null.class;
-
-    /**
-     * Indicate the service should be initialized at launch time
-     * 
-     * @return
-     */
-    public boolean initAtLaunching() default false;
 }

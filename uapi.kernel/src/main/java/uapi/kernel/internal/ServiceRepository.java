@@ -49,7 +49,7 @@ public class ServiceRepository {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T getService(Class<?> serviceType) {
+    public <T> T getService(Class<?> serviceType) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
@@ -57,7 +57,7 @@ public class ServiceRepository {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T getService(String serviceId) {
+    public <T> T getService(String serviceId) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
@@ -71,14 +71,14 @@ public class ServiceRepository {
         }
     }
 
-    Object[] getServices(Class<?> serviceType) {
+    public Object[] getServices(Class<?> serviceType) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
         return getServices(serviceType.getName());
     }
 
-    Object[] getServices(String serviceId) {
+    public Object[] getServices(String serviceId) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }

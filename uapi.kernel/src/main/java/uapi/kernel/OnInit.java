@@ -7,4 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Init { }
+public @interface OnInit {
+
+    public boolean lazy() default true;
+}

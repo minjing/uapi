@@ -12,7 +12,7 @@ import java.util.HashMap;
 import com.google.common.base.Strings;
 
 import uapi.kernel.Attribute;
-import uapi.kernel.Init;
+import uapi.kernel.OnInit;
 import uapi.kernel.Inject;
 import uapi.kernel.InvalidArgumentException;
 import uapi.kernel.InvalidStateException;
@@ -31,7 +31,7 @@ final class StatefulService {
     private final Lifecycle                 _lifecycle;
 
     private String      _name;
-    private boolean     _initAtLaunching;
+    private boolean     _lazyInit;
     private Method      _initMethod;
 
     StatefulService(ServiceRepository serviceRepository, Object instance) {
@@ -69,12 +69,12 @@ final class StatefulService {
         return this._lifecycle.isInitialized();
     }
 
-    boolean initAtLaunching() {
-        return this._initAtLaunching;
+    boolean isLazyInit() {
+        return this._lazyInit;
     }
 
     boolean hasInitMethod() {
-    	return this._initMethod != null;
+        return this._initMethod != null;
     }
 
     @SuppressWarnings("unchecked")
@@ -165,11 +165,11 @@ final class StatefulService {
                 }
             }
             // Set initAtLaunching tag
-            if (attr != null && attr.initAtLaunching()) {
-                StatefulService.this._initAtLaunching = true;
-            } else {
-                StatefulService.this._initAtLaunching = false;
-            }
+//            if (attr != null && attr.initAtLaunching()) {
+//                StatefulService.this._initAtLaunching = true;
+//            } else {
+//                StatefulService.this._initAtLaunching = false;
+//            }
             // Resolve dependencies
             Field[] fields = StatefulService.this._type.getDeclaredFields();
             for (Field field : fields) {
@@ -177,7 +177,7 @@ final class StatefulService {
                 if (inject == null) {
                     continue;
                 }
-                String dependName = inject.sid();
+                String dependName = inject.name();
                 if (Strings.isNullOrEmpty(dependName)) {
                     dependName = field.getType().getName();
                 }
@@ -214,7 +214,7 @@ final class StatefulService {
             // Find out init method
             Method[] methods = StatefulService.this._type.getMethods();
             for (Method method : methods) {
-                Init init = method.getAnnotation(Init.class);
+                OnInit init = method.getAnnotation(OnInit.class);
                 if (init == null) {
                     continue;
                 }
@@ -227,6 +227,7 @@ final class StatefulService {
                             method.getName(), StatefulService.this._name);
                 }
                 StatefulService.this._initMethod = method;
+                StatefulService.this._lazyInit = init.lazy();
             }
 
             if (StatefulService.this._dependencies.size() == 0 && StatefulService.this._initMethod == null) {
