@@ -32,21 +32,28 @@ public final class Main {
         // TODO: configuration
 
         try {
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(new ShutdownHook(logger)));
             semaphore.acquire();
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.info("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
 
         System.exit(0);
     }
 
     private static final class ShutdownHook implements Runnable {
 
+        private final ILogger _logger;
+
+        private ShutdownHook(ILogger logger) throws InterruptedException {
+            this._logger = logger;
+            semaphore.acquire();
+        }
+
         @Override
         public void run() {
-            System.out.println("The system is going to shutdown...");
+            this._logger.info("The system is going to shutdown...");
             semaphore.release();
         }
     }
