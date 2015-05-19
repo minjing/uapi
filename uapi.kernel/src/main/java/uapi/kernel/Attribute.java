@@ -16,7 +16,7 @@ public @interface Attribute {
      * 
      * @return Service name
      */
-    public String name() default "";
+    String name() default "";
 
-    public Class<?> type() default Null.class;
+    Class<?> type() default Null.class;
 }

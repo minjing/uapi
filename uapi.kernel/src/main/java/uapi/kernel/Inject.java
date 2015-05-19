@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Inject {
 
-    public String name() default "";
+    String name() default "";
 }
