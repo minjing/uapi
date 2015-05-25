@@ -7,14 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE_USE)
+@Target(ElementType.METHOD)
 @Repeatable(CliOptions.class)
 public @interface CliOption {
 
     String option();
 
     boolean required() default false;
-    
+
     boolean hasValue() default false;
 
     CliOptionValueType valueType() default CliOptionValueType.STRING;
