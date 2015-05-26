@@ -7,9 +7,9 @@ import java.util.regex.Pattern;
 
 public class WordHelper {
 
-    private static List<RuleAndReplacement> plurals = new ArrayList<RuleAndReplacement>(); // 复数
+    private static List<RuleAndReplacement> plurals = new ArrayList<RuleAndReplacement>();
 
-    private static List<RuleAndReplacement> singulars = new ArrayList<RuleAndReplacement>();// 单数
+    private static List<RuleAndReplacement> singulars = new ArrayList<RuleAndReplacement>();
 
     private static List<String> uncountables = new ArrayList<String>();
 
@@ -81,7 +81,7 @@ public class WordHelper {
      * @return
      */
     public static String pluralize(String word) {
-        if (uncountables.contains(word.toLowerCase())) {//  没有单复数形式
+        if (uncountables.contains(word.toLowerCase())) {
             return word;
         }
         return replaceWithFirstRule(word, plurals);
@@ -94,7 +94,7 @@ public class WordHelper {
      * @return 
      */
     public static String singularize(String word) {
-        if (uncountables.contains(word.toLowerCase())) {//  没有单复数形式
+        if (uncountables.contains(word.toLowerCase())) {
             return word;
         }
         return replaceWithFirstRule(word, singulars);
@@ -113,7 +113,7 @@ public class WordHelper {
             String replacement = rar.getReplacement();
 
             // Return if we find a match.
-            Matcher matcher = Pattern.compile(rule, Pattern.CASE_INSENSITIVE).matcher(word);// 不分大小的匹配
+            Matcher matcher = Pattern.compile(rule, Pattern.CASE_INSENSITIVE).matcher(word);
             if (matcher.find()) {
                 return matcher.replaceAll(replacement);
             }

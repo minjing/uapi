@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Repeatable(CliOptions.class)
-public @interface CliOption {
+@Repeatable(CliHandler.class)
+public @interface CliConfig {
 
     String option();
 

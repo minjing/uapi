@@ -33,6 +33,7 @@ final class StatefulService {
     private String      _name;
     private boolean     _lazyInit;
     private Method      _initMethod;
+    private boolean     _contributeCli;
 
     StatefulService(ServiceRepository serviceRepository, Object instance) {
         this(serviceRepository, instance, null);
@@ -219,7 +220,7 @@ final class StatefulService {
                     continue;
                 }
                 if (StatefulService.this._initMethod != null) {
-                    throw new KernelException("Do not allow two init method - {} and {} in service {}", 
+                    throw new KernelException("Do not allow two init method - {} and {} in service {}",
                             StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
                 }
                 if (method.getParameterCount() > 0) {
