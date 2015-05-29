@@ -33,7 +33,6 @@ final class StatefulService {
     private String      _name;
     private boolean     _lazyInit;
     private Method      _initMethod;
-    private boolean     _contributeCli;
 
     StatefulService(ServiceRepository serviceRepository, Object instance) {
         this(serviceRepository, instance, null);
