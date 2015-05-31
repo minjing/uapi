@@ -32,14 +32,18 @@ public final class ClassHelper {
         return setterName;
     }
 
-    public static Class<?>[] getInterfaceParameterizedClass(Class<?> type, Class<?> interfaceType) {
+    public static Class<?>[] getInterfaceParameterizedClasses(Class<?> type, Class<?> interfaceType) {
         if (type == null) {
             throw new InvalidArgumentException("type", InvalidArgumentType.EMPTY);
         }
         Class<?>[] paramClasses = null;
         List<Type> intfTypes = Arrays.asList(type.getGenericInterfaces());
         for (Type intfType : intfTypes) {
-            if (! intfType.equals(interfaceType)) {
+            if (! (intfType instanceof ParameterizedType)) {
+                continue;
+            }
+            Type rowType = ((ParameterizedType) intfType).getRawType();
+            if (! rowType.equals(interfaceType)) {
                 continue;
             }
             Type[] paramTypes = ((ParameterizedType) intfType).getActualTypeArguments();

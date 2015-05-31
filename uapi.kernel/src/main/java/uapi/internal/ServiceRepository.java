@@ -1,7 +1,5 @@
 package uapi.internal;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +13,7 @@ import com.google.common.collect.Collections2;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.helper.ClassHelper;
 
 public class ServiceRepository {
 
@@ -117,9 +116,17 @@ public class ServiceRepository {
         if (parser == null) {
             throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);
         }
-        // TODO:
-//        Type[] types = ((ParameterizedType) parser.getClass().getGenericSuperclass()).getActualTypeArguments();
-//        this._annotationParsers.add(parser);
+        Class<?>[] annotationTypes = ClassHelper.getInterfaceParameterizedClasses(parser.getClass(), IAnnotationParser.class);
+        if (annotationTypes == null) {
+            throw new KernelException("The parser {} does not specified parameter type", parser.getClass().getName());
+        }
+        Class<?> annotationType = annotationTypes[0];
+        List<IAnnotationParser<?>> parsers = this._annotationParsers.get(annotationType);
+        if (parsers == null) {
+            parsers = new ArrayList<>();
+            this._annotationParsers.put(annotationType, parsers);
+        }
+        parsers.add(parser);
     }
 
     private static final class ServiceExtractor implements Function<StatefulService, Object> {
@@ -128,6 +135,5 @@ public class ServiceRepository {
         public Object apply(StatefulService input) {
             return input.getInstance();
         }
-        
     }
 }

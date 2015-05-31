@@ -1,5 +1,6 @@
 package uapi.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +40,17 @@ public final class Configurator {
     private final class AnnotationParser implements IAnnotationParser<Config> {
 
         @Override
-        public void parse(Config annotation, ServiceReference serviceReference) {
-            // TODO Auto-generated method stub
+        public void parse(Config cfgAnno, ConfigurableServiceDescriptor svcDesc) {
+            List<ConfigurableServiceDescriptor> svcDescs = Configurator.this._svcDescs.get(cfgAnno.namespace());
+            if (svcDescs == null) {
+                svcDescs = new ArrayList<>();
+                Configurator.this._svcDescs.put(cfgAnno.namespace(), svcDescs);
+            }
+            svcDescs.add(svcDesc);
+            Map<String, ?> newCfg = Configurator.this._cgfs.get(cfgAnno.namespace());
+            if (newCfg != null) {
+                Configurator.this.doConfigChange(cfgAnno.namespace(), null, newCfg);
+            }
         }
     }
 }

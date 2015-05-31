@@ -154,14 +154,6 @@ final class StatefulService {
             }
 
             // Generate service name
-//            List<Annotation> annotations = Arrays.asList(StatefulService.this._type.getAnnotations());
-//            annotations.forEach((annotation) -> {
-//                StatefulService.this._annotationParsers.forEach((parser) -> {
-//                    if (parser.getAnnotationType().equals(Annotation.class)) {
-//                        parser.parse(StatefulService.this._instance);
-//                    }
-//                });
-//            });
             Attribute attr = StatefulService.this._type.getAnnotation(Attribute.class);
             if (Strings.isNullOrEmpty(StatefulService.this._name)) {
                 if (attr != null && ! Strings.isNullOrEmpty(attr.name())) {
