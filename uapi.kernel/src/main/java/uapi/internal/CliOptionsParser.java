@@ -1,0 +1,46 @@
+package uapi.internal;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import uapi.InvalidArgumentException;
+import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.helper.Pair;
+
+import com.google.common.base.Strings;
+
+public final class CliOptionsParser {
+
+    private static final String OPTION_PREFIX       = "-";
+    private static final String OPTION_VALUE_TAG    = "=";
+
+    private CliOptionsParser() { }
+
+    public static Map<String, String> parse(String[] args) {
+        if (args == null || args.length == 0) {
+            throw new InvalidArgumentException("name", InvalidArgumentType.EMPTY);
+        }
+        List<String> arggs = Arrays.asList(args);
+//        CliOptions cliCfg = new CliOptions();
+        Map<String, String> cliCfg = new HashMap<>();
+        arggs.parallelStream()
+                .filter((option) -> { return Strings.isNullOrEmpty(option) ? false : true; })
+                .map((option) -> {
+                    if (option.startsWith(OPTION_PREFIX)) {
+                        return option.substring(1);
+                    } else {
+                        return option;
+                    }})
+                .map((option) -> {
+                    String[] values = option.split(OPTION_VALUE_TAG);
+                    if (values.length == 1) {
+                        return new Pair<String, String>(values[0], Boolean.TRUE.toString());
+                    } else {
+                        return new Pair<String, String>(values[0], values[1]);
+                    }})
+                .forEach((pair) -> { cliCfg.put(pair.getLeftValue(), pair.getRightValue()); });
+        return cliCfg;
+    }
+}

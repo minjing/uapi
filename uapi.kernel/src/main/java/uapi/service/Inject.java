@@ -1,4 +1,4 @@
-package uapi.config;
+package uapi.service;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,9 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Config {
+public @interface Inject {
 
-    String namespace();
-
-    Class<?> configDataType();
+    String name() default "";
 }
