@@ -12,10 +12,11 @@ import org.mockito.Mock;
 import uapi.TestBase;
 import uapi.internal.ServiceRepository;
 import uapi.internal.StatefulService;
-import uapi.service.Attribute;
 import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.OnInit;
+import uapi.service.Registration;
+import uapi.service.Type;
 
 public class StatefulServiceTest extends TestBase {
 
@@ -99,10 +100,10 @@ public class StatefulServiceTest extends TestBase {
         }
     }
 
-    @Attribute(name="TestServiceWithId")
+    @Registration(names="TestServiceWithId")
     final class TestServiceWithId implements IService { }
 
-    @Attribute(type=IService.class)
+    @Registration({@Type(IService.class)})
     final class TestServiceWithType implements IService { }
 
     final class MultipleDependenciesService {

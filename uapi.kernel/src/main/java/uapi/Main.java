@@ -1,5 +1,7 @@
 package uapi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
 
@@ -9,19 +11,28 @@ import uapi.service.IService;
 
 public final class Main {
 
-    private static final Semaphore          semaphore;
-    private static final ServiceRepository  svcRepo;
+    private static final Semaphore semaphore;
 
     static {
-        semaphore   = new Semaphore(1);
-        svcRepo     = new ServiceRepository();
+        semaphore = new Semaphore(1);
     }
 
     public static void main(String[] args) {
-        ServiceLoader<IService> svrLoaders = ServiceLoader.load(IService.class);
-        for (IService svr : svrLoaders) {
-            svcRepo.addService(svr);
+        ServiceLoader<IService> svcLoaders = ServiceLoader.load(IService.class);
+        ServiceRepository svcRepo = null;
+        List<IService> svcs = new ArrayList<>();
+        // find out ServiceRepository first and then put all services into it;
+        for (IService svc : svcLoaders) {
+            if (ServiceRepository.class.equals(svc.getClass())) {
+                svcRepo = (ServiceRepository) svc;
+            }
+            svcs.add(svc);
         }
+        if (svcRepo == null) {
+            throw new KernelException("Can't find out ServiceRepository instance");
+        }
+        svcRepo.addServices(svcs);
+        svcRepo = svcRepo.getService(ServiceRepository.class);
 
         // Retrieve the log service
         ILogger logger = svcRepo.getService(ILogger.class);

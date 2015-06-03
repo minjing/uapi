@@ -3,9 +3,6 @@ package uapi.internal;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -15,10 +12,9 @@ import uapi.InvalidArgumentException;
 import uapi.InvalidStateException;
 import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.helper.ChangeableBoolean;
 import uapi.helper.ClassHelper;
-import uapi.helper.Null;
 import uapi.helper.StringHelper;
-import uapi.service.Attribute;
 import uapi.service.Inject;
 import uapi.service.OnInit;
 
@@ -153,23 +149,6 @@ final class StatefulService {
                 throw new InvalidStateException(ServiceState.UNDEFINED.name(), this._state.name());
             }
 
-            // Generate service name
-            Attribute attr = StatefulService.this._type.getAnnotation(Attribute.class);
-            if (Strings.isNullOrEmpty(StatefulService.this._name)) {
-                if (attr != null && ! Strings.isNullOrEmpty(attr.name())) {
-                    StatefulService.this._name = attr.name();
-                } else if (attr != null && attr.type() != Null.class) {
-                    StatefulService.this._name = attr.type().getName();
-                } else {
-                    StatefulService.this._name = StatefulService.this._type.getName();
-                }
-            }
-            // Set initAtLaunching tag
-//            if (attr != null && attr.initAtLaunching()) {
-//                StatefulService.this._initAtLaunching = true;
-//            } else {
-//                StatefulService.this._initAtLaunching = false;
-//            }
             // Resolve dependencies
             Field[] fields = StatefulService.this._type.getDeclaredFields();
             for (Field field : fields) {
@@ -182,20 +161,9 @@ final class StatefulService {
                     dependName = field.getType().getName();
                 }
                 String fieldName = field.getName();
-                Class<?> fieldType = field.getType();
-                boolean isCollectionField = false;
-                if (Collection.class.isAssignableFrom(fieldType)) {
-                    // We need get the element type if the field is a collection
-                    isCollectionField = true;
-                    Type elemType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-                    if (! (elemType instanceof Class<?>)) {
-                        throw new KernelException("The element type of field {} was not specified on service {}",
-                                fieldName, StatefulService.this._name);
-                    }
-                    fieldType = (Class<?>) elemType;
-                    dependName = fieldType.getName();
-                }
-                String setterName = ClassHelper.makeSetterName(fieldName, isCollectionField);
+                ChangeableBoolean isCollection = new ChangeableBoolean();
+                Class<?> fieldType = ClassHelper.getElementType(field.getType(), field.getGenericType(), isCollection);
+                String setterName = ClassHelper.makeSetterName(fieldName, isCollection.get());
                 Method setter;
                 try {
                     setter = StatefulService.this._type.getMethod(setterName, fieldType);
@@ -204,7 +172,7 @@ final class StatefulService {
                             StringHelper.makeString("Can't found setter for field {} in class {}, expect the setter name is {}",
                                     fieldName, StatefulService.this._type.getName(), setterName));
                 }
-                Dependency dependency = new Dependency(dependName, fieldType, setter, isCollectionField);
+                Dependency dependency = new Dependency(dependName, fieldType, setter, isCollection.get());
                 if (StatefulService.this._dependencies.containsKey(dependency.getName())) {
                     throw new KernelException("Duplicated dependency {} in service - {}", dependName, StatefulService.this._name);
                 }

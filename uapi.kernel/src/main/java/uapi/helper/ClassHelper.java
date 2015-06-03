@@ -3,7 +3,9 @@ package uapi.helper;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
@@ -14,6 +16,7 @@ public final class ClassHelper {
 
     private static final String FIELD_PREFIX    = "_";
     private static final String SETTER_PREFIX   = "set";
+    private static final String ADD_PREFIX      = "add";
 
     public static String makeSetterName(String fieldName, boolean isCollection) {
         if (Strings.isNullOrEmpty(fieldName)) {
@@ -25,11 +28,39 @@ public final class ClassHelper {
         } else {
             propName = fieldName;
         }
+        String setterName = null;
         if (isCollection) {
             propName = WordHelper.singularize(propName);
+            setterName = ADD_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
+        } else {
+            setterName = SETTER_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
         }
-        String setterName = SETTER_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
         return setterName;
+    }
+
+    public static Class<?> getElementType(Class<?> collectionClass, Type collectionType, ChangeableBoolean isCollection) {
+        if (! (collectionType instanceof ParameterizedType)) {
+            return collectionClass;
+        }
+        if (Collection.class.isAssignableFrom(collectionClass)) {
+            isCollection.set(true);
+            Type elemType = ((ParameterizedType) collectionType).getActualTypeArguments()[0];
+            if (elemType instanceof ParameterizedType) {
+                return getElementType((Class<?>) ((ParameterizedType) elemType).getRawType(), elemType, isCollection);
+            } else {
+                return (Class<?>) elemType;
+            }
+        } else if (Map.class.isAssignableFrom(collectionClass)) {
+            isCollection.set(true);
+            Type elemType = ((ParameterizedType) collectionType).getActualTypeArguments()[1];
+            if (elemType instanceof ParameterizedType) {
+                return getElementType((Class<?>) ((ParameterizedType) elemType).getRawType(), elemType, isCollection);
+            } else {
+                return (Class<?>) elemType;
+            }
+        } else {
+            return collectionClass;
+        }
     }
 
     public static Class<?>[] getInterfaceParameterizedClasses(Class<?> type, Class<?> interfaceType) {

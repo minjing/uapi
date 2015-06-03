@@ -8,18 +8,52 @@ import java.util.concurrent.ConcurrentHashMap;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
+import uapi.config.IConfigSource;
+import uapi.service.IService;
+import uapi.service.IServiceRepository;
+import uapi.service.Inject;
+import uapi.service.OnInit;
+import uapi.service.Registration;
+import uapi.service.Type;
 
 import com.google.common.base.Strings;
 
-public final class Configurator {
+@Registration({
+        @Type(Configurator.class),
+        @Type(IAnnotationParser.class)
+})
+public final class Configurator implements IService, IAnnotationParser<Config> {
 
     private final Map<String /* name space */, Map<String, ?>> _cgfs;
     private final Map<String /* name space */, List<ConfigurableServiceDescriptor>> _svcDescs;
 
-    Configurator() {
-        this._cgfs = new ConcurrentHashMap<>();
-        this._svcDescs = new ConcurrentHashMap<>();
+//    @Inject
+//    private IServiceRepository _serviceRepository;
+
+    @Inject
+    private final List<IConfigSource> _configSources;
+
+    public Configurator() {
+        this._cgfs          = new ConcurrentHashMap<>();
+        this._svcDescs      = new ConcurrentHashMap<>();
+        this._configSources = new ArrayList<>();
     }
+
+    public void addConfigSource(IConfigSource configSource) {
+        if (configSource == null) {
+            throw new InvalidArgumentException("configSource", InvalidArgumentType.EMPTY);
+        }
+        this._configSources.add(configSource);
+    }
+
+//    public void setServiceRepository(IServiceRepository serviceRepository) {
+//        this._serviceRepository = serviceRepository;
+//    }
+
+//    @OnInit
+//    public void init() {
+//        this._serviceRepository.addAnnotationParser(this);
+//    }
 
     void addConfig(String namespace, Map<String, ?> config) {
         if (Strings.isNullOrEmpty(namespace)) {
@@ -37,20 +71,17 @@ public final class Configurator {
         svcDescs.forEach((svcDesc) -> { svcDesc.setConfig(oldCfg, newCfg); });
     }
 
-    private final class AnnotationParser implements IAnnotationParser<Config> {
-
-        @Override
-        public void parse(Config cfgAnno, ConfigurableServiceDescriptor svcDesc) {
-            List<ConfigurableServiceDescriptor> svcDescs = Configurator.this._svcDescs.get(cfgAnno.namespace());
-            if (svcDescs == null) {
-                svcDescs = new ArrayList<>();
-                Configurator.this._svcDescs.put(cfgAnno.namespace(), svcDescs);
-            }
-            svcDescs.add(svcDesc);
-            Map<String, ?> newCfg = Configurator.this._cgfs.get(cfgAnno.namespace());
-            if (newCfg != null) {
-                Configurator.this.doConfigChange(cfgAnno.namespace(), null, newCfg);
-            }
+    @Override
+    public void parse(Config cfgAnno, ConfigurableServiceDescriptor svcDesc) {
+        List<ConfigurableServiceDescriptor> svcDescs = this._svcDescs.get(cfgAnno.namespace());
+        if (svcDescs == null) {
+            svcDescs = new ArrayList<>();
+            this._svcDescs.put(cfgAnno.namespace(), svcDescs);
+        }
+        svcDescs.add(svcDesc);
+        Map<String, ?> newCfg = this._cgfs.get(cfgAnno.namespace());
+        if (newCfg != null) {
+            this.doConfigChange(cfgAnno.namespace(), null, newCfg);
         }
     }
 }

@@ -1,6 +1,6 @@
 package uapi.config;
 
-public interface IConfiguration {
+public interface IConfigSource {
 
     <T> T getConfig(String key);
 }

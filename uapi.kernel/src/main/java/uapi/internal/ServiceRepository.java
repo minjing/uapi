@@ -14,12 +14,19 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ClassHelper;
+import uapi.service.IService;
+import uapi.service.IServiceRepository;
+import uapi.service.Inject;
+import uapi.service.Registration;
+import uapi.service.Type;
 
-public class ServiceRepository {
+public class ServiceRepository implements IService, IServiceRepository {
 
     private final Map<String, List<StatefulService>>        _uninitializedServices;
     private final Map<String, List<StatefulService>>        _initializedServices;
     private final ServiceExtractor                          _serviceExtractor;
+
+    @Inject
     private final Map<Class<?>, List<IAnnotationParser<?>>> _annotationParsers;
 
     public ServiceRepository() {
@@ -29,8 +36,27 @@ public class ServiceRepository {
         this._annotationParsers     = new HashMap<>();
     }
 
+    public void addServices(List<IService> services) {
+        for (IService service : services) {
+            addService(service);
+        }
+    }
+
     public void addService(Object service) {
-        addService(service, null);
+        if (service == null) {
+            throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);
+        }
+        Registration reg = service.getClass().getAnnotation(Registration.class);
+        if (reg == null) {
+            addService(service, service.getClass().getName());
+        } else {
+            for (String name : reg.names()) {
+                addService(service, name);
+            }
+            for (Type type : reg.value()) {
+                addService(service, type.value().toString());
+            }
+        }
     }
 
     /**
@@ -42,6 +68,9 @@ public class ServiceRepository {
     public void addService(Object service, String sid) {
         if (service == null) {
             throw new InvalidArgumentException("service", InvalidArgumentType.EMPTY);
+        }
+        if (Strings.isNullOrEmpty(sid)) {
+            throw new InvalidArgumentException("sid", InvalidArgumentType.EMPTY);
         }
         StatefulService svc = new StatefulService(this, service, sid);
         if (svc.isInitialized()) {
@@ -112,7 +141,8 @@ public class ServiceRepository {
         svcs.add(service);
     }
 
-    void addAnnotationParser(IAnnotationParser<?> parser) {
+    @Override
+    public void addAnnotationParser(IAnnotationParser<?> parser) {
         if (parser == null) {
             throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);
         }

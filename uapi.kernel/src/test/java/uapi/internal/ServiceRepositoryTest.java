@@ -7,9 +7,9 @@ import org.junit.Test;
 
 import uapi.TestBase;
 import uapi.internal.ServiceRepository;
-import uapi.service.Attribute;
 import uapi.service.IService;
 import uapi.service.Inject;
+import uapi.service.Registration;
 
 public class ServiceRepositoryTest extends TestBase {
 
@@ -61,15 +61,15 @@ public class ServiceRepositoryTest extends TestBase {
 
     private class NoIdService implements IService { }
 
-    @Attribute(name="NamedService")
+    @Registration(names="NamedService")
     private class IdService implements IService { }
 
     private class OutterService { }
 
-    @Attribute(name="IService")
+    @Registration(names="IService")
     private class Service1 implements IService { }
 
-    @Attribute(name="IService")
+    @Registration(names="IService")
     private class Service2 implements IService { }
 
     private class Service3 {
