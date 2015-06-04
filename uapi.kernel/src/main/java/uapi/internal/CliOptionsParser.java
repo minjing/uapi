@@ -1,9 +1,8 @@
 package uapi.internal;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
@@ -22,10 +21,8 @@ public final class CliOptionsParser {
         if (args == null || args.length == 0) {
             throw new InvalidArgumentException("name", InvalidArgumentType.EMPTY);
         }
-        List<String> arggs = Arrays.asList(args);
-//        CliOptions cliCfg = new CliOptions();
         Map<String, String> cliCfg = new HashMap<>();
-        arggs.parallelStream()
+        Stream.of(args).parallel()
                 .filter((option) -> { return Strings.isNullOrEmpty(option) ? false : true; })
                 .map((option) -> {
                     if (option.startsWith(OPTION_PREFIX)) {

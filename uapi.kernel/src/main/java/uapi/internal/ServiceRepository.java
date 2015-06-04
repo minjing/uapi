@@ -5,15 +5,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ClassHelper;
+import uapi.helper.Executor;
 import uapi.service.IService;
 import uapi.service.IServiceRepository;
 import uapi.service.Inject;
@@ -22,18 +25,21 @@ import uapi.service.Type;
 
 public class ServiceRepository implements IService, IServiceRepository {
 
-    private final Map<String, List<StatefulService>>        _uninitializedServices;
-    private final Map<String, List<StatefulService>>        _initializedServices;
-    private final ServiceExtractor                          _serviceExtractor;
+    private final Lock _uninitedSvcsLock;
+    private final Lock _initedSvcsLock;
+
+    private final Multimap<String, StatefulService> _uninitedSvcs;
+    private final Multimap<String, StatefulService> _initedSvcs;
 
     @Inject
     private final Map<Class<?>, List<IAnnotationParser<?>>> _annotationParsers;
 
     public ServiceRepository() {
-        this._uninitializedServices = new HashMap<>();
-        this._initializedServices   = new HashMap<>();
-        this._serviceExtractor      = new ServiceExtractor();
-        this._annotationParsers     = new HashMap<>();
+        this._uninitedSvcsLock  = new ReentrantLock();
+        this._initedSvcsLock    = new ReentrantLock();
+        this._uninitedSvcs      = LinkedListMultimap.create();
+        this._initedSvcs        = LinkedListMultimap.create();
+        this._annotationParsers = new HashMap<>();
     }
 
     public void addServices(List<IService> services) {
@@ -74,9 +80,13 @@ public class ServiceRepository implements IService, IServiceRepository {
         }
         StatefulService svc = new StatefulService(this, service, sid);
         if (svc.isInitialized()) {
-            storeService(svc, this._initializedServices);
+            Executor.create().guardBy(this._initedSvcsLock).run(() -> {
+                this._initedSvcs.put(svc.getName(), svc);
+            });
         } else {
-            storeService(svc, this._uninitializedServices);
+            Executor.create().guardBy(this._uninitedSvcsLock).run(() -> {
+                this._uninitedSvcs.put(svc.getName(), svc);
+            });
         }
     }
 
@@ -114,31 +124,25 @@ public class ServiceRepository implements IService, IServiceRepository {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
-        Collection<Object> svcInsts;
-        List<StatefulService> svcs = this._initializedServices.get(serviceId);
+        final List<Object> svcInsts = new ArrayList<>();
+        Collection<StatefulService> svcs = Executor.create().guardBy(this._initedSvcsLock).getResult(() -> {
+            return this._initedSvcs.get(serviceId);
+        });
         if (svcs != null) {
-            svcInsts = Collections2.transform(svcs, this._serviceExtractor);
-        } else {
-            svcInsts = new ArrayList<>();
+            svcs.stream().map(StatefulService::getInstance).forEach((svcInst) -> { svcInsts.add(svcInst); });
         }
-        svcs = this._uninitializedServices.remove(serviceId);
+        svcs = Executor.create().guardBy(this._uninitedSvcsLock).getResult(() -> {
+            return this._uninitedSvcs.removeAll(serviceId);
+        });
         if (svcs != null) {
-            for (int i = 0; i < svcs.size(); i++) {
-                StatefulService svc = svcs.get(i);
+            svcs.parallelStream().forEach((svc) -> {
                 svcInsts.add(svc.getInstance());
-                storeService(svc, this._initializedServices);
-            }
+                Executor.create().guardBy(this._initedSvcsLock).run(() -> {
+                    this._initedSvcs.put(svc.getName(), svc);
+                });
+            });
         }
         return svcInsts.toArray();
-    }
-
-    private void storeService(StatefulService service, Map<String, List<StatefulService>> serviceMap) {
-        List<StatefulService> svcs = serviceMap.get(service.getName());
-        if (svcs == null) {
-            svcs = new ArrayList<>();
-            serviceMap.put(service.getName(), svcs);
-        }
-        svcs.add(service);
     }
 
     @Override
@@ -157,13 +161,5 @@ public class ServiceRepository implements IService, IServiceRepository {
             this._annotationParsers.put(annotationType, parsers);
         }
         parsers.add(parser);
-    }
-
-    private static final class ServiceExtractor implements Function<StatefulService, Object> {
-
-        @Override
-        public Object apply(StatefulService input) {
-            return input.getInstance();
-        }
     }
 }

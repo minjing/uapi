@@ -10,9 +10,7 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
 import uapi.config.IConfigSource;
 import uapi.service.IService;
-import uapi.service.IServiceRepository;
 import uapi.service.Inject;
-import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -26,9 +24,6 @@ public final class Configurator implements IService, IAnnotationParser<Config> {
 
     private final Map<String /* name space */, Map<String, ?>> _cgfs;
     private final Map<String /* name space */, List<ConfigurableServiceDescriptor>> _svcDescs;
-
-//    @Inject
-//    private IServiceRepository _serviceRepository;
 
     @Inject
     private final List<IConfigSource> _configSources;
@@ -45,15 +40,6 @@ public final class Configurator implements IService, IAnnotationParser<Config> {
         }
         this._configSources.add(configSource);
     }
-
-//    public void setServiceRepository(IServiceRepository serviceRepository) {
-//        this._serviceRepository = serviceRepository;
-//    }
-
-//    @OnInit
-//    public void init() {
-//        this._serviceRepository.addAnnotationParser(this);
-//    }
 
     void addConfig(String namespace, Map<String, ?> config) {
         if (Strings.isNullOrEmpty(namespace)) {
