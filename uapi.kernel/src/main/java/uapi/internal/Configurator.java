@@ -8,9 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
-import uapi.config.IConfigSource;
+import uapi.config.IConfigTracer;
 import uapi.service.IService;
-import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -18,28 +17,29 @@ import com.google.common.base.Strings;
 
 @Registration({
         @Type(Configurator.class),
-        @Type(IAnnotationParser.class)
+        @Type(IAnnotationParser.class),
+        @Type(IConfigTracer.class)
 })
-public final class Configurator implements IService, IAnnotationParser<Config> {
+public final class Configurator implements IService, IAnnotationParser<Config>, IConfigTracer {
 
     private final Map<String /* name space */, Map<String, ?>> _cgfs;
     private final Map<String /* name space */, List<ConfigurableServiceDescriptor>> _svcDescs;
 
-    @Inject
-    private final List<IConfigSource> _configSources;
+//    @Inject
+//    private final List<IConfigSource> _configSources;
 
     public Configurator() {
         this._cgfs          = new ConcurrentHashMap<>();
         this._svcDescs      = new ConcurrentHashMap<>();
-        this._configSources = new ArrayList<>();
+//        this._configSources = new ArrayList<>();
     }
 
-    public void addConfigSource(IConfigSource configSource) {
-        if (configSource == null) {
-            throw new InvalidArgumentException("configSource", InvalidArgumentType.EMPTY);
-        }
-        this._configSources.add(configSource);
-    }
+//    public void addConfigSource(IConfigSource configSource) {
+//        if (configSource == null) {
+//            throw new InvalidArgumentException("configSource", InvalidArgumentType.EMPTY);
+//        }
+//        this._configSources.add(configSource);
+//    }
 
     void addConfig(String namespace, Map<String, ?> config) {
         if (Strings.isNullOrEmpty(namespace)) {
@@ -69,5 +69,10 @@ public final class Configurator implements IService, IAnnotationParser<Config> {
         if (newCfg != null) {
             this.doConfigChange(cfgAnno.namespace(), null, newCfg);
         }
+    }
+
+    @Override
+    public void onChanged(String namespace, Map<String, ?> config) {
+        addConfig(namespace, config);
     }
 }

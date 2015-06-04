@@ -4,22 +4,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import uapi.InvalidArgumentException;
-import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.config.Namespace;
 import uapi.helper.Pair;
+import uapi.service.IService;
 
 import com.google.common.base.Strings;
 
-public final class CliOptionsParser {
+public final class CliConfigSource extends TraceableConfigSource implements IService {
 
     private static final String OPTION_PREFIX       = "-";
     private static final String OPTION_VALUE_TAG    = "=";
 
-    private CliOptionsParser() { }
-
-    public static Map<String, String> parse(String[] args) {
+    public void parse(String[] args) {
         if (args == null || args.length == 0) {
-            throw new InvalidArgumentException("name", InvalidArgumentType.EMPTY);
+            return;
         }
         Map<String, String> cliCfg = new HashMap<>();
         Stream.of(args).parallel()
@@ -38,6 +36,6 @@ public final class CliOptionsParser {
                         return new Pair<String, String>(values[0], values[1]);
                     }})
                 .forEach((pair) -> { cliCfg.put(pair.getLeftValue(), pair.getRightValue()); });
-        return cliCfg;
+        onChanged(Namespace.CLI, cliCfg);
     }
 }

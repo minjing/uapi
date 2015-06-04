@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
 
+import uapi.internal.CliConfigSource;
 import uapi.internal.ServiceRepository;
 import uapi.log.ILogger;
 import uapi.service.IService;
@@ -33,6 +34,10 @@ public final class Main {
         }
         svcRepo.addServices(svcs);
         svcRepo = svcRepo.getService(ServiceRepository.class);
+
+        // Initialize CLI arguments
+        CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class);
+        cliCfgSrc.parse(args);
 
         // Retrieve the log service
         ILogger logger = svcRepo.getService(ILogger.class);

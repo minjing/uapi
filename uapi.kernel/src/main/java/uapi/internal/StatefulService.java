@@ -156,10 +156,6 @@ final class StatefulService {
                 if (inject == null) {
                     continue;
                 }
-                String dependName = inject.name();
-                if (Strings.isNullOrEmpty(dependName)) {
-                    dependName = field.getType().getName();
-                }
                 String fieldName = field.getName();
                 ChangeableBoolean isCollection = new ChangeableBoolean();
                 Class<?> fieldType = ClassHelper.getElementType(field.getType(), field.getGenericType(), isCollection);
@@ -171,6 +167,10 @@ final class StatefulService {
                     throw new IllegalStateException(
                             StringHelper.makeString("Can't found setter for field {} in class {}, expect the setter name is {}",
                                     fieldName, StatefulService.this._type.getName(), setterName));
+                }
+                String dependName = inject.name();
+                if (Strings.isNullOrEmpty(dependName)) {
+                    dependName = fieldType.getName();
                 }
                 Dependency dependency = new Dependency(dependName, fieldType, setter, isCollection.get());
                 if (StatefulService.this._dependencies.containsKey(dependency.getName())) {
@@ -214,16 +214,16 @@ final class StatefulService {
             }
 
             for (Map.Entry<String, Dependency> dependEntry : StatefulService.this._dependencies.entrySet()) {
-                Object[] dependSvcs;
                 if (dependEntry.getValue().isMultiple()) {
-                    dependSvcs = StatefulService.this._serviceRepo.getServices(dependEntry.getKey());
+                    Object[] dependSvcs = StatefulService.this._serviceRepo.getServices(dependEntry.getKey());
+                    for (Object dependSvc : dependSvcs) {
+                        dependEntry.getValue().setInstance(dependSvc);
+                    }
                 } else {
-                    dependSvcs = new Object[] { StatefulService.this._serviceRepo.getService(dependEntry.getKey()) };
-                }
-                if (dependSvcs == null || dependSvcs.length == 0 || dependSvcs[0] == null) {
-                    throw new KernelException("Can't retrieve service instance - {}", dependEntry.getKey());
-                }
-                for (Object dependSvc : dependSvcs) {
+                    Object dependSvc = StatefulService.this._serviceRepo.getService(dependEntry.getKey());
+                    if (dependSvc == null) {
+                        throw new KernelException("Can't retrieve service instance - {}", dependEntry.getKey());
+                    }
                     dependEntry.getValue().setInstance(dependSvc);
                 }
             }

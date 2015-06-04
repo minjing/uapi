@@ -18,12 +18,11 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ClassHelper;
 import uapi.helper.Executor;
 import uapi.service.IService;
-import uapi.service.IServiceRepository;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
 
-public class ServiceRepository implements IService, IServiceRepository {
+public class ServiceRepository implements IService {
 
     private final Lock _uninitedSvcsLock;
     private final Lock _initedSvcsLock;
@@ -60,7 +59,7 @@ public class ServiceRepository implements IService, IServiceRepository {
                 addService(service, name);
             }
             for (Type type : reg.value()) {
-                addService(service, type.value().toString());
+                addService(service, type.value().getName());
             }
         }
     }
@@ -90,12 +89,11 @@ public class ServiceRepository implements IService, IServiceRepository {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getService(Class<?> serviceType) {
+    public <T> T getService(Class<T> serviceType) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
-        return (T) getService(serviceType.getName());
+        return getService(serviceType.getName());
     }
 
     @SuppressWarnings("unchecked")
@@ -113,14 +111,15 @@ public class ServiceRepository implements IService, IServiceRepository {
         }
     }
 
-    public Object[] getServices(Class<?> serviceType) {
+    public <T> T[] getServices(Class<T> serviceType) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
         return getServices(serviceType.getName());
     }
 
-    public Object[] getServices(String serviceId) {
+    @SuppressWarnings("unchecked")
+    public <T> T[] getServices(String serviceId) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
@@ -142,10 +141,9 @@ public class ServiceRepository implements IService, IServiceRepository {
                 });
             });
         }
-        return svcInsts.toArray();
+        return ((T[]) svcInsts.toArray());
     }
 
-    @Override
     public void addAnnotationParser(IAnnotationParser<?> parser) {
         if (parser == null) {
             throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);

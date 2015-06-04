@@ -1,6 +1,6 @@
 package uapi.internal;
 
-public enum ServiceState {
+enum ServiceState {
 
     /**
      * The service was not defined.
