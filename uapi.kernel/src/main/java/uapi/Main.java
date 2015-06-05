@@ -6,6 +6,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
 
 import uapi.internal.CliConfigSource;
+import uapi.internal.LoggerManager;
 import uapi.internal.ServiceRepository;
 import uapi.log.ILogger;
 import uapi.service.IService;
@@ -40,10 +41,12 @@ public final class Main {
         cliCfgSrc.parse(args);
 
         // Retrieve the log service
-        ILogger logger = svcRepo.getService(ILogger.class);
-        if (logger == null) {
+        LoggerManager loggerMgr = (LoggerManager) svcRepo.getService(ILogger.class);
+        if (loggerMgr == null) {
             throw new KernelException("The logger service must be provided - {}", ILogger.class.getName());
         }
+        ILogger logger = loggerMgr.createService(new Object());
+        logger.info("Logger created!!!");
 
         // Retrieve the configuration service
         // TODO: configuration

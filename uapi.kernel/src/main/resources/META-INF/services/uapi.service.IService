@@ -1,3 +1,4 @@
 uapi.internal.ServiceRepository
 uapi.internal.Configurator
 uapi.internal.CliConfigSource
+uapi.internal.LoggerManager

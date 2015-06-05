@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import uapi.config.Namespace;
+import uapi.config.Qualifier;
 import uapi.helper.Pair;
 import uapi.service.IService;
 
@@ -36,6 +36,6 @@ public final class CliConfigSource extends TraceableConfigSource implements ISer
                         return new Pair<String, String>(values[0], values[1]);
                     }})
                 .forEach((pair) -> { cliCfg.put(pair.getLeftValue(), pair.getRightValue()); });
-        onChanged(Namespace.CLI, cliCfg);
+        onChanged(Qualifier.CLI, cliCfg);
     }
 }

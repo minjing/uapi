@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -18,6 +19,7 @@ import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
 
+@Ignore
 public class StatefulServiceTest extends TestBase {
 
     @Mock ServiceRepository _svcRepo;

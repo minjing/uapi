@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import uapi.config.Config;
@@ -14,6 +15,7 @@ import uapi.helper.ClassHelper;
 
 public class ClassHelperTest {
 
+    @Ignore
     @Test
     public void testCollectionField() {
         assertEquals("setMessage", ClassHelper.makeSetterName("messages", true));

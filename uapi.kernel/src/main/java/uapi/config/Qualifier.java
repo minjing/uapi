@@ -1,8 +1,10 @@
 package uapi.config;
 
-public final class Namespace {
+public final class Qualifier {
 
-    private Namespace() { }
+    private Qualifier() { }
 
     public static final String CLI  = "cli";
+
+    
 }

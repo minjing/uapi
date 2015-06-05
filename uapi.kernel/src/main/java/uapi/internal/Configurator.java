@@ -59,15 +59,15 @@ public final class Configurator implements IService, IAnnotationParser<Config>, 
 
     @Override
     public void parse(Config cfgAnno, ConfigurableServiceDescriptor svcDesc) {
-        List<ConfigurableServiceDescriptor> svcDescs = this._svcDescs.get(cfgAnno.namespace());
+        List<ConfigurableServiceDescriptor> svcDescs = this._svcDescs.get(cfgAnno.qualifier());
         if (svcDescs == null) {
             svcDescs = new ArrayList<>();
-            this._svcDescs.put(cfgAnno.namespace(), svcDescs);
+            this._svcDescs.put(cfgAnno.qualifier(), svcDescs);
         }
         svcDescs.add(svcDesc);
-        Map<String, ?> newCfg = this._cgfs.get(cfgAnno.namespace());
+        Map<String, ?> newCfg = this._cgfs.get(cfgAnno.qualifier());
         if (newCfg != null) {
-            this.doConfigChange(cfgAnno.namespace(), null, newCfg);
+            this.doConfigChange(cfgAnno.qualifier(), null, newCfg);
         }
     }
 
