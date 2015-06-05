@@ -5,16 +5,15 @@ import java.util.Map;
 
 import uapi.service.IService;
 
-public final class PropertiesFileConfigSource implements IService, IConfigFileParser {
+public class JsonFileConfigSource implements IService, IConfigFileParser {
 
     @Override
     public String[] supportedFileExtensions() {
-        return new String[] { "properties" };
+        return new String[] { "json" };
     }
 
     @Override
     public Map<String, String> parse(File configFile) {
         return null;
     }
-
 }
