@@ -24,22 +24,22 @@ public class ServiceContext implements IServiceContext {
 
     @Override
     public <T> T getService(Class<T> serviceType) {
-        return this._serviceRepository.getService(serviceType);
+        return this._serviceRepository.getService(serviceType, null);
     }
 
     @Override
     public <T> T[] getServices(Class<T> serviceType) {
-        return this._serviceRepository.getServices(serviceType);
+        return this._serviceRepository.getServices(serviceType, null);
     }
 
     @Override
     public <T> T getService(String serviceId) {
-        return this._serviceRepository.getService(serviceId);
+        return this._serviceRepository.getService(serviceId, null);
     }
 
     @Override
     public <T> T[] getServices(String serviceId) {
-        return this._serviceRepository.getServices(serviceId);
+        return this._serviceRepository.getServices(serviceId, null);
     }
 
 }

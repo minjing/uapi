@@ -4,4 +4,3 @@ uapi.internal.CliConfigSource
 uapi.internal.FileBasedConfigSource
 uapi.internal.PropertiesFileConfigSource
 uapi.internal.JsonFileConfigSource
-uapi.internal.LoggerManager

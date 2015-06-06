@@ -1,4 +1,4 @@
-package uapi.internal;
+package uapi.log.internal;
 
 import uapi.helper.StringHelper;
 import uapi.log.ILogger;
@@ -6,7 +6,7 @@ import uapi.log.ILogger;
 final class Logger implements ILogger {
 
     private final org.slf4j.Logger _slfLogger;
-    
+
     Logger(org.slf4j.Logger slfLogger) {
         this._slfLogger = slfLogger;
     }

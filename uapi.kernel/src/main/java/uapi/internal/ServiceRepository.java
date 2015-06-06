@@ -89,19 +89,19 @@ public class ServiceRepository implements IService {
         }
     }
 
-    public <T> T getService(Class<T> serviceType) {
+    public <T> T getService(Class<T> serviceType, Object serveFor) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
-        return getService(serviceType.getName());
+        return getService(serviceType.getName(), serveFor);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getService(String serviceId) {
+    public <T> T getService(String serviceId, Object serveFor) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
-        Object[] svcs = getServices(serviceId);
+        Object[] svcs = getServices(serviceId, serveFor);
         if (svcs.length == 0) {
             return null;
         } else if (svcs.length == 1) {
@@ -111,15 +111,15 @@ public class ServiceRepository implements IService {
         }
     }
 
-    public <T> T[] getServices(Class<T> serviceType) {
+    public <T> T[] getServices(Class<T> serviceType, Object serveFor) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
         }
-        return getServices(serviceType.getName());
+        return getServices(serviceType.getName(), serveFor);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T[] getServices(String serviceId) {
+    public <T> T[] getServices(String serviceId, Object serveFor) {
         if (Strings.isNullOrEmpty(serviceId)) {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
@@ -128,14 +128,16 @@ public class ServiceRepository implements IService {
             return this._initedSvcs.get(serviceId);
         });
         if (svcs != null) {
-            svcs.stream().map(StatefulService::getInstance).forEach((svcInst) -> { svcInsts.add(svcInst); });
+            svcs.stream()
+                .map((svc) -> { return svc.getInstance(serveFor); })
+                .forEach((svcInst) -> { svcInsts.add(svcInst); });
         }
         svcs = Executor.create().guardBy(this._uninitedSvcsLock).getResult(() -> {
             return this._uninitedSvcs.removeAll(serviceId);
         });
         if (svcs != null) {
             svcs.parallelStream().forEach((svc) -> {
-                svcInsts.add(svc.getInstance());
+                svcInsts.add(svc.getInstance(serveFor));
                 Executor.create().guardBy(this._initedSvcsLock).run(() -> {
                     this._initedSvcs.put(svc.getName(), svc);
                 });

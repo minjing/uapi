@@ -15,6 +15,7 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ChangeableBoolean;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
+import uapi.service.IServiceGenerator;
 import uapi.service.Inject;
 import uapi.service.OnInit;
 
@@ -74,10 +75,14 @@ final class StatefulService {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T getInstance() {
+    <T> T getInstance(Object serveFor) {
         this._lifecycle.satisfy();
         this._lifecycle.initialize();
-        return (T) this._instance;
+        if (this._instance instanceof IServiceGenerator<?>) {
+            return ((IServiceGenerator<T>) this._instance).createService(serveFor);
+        } else {
+            return (T) this._instance;
+        }
     }
 
     final class Dependency {
@@ -215,12 +220,14 @@ final class StatefulService {
 
             for (Map.Entry<String, Dependency> dependEntry : StatefulService.this._dependencies.entrySet()) {
                 if (dependEntry.getValue().isMultiple()) {
-                    Object[] dependSvcs = StatefulService.this._serviceRepo.getServices(dependEntry.getKey());
+                    Object[] dependSvcs = StatefulService.this._serviceRepo.getServices(
+                            dependEntry.getKey(), StatefulService.this._instance);
                     for (Object dependSvc : dependSvcs) {
                         dependEntry.getValue().setInstance(dependSvc);
                     }
                 } else {
-                    Object dependSvc = StatefulService.this._serviceRepo.getService(dependEntry.getKey());
+                    Object dependSvc = StatefulService.this._serviceRepo.getService(
+                            dependEntry.getKey(), StatefulService.this._instance);
                     if (dependSvc == null) {
                         throw new KernelException("Can't retrieve service instance - {}", dependEntry.getKey());
                     }

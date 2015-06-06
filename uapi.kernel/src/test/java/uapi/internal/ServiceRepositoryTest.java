@@ -25,29 +25,29 @@ public class ServiceRepositoryTest extends TestBase {
     public void testAddNoIdService() {
         Object svcInst = new NoIdService();
         this._svcRepo.addService(svcInst);
-        assertEquals(svcInst, this._svcRepo.getService(NoIdService.class));
-        assertEquals(svcInst, this._svcRepo.getService(NoIdService.class.getName()));
+        assertEquals(svcInst, this._svcRepo.getService(NoIdService.class, null));
+        assertEquals(svcInst, this._svcRepo.getService(NoIdService.class.getName(), null));
     }
 
     @Test
     public void testAddIdService() {
         Object svcInst = new IdService();
         this._svcRepo.addService(svcInst);
-        assertEquals(svcInst, this._svcRepo.getService("NamedService"));
+        assertEquals(svcInst, this._svcRepo.getService("NamedService", null));
     }
 
     @Test
     public void testOutterService() {
         Object svcInst = new OutterService();
         this._svcRepo.addService(svcInst, "OutterService");
-        assertEquals(svcInst, this._svcRepo.getService("OutterService"));
+        assertEquals(svcInst, this._svcRepo.getService("OutterService", null));
     }
 
     @Test
     public void testAddMultipleService() {
         this._svcRepo.addService(new Service1());
         this._svcRepo.addService(new Service2());
-        assertEquals(2, this._svcRepo.getServices("IService").length);
+        assertEquals(2, this._svcRepo.getServices("IService", null).length);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class ServiceRepositoryTest extends TestBase {
         Service4 svc4 = new Service4();
         this._svcRepo.addService(new Service3());
         this._svcRepo.addService(svc4);
-        Service3 svc3 = this._svcRepo.getService(Service3.class);
+        Service3 svc3 = this._svcRepo.getService(Service3.class, null);
         assertEquals(svc4, svc3._service);
     }
 

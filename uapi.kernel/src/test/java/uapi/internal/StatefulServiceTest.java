@@ -42,24 +42,24 @@ public class StatefulServiceTest extends TestBase {
 
     @Test
     public void testServiceWithDependency() {
-        when(this._svcRepo.getService(String.class.getName())).thenReturn("Hello");
+        when(this._svcRepo.getService(String.class.getName(), null)).thenReturn("Hello");
 
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getName());
-        assertEquals("Hello", ((TestService) stateService.getInstance())._message);
+        assertEquals("Hello", ((TestService) stateService.getInstance(null))._message);
 
-        verify(this._svcRepo, times(1)).getService(String.class.getName());
+        verify(this._svcRepo, times(1)).getService(String.class.getName(), null);
     }
 
     @Test
     public void testServiceInit() {
-        when(this._svcRepo.getService(String.class.getName())).thenReturn("Hello");
+        when(this._svcRepo.getService(String.class.getName(), null)).thenReturn("Hello");
 
         TestService svcInst = new TestService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getName());
-        assertTrue(((TestService) stateService.getInstance()).isInit());
+        assertTrue(((TestService) stateService.getInstance(null)).isInit());
     }
 
     @Test
@@ -71,11 +71,11 @@ public class StatefulServiceTest extends TestBase {
 
     @Test
     public void testMultiple() {
-        when(this._svcRepo.getServices(String.class.getName())).thenReturn(new String[] { "Min", "Jing" });
+        when(this._svcRepo.getServices(String.class.getName(), null)).thenReturn(new String[] { "Min", "Jing" });
 
         MultipleDependenciesService svcInst = new MultipleDependenciesService();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        MultipleDependenciesService inst = stateService.getInstance();
+        MultipleDependenciesService inst = stateService.getInstance(null);
         assertEquals(svcInst, inst);
         assertTrue(inst._messages.contains("Min"));
         assertTrue(inst._messages.contains("Jing"));
