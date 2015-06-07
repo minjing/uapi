@@ -35,18 +35,13 @@ public final class Main {
         svcRepo.addServices(svcs);
         svcRepo = svcRepo.getService(ServiceRepository.class, null);
 
+        // Retrieve the log service
+        ILogger logger = svcRepo.getService(ILogger.class, new Main());
+        logger.info("Logger created!!!");
+
         // Initialize CLI arguments
         CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class, null);
         cliCfgSrc.parse(args);
-
-        // Retrieve the log service
-//        LoggerManager loggerMgr = (LoggerManager) svcRepo.getService(ILogger.class);
-//        if (loggerMgr == null) {
-//            throw new KernelException("The logger service must be provided - {}", ILogger.class.getName());
-//        }
-//        ILogger logger = loggerMgr.createService(new Object());
-        ILogger logger = svcRepo.getService(ILogger.class, new Main());
-        logger.info("Logger created!!!");
 
         // Retrieve the configuration service
         // TODO: configuration
