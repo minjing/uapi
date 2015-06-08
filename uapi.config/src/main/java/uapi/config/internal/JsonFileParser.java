@@ -1,11 +1,12 @@
-package uapi.internal;
+package uapi.config.internal;
 
 import java.io.File;
 import java.util.Map;
 
+import uapi.internal.IConfigFileParser;
 import uapi.service.IService;
 
-public class JsonFileConfigSource implements IService, IConfigFileParser {
+public class JsonFileParser implements IService, IConfigFileParser {
 
     @Override
     public String[] supportedFileExtensions() {

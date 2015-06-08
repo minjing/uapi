@@ -25,21 +25,10 @@ public final class Configurator implements IService, IAnnotationParser<Config>, 
     private final Map<String /* name space */, Map<String, ?>> _cgfs;
     private final Map<String /* name space */, List<ConfigurableServiceDescriptor>> _svcDescs;
 
-//    @Inject
-//    private final List<IConfigSource> _configSources;
-
     public Configurator() {
         this._cgfs          = new ConcurrentHashMap<>();
         this._svcDescs      = new ConcurrentHashMap<>();
-//        this._configSources = new ArrayList<>();
     }
-
-//    public void addConfigSource(IConfigSource configSource) {
-//        if (configSource == null) {
-//            throw new InvalidArgumentException("configSource", InvalidArgumentType.EMPTY);
-//        }
-//        this._configSources.add(configSource);
-//    }
 
     void addConfig(String namespace, Map<String, ?> config) {
         if (Strings.isNullOrEmpty(namespace)) {

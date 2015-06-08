@@ -1,4 +1,4 @@
-package uapi.internal;
+package uapi.config.internal;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.internal.IConfigFileParser;
+import uapi.internal.TraceableConfigSource;
 import uapi.service.IService;
 import uapi.service.Inject;
 
