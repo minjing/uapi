@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
 
+import uapi.helper.StringHelper;
+import uapi.helper.TimeHelper;
 import uapi.internal.CliConfigSource;
 import uapi.internal.ServiceRepository;
 import uapi.log.ILogger;
@@ -19,6 +21,8 @@ public final class Main {
     }
 
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+
         ServiceLoader<IService> svcLoaders = ServiceLoader.load(IService.class);
         ServiceRepository svcRepo = null;
         List<IService> svcs = new ArrayList<>();
@@ -35,10 +39,6 @@ public final class Main {
         svcRepo.addServices(svcs);
         svcRepo = svcRepo.getService(ServiceRepository.class, null);
 
-        // Retrieve the log service
-        ILogger logger = svcRepo.getService(ILogger.class, new Main());
-        logger.info("Logger created!!!");
-
         // Initialize CLI arguments
         CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class, null);
         cliCfgSrc.parse(args);
@@ -46,12 +46,18 @@ public final class Main {
         // Retrieve the configuration service
         // TODO: configuration
 
+        long expend = System.currentTimeMillis() - startTime;
+        long expendSecond = expend / TimeHelper.MS_OF_SECOND;
+        long expendMs = expend - (expend / TimeHelper.MS_OF_SECOND);
+
+        ILogger logger = svcRepo.getService(ILogger.class, new Main());
+        logger.info(StringHelper.makeString("System launched, expend {}.{}s", expendSecond, expendMs));
+
         try {
-            Runtime.getRuntime().addShutdownHook(
-                    new Thread(new ShutdownHook(logger)));
+            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(logger)));
             semaphore.acquire();
         } catch (InterruptedException e) {
-            logger.info("Encounter an InterruptedException when acquire the semaphore, system will exit.");
+            logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
 
         System.exit(0);

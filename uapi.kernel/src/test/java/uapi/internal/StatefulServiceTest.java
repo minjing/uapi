@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -19,7 +18,6 @@ import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
 
-@Ignore
 public class StatefulServiceTest extends TestBase {
 
     @Mock ServiceRepository _svcRepo;
@@ -34,46 +32,34 @@ public class StatefulServiceTest extends TestBase {
     }
 
     @Test
-    public void testServiceWithId() {
-        TestServiceWithId svcInst = new TestServiceWithId();
-        StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals("TestServiceWithId", stateService.getName());
-    }
-
-    @Test
     public void testServiceWithDependency() {
-        when(this._svcRepo.getService(String.class.getName(), null)).thenReturn("Hello");
-
         TestService svcInst = new TestService();
+        when(this._svcRepo.getService(String.class.getName(), svcInst)).thenReturn("Hello");
+
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getName());
         assertEquals("Hello", ((TestService) stateService.getInstance(null))._message);
 
-        verify(this._svcRepo, times(1)).getService(String.class.getName(), null);
+        verify(this._svcRepo, times(1)).getService(String.class.getName(), svcInst);
     }
 
     @Test
     public void testServiceInit() {
-        when(this._svcRepo.getService(String.class.getName(), null)).thenReturn("Hello");
-
         TestService svcInst = new TestService();
+
+        when(this._svcRepo.getService(String.class.getName(), svcInst)).thenReturn("Hello");
+
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         assertEquals(TestService.class.getName(), stateService.getName());
         assertTrue(((TestService) stateService.getInstance(null)).isInit());
     }
 
     @Test
-    public void testServiceWithType() {
-        TestServiceWithType svcInst = new TestServiceWithType();
-        StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(IService.class.getName(), stateService.getName());
-    }
-
-    @Test
     public void testMultiple() {
-        when(this._svcRepo.getServices(String.class.getName(), null)).thenReturn(new String[] { "Min", "Jing" });
-
         MultipleDependenciesService svcInst = new MultipleDependenciesService();
+
+        when(this._svcRepo.getServices(String.class.getName(), svcInst)).thenReturn(new String[] { "Min", "Jing" });
+
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
         MultipleDependenciesService inst = stateService.getInstance(null);
         assertEquals(svcInst, inst);
@@ -113,7 +99,7 @@ public class StatefulServiceTest extends TestBase {
         @Inject
         private List<String> _messages = new ArrayList<>();
 
-        public void setMessage(String msg) {
+        public void addMessage(String msg) {
             this._messages.add(msg);
         }
     }

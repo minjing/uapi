@@ -26,8 +26,8 @@ final class StatefulService {
     private final Object                    _instance;
     private final Map<String, Dependency>   _dependencies;
     private final Lifecycle                 _lifecycle;
+    private final String                    _name;
 
-    private String      _name;
     private boolean     _lazyInit;
     private Method      _initMethod;
 
@@ -45,6 +45,8 @@ final class StatefulService {
 
         if (! Strings.isNullOrEmpty(name)) {
             this._name = name;
+        } else {
+            this._name = instance.getClass().getName();
         }
         this._serviceRepo = serviceRepository;
         this._type = instance.getClass();

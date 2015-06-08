@@ -7,7 +7,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import uapi.config.Config;
@@ -15,11 +14,10 @@ import uapi.helper.ClassHelper;
 
 public class ClassHelperTest {
 
-    @Ignore
     @Test
     public void testCollectionField() {
-        assertEquals("setMessage", ClassHelper.makeSetterName("messages", true));
-        assertEquals("setChild", ClassHelper.makeSetterName("children", true));
+        assertEquals("addMessage", ClassHelper.makeSetterName("messages", true));
+        assertEquals("addChild", ClassHelper.makeSetterName("children", true));
     }
 
     @Test

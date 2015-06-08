@@ -10,6 +10,7 @@ import uapi.internal.ServiceRepository;
 import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.Registration;
+import uapi.service.Type;
 
 public class ServiceRepositoryTest extends TestBase {
 
@@ -27,6 +28,14 @@ public class ServiceRepositoryTest extends TestBase {
         this._svcRepo.addService(svcInst);
         assertEquals(svcInst, this._svcRepo.getService(NoIdService.class, null));
         assertEquals(svcInst, this._svcRepo.getService(NoIdService.class.getName(), null));
+    }
+
+    @Test
+    public void testAddTypeService() {
+        Object svcInst = new TypeService();
+        this._svcRepo.addService(svcInst);
+        assertEquals(svcInst, this._svcRepo.getService(IService.class, null));
+        assertEquals(svcInst, this._svcRepo.getService(IService.class.getName(), null));
     }
 
     @Test
@@ -63,6 +72,9 @@ public class ServiceRepositoryTest extends TestBase {
 
     @Registration(names="NamedService")
     private class IdService implements IService { }
+
+    @Registration({ @Type(IService.class) })
+    private class TypeService implements IService { }
 
     private class OutterService { }
 
