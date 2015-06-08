@@ -40,5 +40,4 @@ final class Logger implements ILogger {
     public void error(Throwable t, String message, Object... parameters) {
         this._slfLogger.error(StringHelper.makeString(message, parameters), t);
     }
-
 }

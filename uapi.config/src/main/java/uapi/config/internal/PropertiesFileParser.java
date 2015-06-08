@@ -3,10 +3,13 @@ package uapi.config.internal;
 import java.io.File;
 import java.util.Map;
 
-import uapi.internal.IConfigFileParser;
+import uapi.config.IConfigFileParser;
+import uapi.internal.TraceableConfigSource;
 import uapi.service.IService;
 
-public final class PropertiesFileParser implements IService, IConfigFileParser {
+public final class PropertiesFileParser
+    extends TraceableConfigSource
+    implements IService, IConfigFileParser {
 
     @Override
     public String[] supportedFileExtensions() {

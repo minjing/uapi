@@ -1,4 +1,4 @@
-package uapi.internal;
+package uapi.config;
 
 import java.io.File;
 import java.util.Map;

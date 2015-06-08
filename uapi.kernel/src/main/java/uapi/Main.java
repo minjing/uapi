@@ -37,10 +37,10 @@ public final class Main {
             throw new KernelException("Can't find out ServiceRepository instance");
         }
         svcRepo.addServices(svcs);
-        svcRepo = svcRepo.getService(ServiceRepository.class, null);
+        svcRepo = svcRepo.getService(ServiceRepository.class);
 
         // Initialize CLI arguments
-        CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class, null);
+        CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class);
         cliCfgSrc.parse(args);
 
         // Retrieve the configuration service

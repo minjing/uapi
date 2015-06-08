@@ -89,6 +89,10 @@ public class ServiceRepository implements IService {
         }
     }
 
+    public <T> T getService(Class<T> serviceType) {
+        return getService(serviceType, null);
+    }
+
     public <T> T getService(Class<T> serviceType, Object serveFor) {
         if (serviceType == null) {
             throw new InvalidArgumentException("serviceType", InvalidArgumentType.EMPTY);
