@@ -20,48 +20,53 @@ import com.google.common.base.Strings;
         @Type(IAnnotationParser.class),
         @Type(IConfigTracer.class)
 })
-public final class Configurator implements IService, IAnnotationParser<Config>, IConfigTracer {
+public final class Configurator
+    implements IService, IAnnotationParser<Config>, IConfigTracer {
 
-    private final Map<String /* name space */, Map<String, ?>> _cgfs;
-    private final Map<String /* name space */, List<ConfigurableServiceDescriptor>> _svcDescs;
+    private final Map<String /* qualifier */, Object> _cgfs;
+    private final Map<String /* qualifier */, List<ConfigurableServiceMethod>> _svcDescs;
 
     public Configurator() {
-        this._cgfs          = new ConcurrentHashMap<>();
-        this._svcDescs      = new ConcurrentHashMap<>();
+        this._cgfs      = new ConcurrentHashMap<>();
+        this._svcDescs  = new ConcurrentHashMap<>();
     }
 
-    void addConfig(String namespace, Map<String, ?> config) {
-        if (Strings.isNullOrEmpty(namespace)) {
-            throw new InvalidArgumentException("namespace", InvalidArgumentType.EMPTY);
+    void addConfig(String qualifier, Object config) {
+        if (Strings.isNullOrEmpty(qualifier)) {
+            throw new InvalidArgumentException("qualifier", InvalidArgumentType.EMPTY);
         }
         if (config == null) {
             throw new InvalidArgumentException("config", InvalidArgumentType.EMPTY);
         }
-        Map<String, ?> oldCfg = this._cgfs.put(namespace, config);
-        doConfigChange(namespace, oldCfg, config);
+        Object oldCfg = this._cgfs.put(qualifier, config);
+        doConfigChange(qualifier, oldCfg, config);
     }
 
-    void doConfigChange(String ns, Map<String, ?> oldCfg, Map<String, ?> newCfg) {
-        List<ConfigurableServiceDescriptor> svcDescs = this._svcDescs.get(ns);
-        svcDescs.forEach((svcDesc) -> { svcDesc.setConfig(oldCfg, newCfg); });
+    void doConfigChange(String qualifier, Object oldCfg, Object newCfg) {
+        List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(qualifier);
+        if (svcDescs != null) {
+            svcDescs.forEach((svcDesc) -> { svcDesc.setConfig(oldCfg, newCfg); });
+        }
     }
 
     @Override
-    public void parse(Config cfgAnno, ConfigurableServiceDescriptor svcDesc) {
-        List<ConfigurableServiceDescriptor> svcDescs = this._svcDescs.get(cfgAnno.qualifier());
+    public void parse(AnnotationServiceMethod serviceMethod) {
+        Config cfgAnno = serviceMethod.getAnnotation();
+        List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(cfgAnno.qualifier());
         if (svcDescs == null) {
             svcDescs = new ArrayList<>();
             this._svcDescs.put(cfgAnno.qualifier(), svcDescs);
         }
-        svcDescs.add(svcDesc);
-        Map<String, ?> newCfg = this._cgfs.get(cfgAnno.qualifier());
+        ConfigurableServiceMethod cfgSvcMethod = new ConfigurableServiceMethod(serviceMethod);
+        svcDescs.add(cfgSvcMethod);
+        Object newCfg = this._cgfs.get(cfgAnno.qualifier());
         if (newCfg != null) {
-            this.doConfigChange(cfgAnno.qualifier(), null, newCfg);
+            cfgSvcMethod.setConfig(null, newCfg);
         }
     }
 
     @Override
-    public void onChanged(String namespace, Map<String, ?> config) {
-        addConfig(namespace, config);
+    public void onChange(String qulifier, Object config) {
+        addConfig(qulifier, config);
     }
 }

@@ -166,4 +166,8 @@ public class ServiceRepository implements IService {
         }
         parsers.add(parser);
     }
+
+    List<IAnnotationParser<?>> getAnnotationParsers(Class<?> annoType) {
+        return this._annotationParsers.get(annoType);
+    }
 }

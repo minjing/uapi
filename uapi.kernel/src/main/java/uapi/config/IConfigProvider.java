@@ -1,6 +1,6 @@
 package uapi.config;
 
-public interface IConfigSource {
+public interface IConfigProvider {
 
     void setTracer(IConfigTracer tracer);
 }

@@ -2,5 +2,5 @@ package uapi.internal;
 
 public interface IAnnotationParser<T> {
 
-    void parse(T annotation, ConfigurableServiceDescriptor serviceDescriptor);
+    void parse(AnnotationServiceMethod serviceMethod);
 }

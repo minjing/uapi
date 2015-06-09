@@ -7,5 +7,5 @@ public interface IConfigFileParser {
 
     String[] supportedFileExtensions();
 
-    Map<String, String> parse(File configFile);
+    Map<String, Object> parse(File configFile);
 }

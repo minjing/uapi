@@ -1,10 +1,12 @@
 package uapi.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.common.base.Strings;
 
@@ -148,16 +150,8 @@ final class StatefulService {
             return this._state == ServiceState.INITIALIZED;
         }
 
-        private void resolve() {
-            if (this._state == ServiceState.RESOLVED || this._state == ServiceState.INITIALIZED) {
-                return;
-            }
-            if (this._state != ServiceState.UNDEFINED) {
-                throw new InvalidStateException(ServiceState.UNDEFINED.name(), this._state.name());
-            }
-
-            // Resolve dependencies
-            Field[] fields = StatefulService.this._type.getDeclaredFields();
+        private void parseDependencies(Class<?> type) {
+            Field[] fields = type.getDeclaredFields();
             for (Field field : fields) {
                 Inject inject = field.getAnnotation(Inject.class);
                 if (inject == null) {
@@ -169,11 +163,11 @@ final class StatefulService {
                 String setterName = ClassHelper.makeSetterName(fieldName, isCollection.get());
                 Method setter;
                 try {
-                    setter = StatefulService.this._type.getMethod(setterName, fieldType);
+                    setter = type.getMethod(setterName, fieldType);
                 } catch (NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException(
                             StringHelper.makeString("Can't found setter for field {} in class {}, expect the setter name is {}",
-                                    fieldName, StatefulService.this._type.getName(), setterName));
+                                    fieldName, type.getName(), setterName));
                 }
                 String dependName = inject.name();
                 if (Strings.isNullOrEmpty(dependName)) {
@@ -186,23 +180,52 @@ final class StatefulService {
                 StatefulService.this._dependencies.put(dependency.getName(), dependency);
             }
 
+            // parse super class dependencies if any
+            Class<?> superType = type.getSuperclass();
+            if (superType != null) {
+                parseDependencies(superType);
+            }
+        }
+
+        private void resolve() {
+            if (this._state == ServiceState.RESOLVED || this._state == ServiceState.INITIALIZED) {
+                return;
+            }
+            if (this._state != ServiceState.UNDEFINED) {
+                throw new InvalidStateException(ServiceState.UNDEFINED.name(), this._state.name());
+            }
+
+            // Resolve dependencies
+            parseDependencies(StatefulService.this._type);
+
             // Find out init method
             Method[] methods = StatefulService.this._type.getMethods();
             for (Method method : methods) {
-                OnInit init = method.getAnnotation(OnInit.class);
-                if (init == null) {
-                    continue;
+                // Handle annotation
+                Annotation[] annotations = method.getAnnotations();
+                for (Annotation annotation : annotations) {
+                    Class<?> annoType = annotation.getClass();
+                    if (OnInit.class.equals(annoType)) {
+                        OnInit init = (OnInit) annotation;
+                        if (StatefulService.this._initMethod != null) {
+                            throw new KernelException("Do not allow two init method - {} and {} in service {}",
+                                    StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
+                        }
+                        if (method.getParameterCount() > 0) {
+                            throw new KernelException("The init method {} in service {} only allow empty parameters",
+                                    method.getName(), StatefulService.this._name);
+                        }
+                        StatefulService.this._initMethod = method;
+                        StatefulService.this._lazyInit = init.lazy();
+                    }
+
+                    List<IAnnotationParser<?>> parsers = StatefulService.this._serviceRepo.getAnnotationParsers(annoType);
+                    if (parsers != null) {
+                        parsers.forEach((parser) -> { 
+                            parser.parse(new AnnotationServiceMethod(StatefulService.this._instance, method, annotation));
+                        });
+                    }
                 }
-                if (StatefulService.this._initMethod != null) {
-                    throw new KernelException("Do not allow two init method - {} and {} in service {}",
-                            StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
-                }
-                if (method.getParameterCount() > 0) {
-                    throw new KernelException("The init method {} in service {} only allow empty parameters",
-                            method.getName(), StatefulService.this._name);
-                }
-                StatefulService.this._initMethod = method;
-                StatefulService.this._lazyInit = init.lazy();
             }
 
             if (StatefulService.this._dependencies.size() == 0 && StatefulService.this._initMethod == null) {
@@ -258,17 +281,5 @@ final class StatefulService {
             }
             this._state = ServiceState.INITIALIZED;
         }
-
-//        private void destroy() {
-//            this._state = ServiceState.DESTROYED;
-//        }
-//
-//        private boolean isSatisfy() {
-//            return this._state == ServiceState.SATISFIED;
-//        }
-//
-//        private ServiceState getState() {
-//            return this._state;
-//        }
     }
 }

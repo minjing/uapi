@@ -10,7 +10,9 @@ import uapi.service.IService;
 
 import com.google.common.base.Strings;
 
-public final class CliConfigSource extends TraceableConfigSource implements IService {
+public final class CliConfigProvider
+    extends TraceableConfigProvider
+    implements IService {
 
     private static final String OPTION_PREFIX       = "-";
     private static final String OPTION_VALUE_TAG    = "=";
@@ -36,6 +38,6 @@ public final class CliConfigSource extends TraceableConfigSource implements ISer
                         return new Pair<String, String>(values[0], values[1]);
                     }})
                 .forEach((pair) -> { cliCfg.put(pair.getLeftValue(), pair.getRightValue()); });
-        onChanged(Qualifier.CLI, cliCfg);
+        onChange(Qualifier.CLI, cliCfg);
     }
 }

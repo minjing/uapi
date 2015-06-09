@@ -7,7 +7,7 @@ import java.util.concurrent.Semaphore;
 
 import uapi.helper.StringHelper;
 import uapi.helper.TimeHelper;
-import uapi.internal.CliConfigSource;
+import uapi.internal.CliConfigProvider;
 import uapi.internal.ServiceRepository;
 import uapi.log.ILogger;
 import uapi.service.IService;
@@ -40,7 +40,7 @@ public final class Main {
         svcRepo = svcRepo.getService(ServiceRepository.class);
 
         // Initialize CLI arguments
-        CliConfigSource cliCfgSrc = svcRepo.getService(CliConfigSource.class);
+        CliConfigProvider cliCfgSrc = svcRepo.getService(CliConfigProvider.class);
         cliCfgSrc.parse(args);
 
         // Retrieve the configuration service

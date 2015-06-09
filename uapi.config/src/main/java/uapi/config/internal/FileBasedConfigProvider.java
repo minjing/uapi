@@ -12,16 +12,20 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.KernelException;
 import uapi.config.Config;
 import uapi.config.IConfigFileParser;
-import uapi.internal.TraceableConfigSource;
+import uapi.internal.TraceableConfigProvider;
 import uapi.service.IService;
 import uapi.service.Inject;
 
-public class FileBasedConfigSource extends TraceableConfigSource implements IService {
+public class FileBasedConfigProvider
+    extends TraceableConfigProvider
+    implements IService {
+
+    private static final String CFG_QUALIFIER   = "config";
 
     @Inject
     private final Map<String /* file extension */, IConfigFileParser> _parsers;
 
-    public FileBasedConfigSource() {
+    public FileBasedConfigProvider() {
         this._parsers = new HashMap<>();
     }
 
@@ -35,7 +39,7 @@ public class FileBasedConfigSource extends TraceableConfigSource implements ISer
         });
     }
 
-    @Config(qualifier="cli.config")
+    @Config(qualifier=CFG_QUALIFIER)
     public void config(String fileName) {
         if (Strings.isNullOrEmpty(fileName)) {
             throw new InvalidArgumentException("fileName", InvalidArgumentType.EMPTY);
@@ -59,6 +63,7 @@ public class FileBasedConfigSource extends TraceableConfigSource implements ISer
         if (parser == null) {
             throw new KernelException("No parser associate with extension name {} on config file {}.", extName, fileName);
         }
-        parser.parse(cfgFile);
+        Map<String, Object> config = parser.parse(cfgFile);
+        config.forEach((key, value) -> { onChange(key, value); });
     }
 }

@@ -1,0 +1,7 @@
+{
+    "string-value": "string",
+    "int-value": 2,
+    "array": [
+        "string-item", 34
+    ]
+}

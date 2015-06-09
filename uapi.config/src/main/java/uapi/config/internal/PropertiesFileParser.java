@@ -4,11 +4,9 @@ import java.io.File;
 import java.util.Map;
 
 import uapi.config.IConfigFileParser;
-import uapi.internal.TraceableConfigSource;
 import uapi.service.IService;
 
 public final class PropertiesFileParser
-    extends TraceableConfigSource
     implements IService, IConfigFileParser {
 
     @Override
@@ -17,7 +15,7 @@ public final class PropertiesFileParser
     }
 
     @Override
-    public Map<String, String> parse(File configFile) {
+    public Map<String, Object> parse(File configFile) {
         return null;
     }
 
