@@ -13,7 +13,12 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.KernelException;
 import uapi.config.IConfigFileParser;
 import uapi.service.IService;
+import uapi.service.Registration;
+import uapi.service.Type;
 
+@Registration({
+    @Type(IConfigFileParser.class)
+})
 public class JsonFileParser
     implements IService, IConfigFileParser {
 

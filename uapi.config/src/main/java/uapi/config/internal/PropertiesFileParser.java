@@ -5,7 +5,12 @@ import java.util.Map;
 
 import uapi.config.IConfigFileParser;
 import uapi.service.IService;
+import uapi.service.Registration;
+import uapi.service.Type;
 
+@Registration({
+    @Type(IConfigFileParser.class)
+})
 public final class PropertiesFileParser
     implements IService, IConfigFileParser {
 

@@ -25,7 +25,7 @@ final class ConfigurableServiceMethod
         this._cfgType = argTypes[0];
     }
 
-    void setConfig(Object oldConfig, Object newConfig) {
+    void updateConfig(Object oldConfig, Object newConfig) {
         if (oldConfig != null && ! oldConfig.getClass().equals(newConfig.getClass())) {
             throw new KernelException("The type of old config {} and the type of new config {} are not same.");
         }

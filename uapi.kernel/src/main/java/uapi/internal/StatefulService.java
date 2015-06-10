@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 
 import com.google.common.base.Strings;
@@ -53,7 +53,7 @@ final class StatefulService {
         this._serviceRepo = serviceRepository;
         this._type = instance.getClass();
         this._instance = instance;
-        this._dependencies = new HashMap<>();
+        this._dependencies = new ConcurrentHashMap<>();
         this._lifecycle = new Lifecycle();
         this._lifecycle.resolve();
     }
@@ -201,31 +201,20 @@ final class StatefulService {
             // Find out init method
             Method[] methods = StatefulService.this._type.getMethods();
             for (Method method : methods) {
-                // Handle annotation
-                Annotation[] annotations = method.getAnnotations();
-                for (Annotation annotation : annotations) {
-                    Class<?> annoType = annotation.getClass();
-                    if (OnInit.class.equals(annoType)) {
-                        OnInit init = (OnInit) annotation;
-                        if (StatefulService.this._initMethod != null) {
-                            throw new KernelException("Do not allow two init method - {} and {} in service {}",
-                                    StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
-                        }
-                        if (method.getParameterCount() > 0) {
-                            throw new KernelException("The init method {} in service {} only allow empty parameters",
-                                    method.getName(), StatefulService.this._name);
-                        }
-                        StatefulService.this._initMethod = method;
-                        StatefulService.this._lazyInit = init.lazy();
-                    }
-
-                    List<IAnnotationParser<?>> parsers = StatefulService.this._serviceRepo.getAnnotationParsers(annoType);
-                    if (parsers != null) {
-                        parsers.forEach((parser) -> { 
-                            parser.parse(new AnnotationServiceMethod(StatefulService.this._instance, method, annotation));
-                        });
-                    }
+                OnInit init = method.getAnnotation(OnInit.class);
+                if (init == null) {
+                    continue;
                 }
+                if (StatefulService.this._initMethod != null) {
+                    throw new KernelException("Do not allow two init method - {} and {} in service {}",
+                            StatefulService.this._initMethod.getName(), method.getName(), StatefulService.this._name);
+                }
+                if (method.getParameterCount() > 0) {
+                    throw new KernelException("The init method {} in service {} only allow empty parameters",
+                            method.getName(), StatefulService.this._name);
+                }
+                StatefulService.this._initMethod = method;
+                StatefulService.this._lazyInit = init.lazy();
             }
 
             if (StatefulService.this._dependencies.size() == 0 && StatefulService.this._initMethod == null) {
@@ -271,6 +260,23 @@ final class StatefulService {
                 throw new InvalidStateException(this._state.name(), ServiceState.SATISFIED.name());
             }
 
+            // Handle extension annotation
+            Method[] methods = StatefulService.this._type.getMethods();
+            for (Method method : methods) {
+                // Handle annotation
+                Annotation[] annotations = method.getAnnotations();
+                for (Annotation annotation : annotations) {
+                    Class<?> annoType = annotation.annotationType();
+                    List<IAnnotationHandler<?>> parsers = StatefulService.this._serviceRepo.getAnnotationHandlers(annoType);
+                    if (parsers != null) {
+                        parsers.forEach((parser) -> { 
+                            parser.parse(new AnnotationServiceMethod(StatefulService.this._instance, method, annotation));
+                        });
+                    }
+                }
+            }
+
+            // invoke initialization method
             if (StatefulService.this._initMethod != null) {
                 try {
                     StatefulService.this._initMethod.invoke(StatefulService.this._instance);

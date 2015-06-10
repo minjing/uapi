@@ -19,6 +19,7 @@ import uapi.helper.ClassHelper;
 import uapi.helper.Executor;
 import uapi.service.IService;
 import uapi.service.Inject;
+import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -29,16 +30,18 @@ public class ServiceRepository implements IService {
 
     private final Multimap<String, StatefulService> _uninitedSvcs;
     private final Multimap<String, StatefulService> _initedSvcs;
+    private final Multimap<String, StatefulService> _forceInitSvcs;
 
     @Inject
-    private final Map<Class<?>, List<IAnnotationParser<?>>> _annotationParsers;
+    private final Map<Class<?>, List<IAnnotationHandler<?>>> _annotationHandlers;
 
     public ServiceRepository() {
-        this._uninitedSvcsLock  = new ReentrantLock();
-        this._initedSvcsLock    = new ReentrantLock();
-        this._uninitedSvcs      = LinkedListMultimap.create();
-        this._initedSvcs        = LinkedListMultimap.create();
-        this._annotationParsers = new HashMap<>();
+        this._uninitedSvcsLock      = new ReentrantLock();
+        this._initedSvcsLock        = new ReentrantLock();
+        this._uninitedSvcs          = LinkedListMultimap.create();
+        this._initedSvcs            = LinkedListMultimap.create();
+        this._forceInitSvcs         = LinkedListMultimap.create();
+        this._annotationHandlers    = new HashMap<>();
     }
 
     public void addServices(List<IService> services) {
@@ -82,6 +85,8 @@ public class ServiceRepository implements IService {
             Executor.create().guardBy(this._initedSvcsLock).run(() -> {
                 this._initedSvcs.put(svc.getName(), svc);
             });
+        } else if (svc.isLazyInit()) {
+            this._forceInitSvcs.put(svc.getName(), svc);
         } else {
             Executor.create().guardBy(this._uninitedSvcsLock).run(() -> {
                 this._uninitedSvcs.put(svc.getName(), svc);
@@ -128,6 +133,7 @@ public class ServiceRepository implements IService {
             throw new InvalidArgumentException("serviceId", InvalidArgumentType.EMPTY);
         }
         final List<Object> svcInsts = new ArrayList<>();
+        // Find service from initialized map
         Collection<StatefulService> svcs = Executor.create().guardBy(this._initedSvcsLock).getResult(() -> {
             return this._initedSvcs.get(serviceId);
         });
@@ -136,6 +142,7 @@ public class ServiceRepository implements IService {
                 .map((svc) -> { return svc.getInstance(serveFor); })
                 .forEach((svcInst) -> { svcInsts.add(svcInst); });
         }
+        // Find service from un-initialized map
         svcs = Executor.create().guardBy(this._uninitedSvcsLock).getResult(() -> {
             return this._uninitedSvcs.removeAll(serviceId);
         });
@@ -147,27 +154,47 @@ public class ServiceRepository implements IService {
                 });
             });
         }
+        // Find service from force-initialized map
+        svcs = this._forceInitSvcs.removeAll(serviceId);
+        if (svcs != null) {
+            svcs.parallelStream().forEach((svc) -> {
+                svcInsts.add(svc.getInstance(serveFor));
+            });
+        }
         return ((T[]) svcInsts.toArray());
     }
 
-    public void addAnnotationParser(IAnnotationParser<?> parser) {
-        if (parser == null) {
+    public void addAnnotationHandler(IAnnotationHandler<?> handler) {
+        if (handler == null) {
             throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);
         }
-        Class<?>[] annotationTypes = ClassHelper.getInterfaceParameterizedClasses(parser.getClass(), IAnnotationParser.class);
+        Class<?>[] annotationTypes = ClassHelper.getInterfaceParameterizedClasses(handler.getClass(), IAnnotationHandler.class);
         if (annotationTypes == null) {
-            throw new KernelException("The parser {} does not specified parameter type", parser.getClass().getName());
+            throw new KernelException("The parser {} does not specified parameter type", handler.getClass().getName());
         }
         Class<?> annotationType = annotationTypes[0];
-        List<IAnnotationParser<?>> parsers = this._annotationParsers.get(annotationType);
-        if (parsers == null) {
-            parsers = new ArrayList<>();
-            this._annotationParsers.put(annotationType, parsers);
+        List<IAnnotationHandler<?>> handlers = this._annotationHandlers.get(annotationType);
+        if (handlers == null) {
+            handlers = new ArrayList<>();
+            this._annotationHandlers.put(annotationType, handlers);
         }
-        parsers.add(parser);
+        handlers.add(handler);
     }
 
-    List<IAnnotationParser<?>> getAnnotationParsers(Class<?> annoType) {
-        return this._annotationParsers.get(annoType);
+    List<IAnnotationHandler<?>> getAnnotationHandlers(Class<?> annoType) {
+        return this._annotationHandlers.get(annoType);
+    }
+
+    @OnInit
+    public void init() {
+        this._forceInitSvcs.asMap().forEach((name, svcs) -> {
+            svcs.forEach((svc) -> {
+                if (svc.getInstance(null) == null) {
+                    throw new KernelException("Initialize service {} failed.", name);
+                }
+                this._initedSvcs.put(name, svc);
+            });
+        });
+        this._forceInitSvcs.clear();
     }
 }

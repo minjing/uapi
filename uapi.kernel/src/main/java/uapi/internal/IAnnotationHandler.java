@@ -1,6 +1,6 @@
 package uapi.internal;
 
-public interface IAnnotationParser<T> {
+public interface IAnnotationHandler<T> {
 
     void parse(AnnotationServiceMethod serviceMethod);
 }

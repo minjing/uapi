@@ -17,11 +17,11 @@ import com.google.common.base.Strings;
 
 @Registration({
         @Type(Configurator.class),
-        @Type(IAnnotationParser.class),
+        @Type(IAnnotationHandler.class),
         @Type(IConfigTracer.class)
 })
 public final class Configurator
-    implements IService, IAnnotationParser<Config>, IConfigTracer {
+    implements IService, IAnnotationHandler<Config>, IConfigTracer {
 
     private final Map<String /* qualifier */, Object> _cgfs;
     private final Map<String /* qualifier */, List<ConfigurableServiceMethod>> _svcDescs;
@@ -45,7 +45,7 @@ public final class Configurator
     void doConfigChange(String qualifier, Object oldCfg, Object newCfg) {
         List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(qualifier);
         if (svcDescs != null) {
-            svcDescs.forEach((svcDesc) -> { svcDesc.setConfig(oldCfg, newCfg); });
+            svcDescs.forEach((svcDesc) -> { svcDesc.updateConfig(oldCfg, newCfg); });
         }
     }
 
@@ -61,7 +61,7 @@ public final class Configurator
         svcDescs.add(cfgSvcMethod);
         Object newCfg = this._cgfs.get(cfgAnno.qualifier());
         if (newCfg != null) {
-            cfgSvcMethod.setConfig(null, newCfg);
+            cfgSvcMethod.updateConfig(null, newCfg);
         }
     }
 
