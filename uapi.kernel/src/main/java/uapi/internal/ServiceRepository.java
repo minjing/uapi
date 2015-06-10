@@ -17,6 +17,7 @@ import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ClassHelper;
 import uapi.helper.Executor;
+import uapi.service.IAnnotationMethodHandler;
 import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.OnInit;
@@ -33,7 +34,7 @@ public class ServiceRepository implements IService {
     private final Multimap<String, StatefulService> _forceInitSvcs;
 
     @Inject
-    private final Map<Class<?>, List<IAnnotationHandler<?>>> _annotationHandlers;
+    private final Map<Class<?>, List<IAnnotationMethodHandler<?>>> _annotationHandlers;
 
     public ServiceRepository() {
         this._uninitedSvcsLock      = new ReentrantLock();
@@ -85,7 +86,7 @@ public class ServiceRepository implements IService {
             Executor.create().guardBy(this._initedSvcsLock).run(() -> {
                 this._initedSvcs.put(svc.getName(), svc);
             });
-        } else if (svc.isLazyInit()) {
+        } else if (! svc.isLazyInit()) {
             this._forceInitSvcs.put(svc.getName(), svc);
         } else {
             Executor.create().guardBy(this._uninitedSvcsLock).run(() -> {
@@ -164,16 +165,16 @@ public class ServiceRepository implements IService {
         return ((T[]) svcInsts.toArray());
     }
 
-    public void addAnnotationHandler(IAnnotationHandler<?> handler) {
+    public void addAnnotationHandler(IAnnotationMethodHandler<?> handler) {
         if (handler == null) {
             throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);
         }
-        Class<?>[] annotationTypes = ClassHelper.getInterfaceParameterizedClasses(handler.getClass(), IAnnotationHandler.class);
+        Class<?>[] annotationTypes = ClassHelper.getInterfaceParameterizedClasses(handler.getClass(), IAnnotationMethodHandler.class);
         if (annotationTypes == null) {
             throw new KernelException("The parser {} does not specified parameter type", handler.getClass().getName());
         }
         Class<?> annotationType = annotationTypes[0];
-        List<IAnnotationHandler<?>> handlers = this._annotationHandlers.get(annotationType);
+        List<IAnnotationMethodHandler<?>> handlers = this._annotationHandlers.get(annotationType);
         if (handlers == null) {
             handlers = new ArrayList<>();
             this._annotationHandlers.put(annotationType, handlers);
@@ -181,7 +182,7 @@ public class ServiceRepository implements IService {
         handlers.add(handler);
     }
 
-    List<IAnnotationHandler<?>> getAnnotationHandlers(Class<?> annoType) {
+    List<IAnnotationMethodHandler<?>> getAnnotationHandlers(Class<?> annoType) {
         return this._annotationHandlers.get(annoType);
     }
 

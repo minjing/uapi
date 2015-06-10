@@ -17,7 +17,10 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.helper.ChangeableBoolean;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
+import uapi.service.AnnotatedMethod;
+import uapi.service.IAnnotationMethodHandler;
 import uapi.service.IServiceGenerator;
+import uapi.service.InitAtLaunch;
 import uapi.service.Inject;
 import uapi.service.OnInit;
 
@@ -55,6 +58,8 @@ final class StatefulService {
         this._instance = instance;
         this._dependencies = new ConcurrentHashMap<>();
         this._lifecycle = new Lifecycle();
+        this._lazyInit = true;
+
         this._lifecycle.resolve();
     }
 
@@ -198,6 +203,12 @@ final class StatefulService {
             // Resolve dependencies
             parseDependencies(StatefulService.this._type);
 
+            // Check InitAtLaunch tag
+            InitAtLaunch initAtLaunch = StatefulService.this._type.getAnnotation(InitAtLaunch.class);
+            if (initAtLaunch != null) {
+                StatefulService.this._lazyInit = initAtLaunch.value();
+            }
+
             // Find out init method
             Method[] methods = StatefulService.this._type.getMethods();
             for (Method method : methods) {
@@ -214,14 +225,8 @@ final class StatefulService {
                             method.getName(), StatefulService.this._name);
                 }
                 StatefulService.this._initMethod = method;
-                StatefulService.this._lazyInit = init.lazy();
             }
-
-            if (StatefulService.this._dependencies.size() == 0 && StatefulService.this._initMethod == null) {
-                this._state = ServiceState.INITIALIZED;
-            } else {
-                this._state = ServiceState.RESOLVED;
-            }
+            this._state = ServiceState.RESOLVED;
         }
 
         private void satisfy() {
@@ -267,10 +272,10 @@ final class StatefulService {
                 Annotation[] annotations = method.getAnnotations();
                 for (Annotation annotation : annotations) {
                     Class<?> annoType = annotation.annotationType();
-                    List<IAnnotationHandler<?>> parsers = StatefulService.this._serviceRepo.getAnnotationHandlers(annoType);
+                    List<IAnnotationMethodHandler<?>> parsers = StatefulService.this._serviceRepo.getAnnotationHandlers(annoType);
                     if (parsers != null) {
                         parsers.forEach((parser) -> { 
-                            parser.parse(new AnnotationServiceMethod(StatefulService.this._instance, method, annotation));
+                            parser.parse(new AnnotatedMethod(StatefulService.this._instance, method, annotation));
                         });
                     }
                 }

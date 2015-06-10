@@ -15,9 +15,10 @@ import uapi.config.IConfigFileParser;
 import uapi.internal.TraceableConfigProvider;
 import uapi.log.ILogger;
 import uapi.service.IService;
+import uapi.service.InitAtLaunch;
 import uapi.service.Inject;
-import uapi.service.OnInit;
 
+@InitAtLaunch
 public class FileBasedConfigProvider
     extends TraceableConfigProvider
     implements IService {
@@ -46,11 +47,6 @@ public class FileBasedConfigProvider
 
     public void setLogger(ILogger logger) {
         this._logger = logger;
-    }
-
-    @OnInit
-    public void init() {
-        
     }
 
     @Config(qualifier=CFG_QUALIFIER)

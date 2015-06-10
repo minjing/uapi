@@ -9,6 +9,8 @@ import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
 import uapi.config.IConfigTracer;
+import uapi.service.AnnotatedMethod;
+import uapi.service.IAnnotationMethodHandler;
 import uapi.service.IService;
 import uapi.service.Registration;
 import uapi.service.Type;
@@ -17,11 +19,11 @@ import com.google.common.base.Strings;
 
 @Registration({
         @Type(Configurator.class),
-        @Type(IAnnotationHandler.class),
+        @Type(IAnnotationMethodHandler.class),
         @Type(IConfigTracer.class)
 })
 public final class Configurator
-    implements IService, IAnnotationHandler<Config>, IConfigTracer {
+    implements IService, IAnnotationMethodHandler<Config>, IConfigTracer {
 
     private final Map<String /* qualifier */, Object> _cgfs;
     private final Map<String /* qualifier */, List<ConfigurableServiceMethod>> _svcDescs;
@@ -50,7 +52,7 @@ public final class Configurator
     }
 
     @Override
-    public void parse(AnnotationServiceMethod serviceMethod) {
+    public void parse(AnnotatedMethod serviceMethod) {
         Config cfgAnno = serviceMethod.getAnnotation();
         List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(cfgAnno.qualifier());
         if (svcDescs == null) {

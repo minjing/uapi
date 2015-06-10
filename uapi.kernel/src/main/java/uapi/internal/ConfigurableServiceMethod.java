@@ -3,13 +3,14 @@ package uapi.internal;
 import java.lang.reflect.Method;
 
 import uapi.KernelException;
+import uapi.service.AnnotatedMethod;
 
 final class ConfigurableServiceMethod
-    extends AnnotationServiceMethod {
+    extends AnnotatedMethod {
 
     private Class<?> _cfgType;
 
-    ConfigurableServiceMethod(AnnotationServiceMethod serviceMethod) {
+    ConfigurableServiceMethod(AnnotatedMethod serviceMethod) {
         super(serviceMethod.getServiceInstance(), serviceMethod.getMethod(), serviceMethod.getAnnotation());
 
         Method method = serviceMethod.getMethod();
