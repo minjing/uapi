@@ -42,9 +42,9 @@ public class AnnotatedMethod {
         return (T) this._annotation;
     }
 
-    public void invoke(Object... args) {
+    public Object invoke(Object... args) {
         try {
-            this._method.invoke(this._svcInst, args);
+            return this._method.invoke(this._svcInst, args);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new KernelException(ex, "Inject config data for service {}:{} failed.",
                     this._svcInst.getClass().getName(), this._method.getName());
