@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Repeatable(Configs.class)
 public @interface Config {
 
-    String qualifier();
+    String value();
 }

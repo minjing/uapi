@@ -54,14 +54,14 @@ public final class Configurator
     @Override
     public void parse(AnnotatedMethod serviceMethod) {
         Config cfgAnno = serviceMethod.getAnnotation();
-        List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(cfgAnno.qualifier());
+        List<ConfigurableServiceMethod> svcDescs = this._svcDescs.get(cfgAnno.value());
         if (svcDescs == null) {
             svcDescs = new ArrayList<>();
-            this._svcDescs.put(cfgAnno.qualifier(), svcDescs);
+            this._svcDescs.put(cfgAnno.value(), svcDescs);
         }
         ConfigurableServiceMethod cfgSvcMethod = new ConfigurableServiceMethod(serviceMethod);
         svcDescs.add(cfgSvcMethod);
-        Object newCfg = this._cgfs.get(cfgAnno.qualifier());
+        Object newCfg = this._cgfs.get(cfgAnno.value());
         if (newCfg != null) {
             cfgSvcMethod.updateConfig(null, newCfg);
         }

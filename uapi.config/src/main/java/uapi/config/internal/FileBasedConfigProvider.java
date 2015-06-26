@@ -49,7 +49,7 @@ public class FileBasedConfigProvider
         this._logger = logger;
     }
 
-    @Config(qualifier=CFG_QUALIFIER)
+    @Config(CFG_QUALIFIER)
     public void config(String oldFileName, String newFileName) {
         this._logger.info("Config update {} -> {}", oldFileName, newFileName);
         if (Strings.isNullOrEmpty(newFileName)) {

@@ -16,7 +16,7 @@ public final class SampleService implements IService {
         this._logger = logger;
     }
 
-    @Config(qualifier="text")
+    @Config("text")
     public void config(String oldCfg, String newCfg) {
         this._logger.info("Receive configuration - {}", newCfg);
     }
