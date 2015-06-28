@@ -12,6 +12,11 @@ final class Logger implements ILogger {
     }
 
     @Override
+    public void trace(String message, Object... parameters) {
+        this._slfLogger.trace(message, parameters);
+    }
+
+    @Override
     public void debug(String message, Object... parameters) {
         this._slfLogger.debug(message, parameters);
     }

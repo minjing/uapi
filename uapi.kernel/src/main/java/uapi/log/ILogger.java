@@ -2,6 +2,8 @@ package uapi.log;
 
 public interface ILogger {
 
+    void trace(String message, Object... parameters);
+
     void debug(String message, Object... parameters);
 
     void info(String message, Object... parameters);

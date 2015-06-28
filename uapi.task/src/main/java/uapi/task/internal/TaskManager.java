@@ -1,5 +1,7 @@
 package uapi.task.internal;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -24,9 +26,11 @@ public final class TaskManager
     private ILogger _logger;
 
     private final BlockingQueue<ITask> _parallelQueue;
+    private final Map<String, SerialQueue> _serialQueueMap;
 
     public TaskManager() {
         this._parallelQueue = new LinkedBlockingQueue<>();
+        this._serialQueueMap = new HashMap<>();
     }
 
     public void setLogger(ILogger logger) {
@@ -44,6 +48,7 @@ public final class TaskManager
         if (task == null) {
             throw new InvalidArgumentException("task", InvalidArgumentType.EMPTY);
         }
+        this._logger.trace("Add a new task - {}", task.getDescription());
         if (task instanceof ISerialTask) {
             // Todo:
         } else {
@@ -51,7 +56,11 @@ public final class TaskManager
         }
     }
 
-    private final class ParallelQueueExecutor {
+    private final class ParallelTaskExecutor {
 
+    }
+
+    private final class SerialTaskExecutor {
+        
     }
 }
