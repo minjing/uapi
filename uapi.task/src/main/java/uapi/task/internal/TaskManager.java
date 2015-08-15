@@ -1,20 +1,14 @@
 package uapi.task.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import uapi.InvalidArgumentException;
-import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
 import uapi.log.ILogger;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
-import uapi.task.ISerialTask;
+import uapi.task.INotifier;
 import uapi.task.ITask;
 import uapi.task.ITaskManager;
+import uapi.task.ITaskProducer;
 
 @Registration({
     @Type(TaskManager.class)
@@ -25,12 +19,7 @@ public final class TaskManager
     @Inject
     private ILogger _logger;
 
-    private final BlockingQueue<ITask> _parallelQueue;
-    private final Map<String, SerialQueue> _serialQueueMap;
-
     public TaskManager() {
-        this._parallelQueue = new LinkedBlockingQueue<>();
-        this._serialQueueMap = new HashMap<>();
     }
 
     public void setLogger(ILogger logger) {
@@ -45,22 +34,26 @@ public final class TaskManager
 
     @Override
     public void addTask(ITask task) {
-        if (task == null) {
-            throw new InvalidArgumentException("task", InvalidArgumentType.EMPTY);
-        }
-        this._logger.trace("Add a new task - {}", task.getDescription());
-        if (task instanceof ISerialTask) {
-            // Todo:
-        } else {
-            this._parallelQueue.add(task);
-        }
+//        if (task == null) {
+//            throw new InvalidArgumentException("task", InvalidArgumentType.EMPTY);
+//        }
+//        this._logger.trace("Add a new task - {}", task.getDescription());
+//        if (task instanceof ISerialTask) {
+//            // Todo:
+//        } else {
+//            this._parallelQueue.add(task);
+//        }
     }
 
-    private final class ParallelTaskExecutor {
-
+    @Override
+    public void addTask(ITask task, INotifier notifier) {
+        // TODO Auto-generated method stub
+        
     }
 
-    private final class SerialTaskExecutor {
+    @Override
+    public void registerProducer(ITaskProducer producer) {
+        // TODO Auto-generated method stub
         
     }
 }

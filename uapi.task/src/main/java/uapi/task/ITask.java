@@ -1,8 +1,22 @@
 package uapi.task;
 
+/**
+ * A task is an abstract executable unit
+ * 
+ * @author min
+ */
 public interface ITask {
 
-    String getDescription();
-
+    /**
+     * The task entry point
+     */
     void run();
+
+    /**
+     * Return the priority of this task
+     * The priority value must be between 0 to 128
+     * 
+     * @return  The priority
+     */
+    int getPriority();
 }
