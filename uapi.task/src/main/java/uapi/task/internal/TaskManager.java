@@ -1,6 +1,9 @@
 package uapi.task.internal;
 
+import uapi.IStateWatcher;
+import uapi.IStateful;
 import uapi.config.Config;
+import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
 import uapi.service.Inject;
 import uapi.service.Registration;
@@ -55,5 +58,37 @@ public final class TaskManager
     public void registerProducer(ITaskProducer producer) {
         // TODO Auto-generated method stub
         
+    }
+    
+    private final class TaskStateWatcher
+        implements IStateWatcher {
+
+        private final ITask _task;
+        private final INotifier _notifier;
+        
+        private TaskStateWatcher(final ITask task, final INotifier notifier) {
+            ArgumentChecker.isEmpty(task, "task");
+            ArgumentChecker.isEmpty(notifier, "notifier");
+            this._task = task;
+            this._notifier = notifier;
+        }
+
+        @Override
+        public void stateChanged(IStateful which, int oldState, int newState) {
+            ArgumentChecker.isEmpty(which, "which");
+            if (newState == IStateful.STATE_TERMINAL) {
+                this._notifier.onDone(this._task);
+            }
+        }
+
+        @Override
+        public void stateChange(IStateful which, int oldState, int newState, Throwable t) {
+            ArgumentChecker.isEmpty(which, "which");
+            if (t != null) {
+                this._notifier.onFailed(this._task, t);
+            } else if (newState == IStateful.STATE_TERMINAL) {
+                this._notifier.onDone(this._task);
+            }
+        }
     }
 }
