@@ -24,4 +24,11 @@ public interface IStateful {
      *          The state change watcher
      */
     void setWatcher(IStateWatcher watcher);
+
+    /**
+     * Get the state change watcher
+     * 
+     * @return  The state change watcher
+     */
+    IStateWatcher getWatcher();
 }

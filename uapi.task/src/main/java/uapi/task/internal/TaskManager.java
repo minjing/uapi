@@ -5,6 +5,7 @@ import uapi.IStateful;
 import uapi.config.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
+import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
@@ -17,16 +18,22 @@ import uapi.task.ITaskProducer;
     @Type(TaskManager.class)
 })
 public final class TaskManager
-    implements ITaskManager {
+    implements ITaskManager, IService {
 
     @Inject
     private ILogger _logger;
 
-    public TaskManager() {
-    }
+    @Inject
+    private TaskTransfer _taskTransfer;
+
+    public TaskManager() { }
 
     public void setLogger(ILogger logger) {
         this._logger = logger;
+    }
+
+    public void setTaskTransfer(TaskTransfer transfer) {
+        this._taskTransfer = transfer;
     }
 
     @Config("uapi.task.worker_count")
@@ -37,21 +44,23 @@ public final class TaskManager
 
     @Override
     public void addTask(ITask task) {
-//        if (task == null) {
-//            throw new InvalidArgumentException("task", InvalidArgumentType.EMPTY);
-//        }
-//        this._logger.trace("Add a new task - {}", task.getDescription());
-//        if (task instanceof ISerialTask) {
-//            // Todo:
-//        } else {
-//            this._parallelQueue.add(task);
-//        }
+        addTask(task, null);
     }
 
     @Override
     public void addTask(ITask task, INotifier notifier) {
-        // TODO Auto-generated method stub
-        
+        ArgumentChecker.isEmpty(task, "task");
+        this._logger.trace("Add a new task - {}", task.getDescription());
+
+        // We need cover three cases:
+        if (notifier == null) {
+            this._taskTransfer.transferTask(task);
+        } else {
+            TaskStateWatcher taskWatcher = new TaskStateWatcher(task, notifier);
+            StatefulTask statefulTask = new StatefulTask();
+            statefulTask.setWatcher(taskWatcher);
+            this._taskTransfer.transferTask(statefulTask);
+        }
     }
 
     @Override
@@ -59,8 +68,8 @@ public final class TaskManager
         // TODO Auto-generated method stub
         
     }
-    
-    private final class TaskStateWatcher
+
+    private static final class TaskStateWatcher
         implements IStateWatcher {
 
         private final ITask _task;
@@ -89,6 +98,39 @@ public final class TaskManager
             } else if (newState == IStateful.STATE_TERMINAL) {
                 this._notifier.onDone(this._task);
             }
+        }
+    }
+    
+    private static final class StatefulTask
+        implements IStateful, ITask {
+
+        private IStateWatcher _watcher;
+        private ITask _task;
+
+        @Override
+        public void setWatcher(IStateWatcher watcher) {
+            this._task = ((TaskStateWatcher) watcher)._task;
+            this._watcher = watcher;
+        }
+
+        @Override
+        public IStateWatcher getWatcher() {
+            return this._watcher;
+        }
+
+        @Override
+        public void run() {
+            this._task.run();
+        }
+
+        @Override
+        public int getPriority() {
+            return this._task.getPriority();
+        }
+
+        @Override
+        public String getDescription() {
+            return this._task.getDescription();
         }
     }
 }

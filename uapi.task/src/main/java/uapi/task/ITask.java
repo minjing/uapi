@@ -19,4 +19,11 @@ public interface ITask {
      * @return  The priority
      */
     int getPriority();
+
+    /**
+     * Return the description of the task
+     * 
+     * @return  Task description
+     */
+    String getDescription();
 }
