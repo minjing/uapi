@@ -52,7 +52,9 @@ public final class TaskManager
         ArgumentChecker.isEmpty(task, "task");
         this._logger.trace("Add a new task - {}", task.getDescription());
 
-        // We need cover three cases:
+        // We need cover two cases:
+        // 1. user want to get the notify of task progress
+        // 2. user don't care about task progress
         if (notifier == null) {
             this._taskTransfer.transferTask(task);
         } else {
@@ -104,8 +106,16 @@ public final class TaskManager
     private static final class StatefulTask
         implements IStateful, ITask {
 
+        private static final int STATE_RUNNING  = 1;
+
+        private int _state;
+
         private IStateWatcher _watcher;
         private ITask _task;
+
+        private StatefulTask() {
+            this._state = STATE_INIT;
+        }
 
         @Override
         public void setWatcher(IStateWatcher watcher) {
@@ -120,7 +130,23 @@ public final class TaskManager
 
         @Override
         public void run() {
-            this._task.run();
+            if (this._watcher != null) {
+                changeState(STATE_RUNNING);
+            }
+
+            try {
+                this._task.run();
+            } catch (Exception ex) {
+                if (this._watcher != null) {
+                    int oldState = this._state;
+                    this._state = STATE_RUNNING;
+                    this._watcher.stateChange(this, oldState, this._state, ex);
+                }
+            }
+
+            if (this._watcher != null) {
+                changeState(STATE_TERMINAL);
+            }
         }
 
         @Override
@@ -131,6 +157,12 @@ public final class TaskManager
         @Override
         public String getDescription() {
             return this._task.getDescription();
+        }
+        
+        private void changeState(int newState) {
+            int oldState = this._state;
+            this._state = newState;
+            this._watcher.stateChanged(this, oldState, newState);
         }
     }
 }
