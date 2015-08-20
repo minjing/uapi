@@ -68,10 +68,51 @@ public final class TaskManager
     @Override
     public void registerProducer(ITaskProducer producer) {
         // TODO Auto-generated method stub
-        
     }
 
-    private static final class TaskStateWatcher
+    private static final class NotifyStateTask implements ITask {
+
+        private final ITask     _task;
+        private final INotifier _notifier;
+        private final int       _newState;
+        private final Throwable _throwable;
+
+        private NotifyStateTask(ITask task, INotifier notifier, int newState) {
+            this(task, notifier, newState, null);
+        }
+
+        private NotifyStateTask
+        (ITask task, INotifier notifier, int newState, Throwable throwable) {
+            this._task      = task;
+            this._notifier  = notifier;
+            this._newState  = newState;
+            this._throwable = throwable;
+        }
+
+        @Override
+        public void run() {
+            if (this._throwable != null) {
+                this._notifier.onFailed(this._task, this._throwable);
+                return;
+            }
+            if (this._newState == IStateful.STATE_TERMINAL) {
+                this._notifier.onDone(this._task);
+                return;
+            }
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Notify state task";
+        }
+    }
+
+    private final class TaskStateWatcher
         implements IStateWatcher {
 
         private final ITask _task;
@@ -87,22 +128,18 @@ public final class TaskManager
         @Override
         public void stateChanged(IStateful which, int oldState, int newState) {
             ArgumentChecker.isEmpty(which, "which");
-            if (newState == IStateful.STATE_TERMINAL) {
-                this._notifier.onDone(this._task);
-            }
+            TaskManager.this._taskTransfer.transferTask(
+                    new NotifyStateTask(this._task, this._notifier, newState));
         }
 
         @Override
         public void stateChange(IStateful which, int oldState, int newState, Throwable t) {
             ArgumentChecker.isEmpty(which, "which");
-            if (t != null) {
-                this._notifier.onFailed(this._task, t);
-            } else if (newState == IStateful.STATE_TERMINAL) {
-                this._notifier.onDone(this._task);
-            }
+            TaskManager.this._taskTransfer.transferTask(
+                    new NotifyStateTask(this._task, this._notifier, newState, t));
         }
     }
-    
+
     private static final class StatefulTask
         implements IStateful, ITask {
 
@@ -158,7 +195,7 @@ public final class TaskManager
         public String getDescription() {
             return this._task.getDescription();
         }
-        
+
         private void changeState(int newState) {
             int oldState = this._state;
             this._state = newState;
