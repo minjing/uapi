@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import uapi.TestBase;
 import uapi.internal.ServiceRepository;
 import uapi.internal.StatefulService;
 import uapi.service.IService;
@@ -17,6 +16,7 @@ import uapi.service.Inject;
 import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
+import uapi.test.TestBase;
 
 public class StatefulServiceTest extends TestBase {
 

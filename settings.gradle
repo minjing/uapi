@@ -1,1 +1,1 @@
-include 'uapi.kernel', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.sample'
+include 'uapi.kernel', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.test', 'uapi.sample'

@@ -6,8 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import uapi.TestBase;
 import uapi.config.IConfigTracer;
+import uapi.test.TestBase;
 
 public class CliConfigProviderTest extends TestBase {
 

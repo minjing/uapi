@@ -5,12 +5,12 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import uapi.TestBase;
 import uapi.internal.ServiceRepository;
 import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
+import uapi.test.TestBase;
 
 public class ServiceRepositoryTest extends TestBase {
 

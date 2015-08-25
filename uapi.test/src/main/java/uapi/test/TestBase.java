@@ -1,4 +1,4 @@
-package uapi;
+package uapi.test;
 
 import org.junit.Before;
 import org.junit.Ignore;
