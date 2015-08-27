@@ -1,5 +1,10 @@
 dependencies {
-    compile project(':uapi.kernel')
+    compile (
+        project(':uapi.kernel')
+    )
+    testCompile (
+        project(':uapi.test')
+    )
 }
 
 jar {

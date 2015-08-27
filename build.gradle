@@ -7,9 +7,13 @@ subprojects {
     }
 
     dependencies {
-        compile     'com.google.guava:guava:18.0'
-        testCompile 'junit:junit:4.+'
-        testCompile 'org.mockito:mockito-core:2.0.8-beta'
+        compile (
+            'com.google.guava:guava:18.0'
+        )
+        testCompile (
+            'junit:junit:4.+',
+            'org.mockito:mockito-core:2.0.8-beta'
+        )
     }
 
     version = '1.0'
