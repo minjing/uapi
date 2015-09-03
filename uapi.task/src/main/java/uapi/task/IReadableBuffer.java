@@ -8,4 +8,6 @@ package uapi.task;
 public interface IReadableBuffer<T> {
 
     T read();
+
+    T read(boolean isWait) throws InterruptedException;
 }

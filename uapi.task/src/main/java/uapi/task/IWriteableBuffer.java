@@ -13,4 +13,6 @@ public interface IWriteableBuffer<T> {
      * @param item  The item which will be added
      */
     void write(T item);
+
+    void write(T item, boolean isWait) throws InterruptedException;
 }
