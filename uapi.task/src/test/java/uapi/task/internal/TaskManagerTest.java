@@ -17,7 +17,7 @@ import uapi.test.TestBase;
 public class TaskManagerTest extends TestBase {
 
     @Mock private ILogger _logger;
-    @Mock private ITaskTransfer _taskTrans;
+    @Mock private TaskTransfer _taskTrans;
     @Mock private INotifier _notifier;
     @Mock private ITask _task;
 

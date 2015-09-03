@@ -1,5 +1,8 @@
 package uapi.task.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import uapi.IStateWatcher;
 import uapi.IStateful;
 import uapi.config.Config;
@@ -11,6 +14,7 @@ import uapi.service.Registration;
 import uapi.service.Type;
 import uapi.task.INotifier;
 import uapi.task.ITask;
+import uapi.task.ITaskEmitter;
 import uapi.task.ITaskManager;
 import uapi.task.ITaskProducer;
 
@@ -24,15 +28,21 @@ public final class TaskManager
     private ILogger _logger;
 
     @Inject
-    private ITaskTransfer _taskTransfer;
+    private TaskTransfer _taskTransfer;
 
-    public TaskManager() { }
+    private final List<ITaskProducer> _taskProducers;
+    private final TaskConverter _taskConverter;
+
+    public TaskManager() {
+        this._taskProducers = new ArrayList<>();
+        this._taskConverter = new TaskConverter();
+    }
 
     public void setLogger(ILogger logger) {
         this._logger = logger;
     }
 
-    public void setTaskTransfer(ITaskTransfer transfer) {
+    public void setTaskTransfer(TaskTransfer transfer) {
         this._taskTransfer = transfer;
     }
 
@@ -49,25 +59,15 @@ public final class TaskManager
 
     @Override
     public void addTask(ITask task, INotifier notifier) {
-        ArgumentChecker.isEmpty(task, "task");
-        this._logger.trace("Add a new task - {}", task.getDescription());
-
-        // We need cover two cases:
-        // 1. user want to get the notify of task progress
-        // 2. user don't care about task progress
-        if (notifier == null) {
-            this._taskTransfer.transferTask(task);
-        } else {
-            TaskStateWatcher taskWatcher = new TaskStateWatcher(task, notifier);
-            StatefulTask statefulTask = new StatefulTask(task);
-            statefulTask.setWatcher(taskWatcher);
-            this._taskTransfer.transferTask(statefulTask);
-        }
+        ITask wrappedTask = this._taskConverter.convert(task, notifier);
+        this._taskTransfer.transferTask(wrappedTask);
     }
 
     @Override
     public void registerProducer(ITaskProducer producer) {
-        // TODO Auto-generated method stub
+        ITaskEmitter taskEmitter = this._taskTransfer.createEmitter(this._taskConverter);
+        producer.setEmitter(taskEmitter);
+        this._taskProducers.add(producer);
     }
 
     private static final class NotifyStateTask implements ITask {
@@ -137,6 +137,26 @@ public final class TaskManager
             ArgumentChecker.isEmpty(which, "which");
             TaskManager.this._taskTransfer.transferTask(
                     new NotifyStateTask(this._task, this._notifier, newState, t));
+        }
+    }
+
+    final class TaskConverter {
+
+        ITask convert(ITask task, INotifier notifier) {
+            ArgumentChecker.isEmpty(task, "task");
+            TaskManager.this._logger.trace("Add a new task - {}", task.getDescription());
+
+            // We need cover two cases:
+            // 1. user want to get the notify of task progress
+            // 2. user don't care about task progress
+            if (notifier == null) {
+                return task;
+            } else {
+                TaskStateWatcher taskWatcher = new TaskStateWatcher(task, notifier);
+                StatefulTask statefulTask = new StatefulTask(task);
+                statefulTask.setWatcher(taskWatcher);
+                return statefulTask;
+            }
         }
     }
 }

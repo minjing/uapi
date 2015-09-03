@@ -31,4 +31,11 @@ public interface IStateful {
      * @return  The state change watcher
      */
     IStateWatcher getWatcher();
+
+    /**
+     * Return current state
+     * 
+     * @return  Current state
+     */
+    int getState();
 }

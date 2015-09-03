@@ -5,7 +5,7 @@ package uapi.task;
  * 
  * @author min
  */
-public interface ITaskProducer {
+public interface ITaskProducer extends Runnable {
 
     /**
      * Inject task emitter which used to emit task to framework

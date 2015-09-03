@@ -60,6 +60,11 @@ final class StatefulTask
         return this._task.getDescription();
     }
 
+    @Override
+    public int getState() {
+        return this._state;
+    }
+
     private void changeState(int newState) {
         int oldState = this._state;
         this._state = newState;
