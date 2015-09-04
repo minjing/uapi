@@ -2,7 +2,6 @@ package uapi.task.internal;
 
 import uapi.helper.ArgumentChecker;
 import uapi.task.INotifier;
-import uapi.task.IReadableBuffer;
 import uapi.task.ITask;
 import uapi.task.ITaskEmitter;
 

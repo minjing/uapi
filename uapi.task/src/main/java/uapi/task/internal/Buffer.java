@@ -5,45 +5,64 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import uapi.KernelException;
-import uapi.task.IReadableBuffer;
-import uapi.task.IWriteableBuffer;
+import uapi.helper.ArgumentChecker;
 
+/**
+ * A buffer is a fifo queue wrapper, it support read/write at multiple thread environment.
+ * 
+ * @author min
+ *
+ * @param <T>   The item type
+ */
 public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
 
+    // The tag means the buffer is at free state, it can be convert to read or write model
     private static final int TAG_NONE   = 0;
+    // The tag means the buffer is at read model, it can't be write
     private static final int TAG_READ   = 1;
+    // The tag means the buffer is at write model, it can't be read
     private static final int TAG_WRITE  = 2;
 
-    private static final int RETRY_LIMIT    = 16;
-    private static final int CAPACITY       = 128;
+    private static final int RETRY_LIMIT        = 16;
+    private static final int DEFAULT_CAPACITY   = 128;
 
     private final Queue<T> _buffer;
     private final AtomicInteger _rwTag;
     private final Object _locker;
+    private final int _capacity;
 
     public Buffer() {
+        this(DEFAULT_CAPACITY);
+    }
+
+    public Buffer(int capacity) {
+        ArgumentChecker.checkInt(capacity, "capacity", 1, Integer.MAX_VALUE);
         this._rwTag = new AtomicInteger(TAG_NONE);
         this._buffer = new LinkedList<>();
         this._locker = new Object();
+        this._capacity = capacity;
     }
 
-    public void write(T item) {
+    public boolean write(T item) {
+        boolean isWrite = false;
         try {
-            write(item, false);
+            isWrite = write(item, false);
         } catch (InterruptedException ex) {
             throw new KernelException(ex, "An impossible exception was thrown");
         }
+        return isWrite;
     }
 
     @Override
-    public void write(T item, boolean isWait) throws InterruptedException {
+    public boolean write(T item, boolean isWait) throws InterruptedException {
         boolean isWrite = false;
         do {
             isWrite = writeItem(item);
             if (! isWait) {
                 break;
             }
-        } while (isWrite);
+        } while (! isWrite);
+        return isWrite;
     }
 
     private boolean writeItem(T item) {
@@ -57,7 +76,7 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
         }
         if (canWrite) {
             for (; tryCount < RETRY_LIMIT; tryCount++) {
-                if (this._buffer.size() >= CAPACITY) {
+                if (this._buffer.size() >= this._capacity) {
                     canWrite = false;
                     this._rwTag.compareAndSet(TAG_WRITE, TAG_NONE);
                 } else if (this._rwTag.get() == TAG_WRITE) {

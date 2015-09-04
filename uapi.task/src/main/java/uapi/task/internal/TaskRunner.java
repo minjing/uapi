@@ -4,7 +4,6 @@ import uapi.IStateWatcher;
 import uapi.IStateful;
 import uapi.log.ILogger;
 import uapi.task.ITask;
-import uapi.task.IWriteableBuffer;
 
 public class TaskRunner implements Runnable {
 

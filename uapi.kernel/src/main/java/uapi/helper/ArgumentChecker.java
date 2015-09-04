@@ -32,4 +32,12 @@ public class ArgumentChecker {
             }
         }
     }
+
+    public static void checkInt(int arg, String argName, int minValue, int maxValue) {
+        if (arg < minValue || arg > maxValue) {
+            throw new InvalidArgumentException(argName,
+                    "The argument must be more than {} and less than {}",
+                    minValue, maxValue);
+        }
+    }
 }
