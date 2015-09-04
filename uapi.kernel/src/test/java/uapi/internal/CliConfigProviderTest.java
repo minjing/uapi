@@ -7,9 +7,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import uapi.config.IConfigTracer;
-import uapi.test.TestBase;
+import uapi.test.MockitoTest;
 
-public class CliConfigProviderTest extends TestBase {
+public class CliConfigProviderTest extends MockitoTest {
 
     @Mock private IConfigTracer _cfgTracer;
 

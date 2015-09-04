@@ -16,9 +16,9 @@ import uapi.service.Inject;
 import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
-import uapi.test.TestBase;
+import uapi.test.MockitoTest;
 
-public class StatefulServiceTest extends TestBase {
+public class StatefulServiceTest extends MockitoTest {
 
     @Mock ServiceRepository _svcRepo;
 

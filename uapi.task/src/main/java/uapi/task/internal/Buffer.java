@@ -8,7 +8,8 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
 /**
- * A buffer is a fifo queue wrapper, it support read/write at multiple thread environment.
+ * A buffer is a fifo queue wrapper, it only support read/write at TWO threads environment.
+ * Notice do NOT use the Buffer at multiple read/write threads environment
  * 
  * @author min
  *
@@ -58,8 +59,11 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
         boolean isWrite = false;
         do {
             isWrite = writeItem(item);
-            if (! isWait) {
+            if (isWrite || ! isWait) {
                 break;
+            }
+            synchronized (this._locker) {
+                this._locker.wait();
             }
         } while (! isWrite);
         return isWrite;
@@ -91,6 +95,13 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
             }
             if (canWrite) {
                 this._buffer.add(item);
+                boolean success = this._rwTag.compareAndSet(TAG_WRITE, TAG_NONE);
+                synchronized (this._locker) {
+                    this._locker.notifyAll();
+                }
+                if (! success) {
+                    throw new KernelException("Swich write model to normal model failed");
+                }
                 return true;
             }
         }
@@ -111,10 +122,13 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
         T item = null;
         do {
             item = readItem();
-            if (! isWait) {
+            if (item != null || ! isWait) {
                 break;
             }
-        } while (item != null);
+            synchronized (this._locker) {
+                this._locker.wait();
+            }
+        } while (item == null);
         return item;
     }
 
@@ -144,6 +158,10 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
             }
             if (canRead) {
                 T t = this._buffer.remove();
+                boolean success = this._rwTag.compareAndSet(TAG_READ, TAG_NONE);
+                if (! success) {
+                    throw new KernelException("Swich read model to normal model failed");
+                }
                 synchronized (this._locker) {
                     this._locker.notifyAll();
                 }

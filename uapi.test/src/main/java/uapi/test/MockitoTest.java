@@ -5,7 +5,7 @@ import org.junit.Ignore;
 import org.mockito.MockitoAnnotations;
 
 @Ignore
-public class TestBase {
+public class MockitoTest {
 
     @Before
     public void before() {

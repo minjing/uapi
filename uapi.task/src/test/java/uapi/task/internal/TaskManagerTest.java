@@ -12,9 +12,9 @@ import org.mockito.Mock;
 import uapi.log.ILogger;
 import uapi.task.INotifier;
 import uapi.task.ITask;
-import uapi.test.TestBase;
+import uapi.test.MockitoTest;
 
-public class TaskManagerTest extends TestBase {
+public class TaskManagerTest extends MockitoTest {
 
     @Mock private ILogger _logger;
     @Mock private TaskTransfer _taskTrans;

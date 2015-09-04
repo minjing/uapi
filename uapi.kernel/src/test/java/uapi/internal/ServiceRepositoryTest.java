@@ -10,9 +10,9 @@ import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
-import uapi.test.TestBase;
+import uapi.test.MockitoTest;
 
-public class ServiceRepositoryTest extends TestBase {
+public class ServiceRepositoryTest extends MockitoTest {
 
     private ServiceRepository _svcRepo;
 
