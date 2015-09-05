@@ -2,6 +2,10 @@ package uapi.task.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import uapi.IStateWatcher;
 import uapi.IStateful;
@@ -13,6 +17,7 @@ import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
 import uapi.task.INotifier;
+import uapi.task.ISerialTask;
 import uapi.task.ITask;
 import uapi.task.ITaskEmitter;
 import uapi.task.ITaskManager;
@@ -32,10 +37,12 @@ public final class TaskManager
 
     private final List<ITaskProducer> _taskProducers;
     private final TaskConverter _taskConverter;
+    private final Map<String, PriorityBlockingQueue<SerialTaskInfo>> _serialQueues;
 
     public TaskManager() {
         this._taskProducers = new ArrayList<>();
         this._taskConverter = new TaskConverter();
+        this._serialQueues = new ConcurrentHashMap<>();
     }
 
     public void setLogger(ILogger logger) {
@@ -59,15 +66,53 @@ public final class TaskManager
 
     @Override
     public void addTask(ITask task, INotifier notifier) {
-        ITask wrappedTask = this._taskConverter.convert(task, notifier);
-        this._taskTransfer.transferTask(wrappedTask);
+        if (task instanceof ISerialTask) {
+            addSerialTask((ISerialTask) task, notifier);
+        } else {
+            addNormalTask(task, notifier);
+        }
     }
 
     @Override
     public void registerProducer(ITaskProducer producer) {
-        ITaskEmitter taskEmitter = this._taskTransfer.createEmitter(this._taskConverter);
+        TaskEmitter taskEmitter = new TaskEmitter(this._taskConverter);
         producer.setEmitter(taskEmitter);
         this._taskProducers.add(producer);
+        this._taskTransfer.addTaskEmitter(taskEmitter);
+    }
+
+    private void addNormalTask(ITask task, INotifier notifier) {
+        ITask wrappedTask = this._taskConverter.convert(task, notifier);
+        this._taskTransfer.transferTask(wrappedTask);
+    }
+
+    private void addSerialTask(ISerialTask task, INotifier notifier) {
+        SerialTaskInfo taskInfo = new SerialTaskInfo(task, notifier);
+        String serialId = task.getSerialId();
+        PriorityBlockingQueue<SerialTaskInfo> taskInfos = 
+                this._serialQueues.putIfAbsent(serialId, new PriorityBlockingQueue<>());
+        taskInfos.add(taskInfo);
+    }
+
+    private static final class SerialTaskInfo {
+
+        private final ISerialTask _task;
+        private final INotifier _notifier;
+
+        private SerialTaskInfo(ISerialTask task, INotifier notifier) {
+            this._task = task;
+            this._notifier = notifier;
+        }
+    }
+
+    private final class CheckSerialQueueTask implements Runnable {
+
+        @Override
+        public void run() {
+            TaskManager.this._serialQueues.forEach((id, taskQueue) -> {
+                // TODO: 
+            });
+        }
     }
 
     private static final class NotifyStateTask implements ITask {
