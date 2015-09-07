@@ -1,8 +1,10 @@
 package uapi.task.internal;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
 /**
@@ -25,15 +27,22 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
     @SuppressWarnings("unchecked")
     public CircleBuffer(int capacity) {
         ArgumentChecker.checkInt(capacity, "capacity", 1, Integer.MAX_VALUE);
-        this._capacity = capacity;
-        this._items = new Item[capacity];
         this._idxWrite = new AtomicInteger(0);
         this._idxRead = new AtomicInteger(0);
+        this._capacity = capacity;
+        this._items = new Item[capacity];
+        for (int i = 0; i < capacity; i++) {
+            this._items[i] = new Item<>();
+        }
     }
 
     @Override
     public boolean write(T item) {
-        return write(item);
+        try {
+            return write(item, false);
+        } catch (InterruptedException e) {
+            throw new KernelException("Unpossiable exception was thrown");
+        }
     }
 
     @Override
@@ -47,12 +56,48 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
                     break;
                 }
             }
+            if (isWrite) {
+                this._items[idx]._waitWrite.release();
+                break;
+            }
             if (! isWait) {
                 break;
             }
-            // TODO: wait / notify
+            this._items[idx]._waitRead.acquire();
         } while (! isWrite);
         return isWrite;
+    }
+
+    @Override
+    public T read() {
+        try {
+            return read(false);
+        } catch (InterruptedException e) {
+            throw new KernelException("Unpossiable exception was thrown");
+        }
+    }
+
+    @Override
+    public T read(boolean isWait) throws InterruptedException {
+        T item = null;
+        int idx = getReadIndex();
+        do {
+            for (int i = 0; i < RETRY_LIMITATION; i++) {
+                item = tryRead(idx);
+                if (item != null) {
+                    break;
+                }
+            }
+            if (item != null) {
+                this._items[idx]._waitWrite.release();
+                break;
+            }
+            if (! isWait) {
+                break;
+            }
+            this._items[idx]._waitRead.acquire();
+        } while (item == null);
+        return item;
     }
 
     private int getWriteIndex() {
@@ -60,38 +105,48 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
         return idx;
     }
 
+    private int getReadIndex() {
+        int idx = this._idxRead.getAndIncrement() % this._capacity;
+        return idx;
+    }
+
     private boolean tryWrite(int idx, T item) throws InterruptedException {
-        if (this._items[idx] != null) {
+        if (this._items[idx].get() != null) {
             return false;
         }
-        this._items[idx] = new Item<T>(item);
-        return true;
+        return this._items[idx].compareAndSet(null, item);
     }
 
-    @Override
-    public T read() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public T read(boolean isWait) throws InterruptedException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    private final class Item<T> {
-
-        private final T _item;
-        private AtomicReference<Action> _action;
-
-        private Item(T item) {
-            this._item = item;
-            this._action = new AtomicReference<>(Action.NONE);
+    private T tryRead(int idx) throws InterruptedException {
+        if (this._items[idx] == null) {
+            return null;
+        }
+        T item = this._items[idx].get();
+        boolean isSet = this._items[idx].compareAndSet(item, null);
+        if (isSet) {
+            return item;
+        } else {
+            return null;
         }
     }
 
-    private enum Action {
-        READING, WRITING, NONE
+    private static final class Item<T> {
+
+        private AtomicReference<T> _item;
+        private final Semaphore _waitRead;
+        private final Semaphore _waitWrite;
+
+        private Item() {
+            this._waitRead = new Semaphore(0);
+            this._waitWrite = new Semaphore(0);
+        }
+
+        private boolean compareAndSet(T expect, T update) {
+            return this._item.compareAndSet(expect, update);
+        }
+
+        private T get() {
+            return this._item.get();
+        }
     }
 }

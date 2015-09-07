@@ -5,4 +5,12 @@
 
 Welcome to UAPI project!
 
-The UAPI project will provide a gernric framework and some basic facilities to make build application easily and fast.
+The UAPI (Universal Application Platform Infrastructure) project will provide a generic platfor/framework and some basic facilities to make build application easier and faster.
+
+It contains below components:
+* Kernel -
+* Config -
+* Log -
+* Job -
+* Flow -
+* Web -
