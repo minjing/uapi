@@ -121,13 +121,7 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
         if (this._items[idx] == null) {
             return null;
         }
-        T item = this._items[idx].get();
-        boolean isSet = this._items[idx].compareAndSet(item, null);
-        if (isSet) {
-            return item;
-        } else {
-            return null;
-        }
+        return this._items[idx].getAndSet(null);
     }
 
     private static final class Item<T> {
@@ -139,6 +133,11 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
         private Item() {
             this._waitRead = new Semaphore(0);
             this._waitWrite = new Semaphore(0);
+            this._item = new AtomicReference<>();
+        }
+
+        private T getAndSet(T newValue) {
+            return this._item.getAndSet(newValue);
         }
 
         private boolean compareAndSet(T expect, T update) {
