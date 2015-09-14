@@ -8,9 +8,9 @@ Welcome to UAPI project!
 The UAPI (Universal Application Platform Infrastructure) project will provide a generic platfor/framework and some basic facilities to make build application easier and faster.
 
 It contains below components:
-* Kernel -
-* Config -
-* Log -
-* Job -
-* Flow -
-* Web -
+* Kernel - The framework core, it contains a simple DI based on Annotation
+* Config - The configuration framework
+* Log - The log framework
+* Job - The multiple thread handling framework
+* Flow - The generic work flow framework
+* Web - The web framework

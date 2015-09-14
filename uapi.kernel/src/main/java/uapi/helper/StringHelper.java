@@ -13,25 +13,35 @@ public final class StringHelper {
         }
         StringBuilder buffer = new StringBuilder();
         boolean foundVarStart = false;
-        int idxVar = 0;
+        int idxDef = 0;
+        String idxSpecified = "";
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (c == VAR_START) {
                 foundVarStart = true;
             } else if (c == VAR_END) {
                 if (foundVarStart) {
-                    if (args.length <= idxVar) {
-                        throw new IllegalArgumentException("");
+                    if (! Strings.isNullOrEmpty(idxSpecified)) {
+                        idxDef = Integer.parseInt(idxSpecified);
+                        idxSpecified = "";
                     }
-                    buffer.append(args[idxVar]);
+                    if (args.length <= idxDef) {
+                        throw new IllegalArgumentException("No parameter for index - " + idxDef);
+                    }
+                    buffer.append(args[idxDef]);
                     foundVarStart = false;
-                    idxVar++;
+                    idxDef++;
                 } else {
                     buffer.append(c);
                 }
             } else {
                 if (foundVarStart) {
-                    buffer.append(VAR_START);
+                    if (c >= '0' && c <= '9') {
+                        idxSpecified += c;
+                        continue;
+                    }
+                    buffer.append(VAR_START).append(idxSpecified);
+                    idxSpecified = "";
                     foundVarStart = false;
                 }
                 buffer.append(c);
