@@ -5,7 +5,7 @@ package uapi.task.internal;
  * 
  * @author min
  */
-public interface IWriteableBuffer<T> {
+public interface IWritableBuffer<T> {
 
     /**
      * Write item to buffer, if write failed it will return false;

@@ -14,9 +14,10 @@ import uapi.helper.ArgumentChecker;
  *
  * @param <T> The item type which can be put in the buffer
  */
-public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
+public class CircleBuffer<T> implements IReadableBuffer<T>, IWritableBuffer<T> {
 
     private static final int RETRY_LIMITATION   = 16;
+    private static final int NO_INDEX           = -1;
 
     private final int _capacity;
     private final Item<T>[] _items;
@@ -57,13 +58,12 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
                 }
             }
             if (isWrite) {
+                this._items[idx]._waitRead.release();
+            } else if (isWait) {
                 this._items[idx]._waitWrite.release();
+            } else {
                 break;
             }
-            if (! isWait) {
-                break;
-            }
-            this._items[idx]._waitRead.acquire();
         } while (! isWrite);
         return isWrite;
     }
@@ -73,15 +73,15 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
         try {
             return read(false);
         } catch (InterruptedException e) {
-            throw new KernelException("Unpossiable exception was thrown");
+            throw new KernelException("Impossible exception was thrown");
         }
     }
 
     @Override
     public T read(boolean isWait) throws InterruptedException {
         T item = null;
-        int idx = getReadIndex();
         do {
+            int idx = getReadIndex();
             for (int i = 0; i < RETRY_LIMITATION; i++) {
                 item = tryRead(idx);
                 if (item != null) {
@@ -90,18 +90,20 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> 
             }
             if (item != null) {
                 this._items[idx]._waitWrite.release();
+            } else if (isWait) {
+                this._items[idx]._waitRead.acquire();
+            } else {
                 break;
             }
-            if (! isWait) {
-                break;
-            }
-            this._items[idx]._waitRead.acquire();
         } while (item == null);
         return item;
     }
 
     private int getWriteIndex() {
         int idx = this._idxWrite.getAndIncrement() % this._capacity;
+        if (idx <= this._idxRead.get()) {
+
+        }
         return idx;
     }
 

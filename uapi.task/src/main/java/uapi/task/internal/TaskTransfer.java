@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import uapi.KernelException;
 import uapi.log.ILogger;
 import uapi.service.IService;
 import uapi.service.Inject;
 import uapi.task.ITask;
 
 class TaskTransfer
-    implements ITaskTransfer, IService{
+    implements ITaskTransfer, IService {
 
     private static final int TASK_QUEUE_CAPACITY    = 32;
+    private static final int WAIT_TIME              = 1000;
 
     @Inject
     private ILogger _logger;
@@ -21,6 +23,7 @@ class TaskTransfer
     private final List<TaskRunner> _taskRunners;
 
     private final TransferTaskJob _transferJob;
+    private Thread _transferThread;
 
     TaskTransfer() {
         this._taskEmitters = new CopyOnWriteArrayList<>();
@@ -38,6 +41,18 @@ class TaskTransfer
 
     void addTaskRunner(TaskRunner taskRunner) {
         this._taskRunners.add(taskRunner);
+    }
+
+    void start() {
+        this._transferThread = new Thread(this._transferJob);
+        this._transferThread.start();
+    }
+
+    void stop() {
+        if (this._transferThread == null) {
+            throw new KernelException("No thread can be stopped.");
+        }
+        this._transferThread.interrupt();
     }
 
     @Override
@@ -60,7 +75,11 @@ class TaskTransfer
             int idxRunner = 0;
 
             while (true) {
-                for (; idxEmitter < TaskTransfer.this._taskEmitters.size() ; idxEmitter++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    TaskTransfer.this._logger.warn("Receive interrupted signal, the thread will exit.");
+                    return;
+                }
+                for (; idxEmitter < TaskTransfer.this._taskEmitters.size(); idxEmitter++) {
                     TaskEmitter taskEmitter = TaskTransfer.this._taskEmitters.get(idxEmitter);
                     IReadableBuffer<ITask> buffer = taskEmitter.getBuffer();
                     ITask task = buffer.read();
@@ -74,18 +93,23 @@ class TaskTransfer
                 }
                 idxEmitter = idxEmitter % TaskTransfer.this._taskEmitters.size();
                 if (this._taskCache.isEmpty()) {
-                    // TODO: Maybe we can wait for while
+                    try {
+                        Thread.sleep(WAIT_TIME);
+                    } catch (InterruptedException e) {
+                        TaskTransfer.this._logger.error(e, "Encounter InterruptedException when wait receive task, thread will exit.");
+                        return;
+                    }
                     continue;
                 }
                 ITask task = null;
                 for (; idxRunner < TaskTransfer.this._taskRunners.size(); idxRunner++) {
                     TaskRunner taskRunner = TaskTransfer.this._taskRunners.get(idxRunner);
-                    IWriteableBuffer<ITask> wbuffer = taskRunner.getBuffer();
+                    IWritableBuffer<ITask> wbuffer = taskRunner.getBuffer();
                     if (task == null) {
                         try {
                             task = this._taskCache.take();
                         } catch (InterruptedException e) {
-                            TaskTransfer.this._logger.error(e, "Encounter an exception when take the task");
+                            TaskTransfer.this._logger.error(e, "Encounter InterruptedException when take the task, thread will exit.");
                             return;
                         }
                     }

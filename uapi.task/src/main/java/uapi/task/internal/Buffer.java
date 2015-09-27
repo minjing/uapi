@@ -15,7 +15,7 @@ import uapi.helper.ArgumentChecker;
  *
  * @param <T>   The item type
  */
-public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
+public class Buffer<T> implements IReadableBuffer<T>, IWritableBuffer<T> {
 
     // The tag means the buffer is at free state, it can be convert to read or write model
     private static final int TAG_NONE   = 0;
@@ -160,7 +160,7 @@ public class Buffer<T> implements IReadableBuffer<T>, IWriteableBuffer<T> {
                 T t = this._buffer.remove();
                 boolean success = this._rwTag.compareAndSet(TAG_READ, TAG_NONE);
                 if (! success) {
-                    throw new KernelException("Swich read model to normal model failed");
+                    throw new KernelException("Switch read model to normal model failed");
                 }
                 synchronized (this._locker) {
                     this._locker.notifyAll();

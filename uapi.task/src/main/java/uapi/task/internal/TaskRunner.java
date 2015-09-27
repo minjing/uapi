@@ -15,7 +15,7 @@ public class TaskRunner implements Runnable {
         this._buffer = new Buffer<>();
     }
 
-    IWriteableBuffer<ITask> getBuffer() {
+    IWritableBuffer<ITask> getBuffer() {
         return this._buffer;
     }
 
@@ -28,7 +28,6 @@ public class TaskRunner implements Runnable {
             } catch (Exception ex) {
                 notify(task, ex);
             }
-            
         }
     }
 

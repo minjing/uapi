@@ -3,8 +3,6 @@ package uapi.helper;
 import org.junit.Assert;
 import org.junit.Test;
 
-import uapi.helper.StringHelper;
-
 public class StringHelperTest {
 
     private final String[] msgs = new String[] {
