@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':uapi.kernel.injector')
+    compile 'org.freemarker:freemarker:2.3.23'
 }
 
 jar {
