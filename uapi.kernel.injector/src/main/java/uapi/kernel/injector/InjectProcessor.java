@@ -12,8 +12,15 @@ import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.util.Set;
 
+import static java.util.Collections.singleton;
+
 @SupportedAnnotationTypes({ "uapi.kernel.injector.Inject" })
 public class InjectProcessor extends AbstractProcessor {
+
+    @Override
+    public Set getSupportedAnnotationTypes() {
+        return singleton(Inject.class.getCanonicalName());
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
