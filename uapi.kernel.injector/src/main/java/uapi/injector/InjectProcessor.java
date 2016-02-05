@@ -1,29 +1,26 @@
-package uapi.kernel.injector;
+package uapi.injector;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Messager;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.SourceVersion;
+import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
+import uapi.AnnotationProcessor;
+
+import javax.annotation.processing.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-import java.io.BufferedWriter;
 import java.util.Set;
 
-import static java.util.Collections.singleton;
-
-@SupportedAnnotationTypes({ "uapi.kernel.injector.Inject" })
-public class InjectProcessor extends AbstractProcessor {
+@AutoService(Processor.class)
+public class InjectProcessor extends AnnotationProcessor {
 
     @Override
-    public Set getSupportedAnnotationTypes() {
-        return singleton(Inject.class.getCanonicalName());
+    public Set<String> getSupportedAnnotationTypes() {
+        return ImmutableSet.of(Inject.class.getCanonicalName());
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        log("start");
         Messager messager = processingEnv.getMessager();
         Set<? extends Element> elmts = roundEnv.getElementsAnnotatedWith(Inject.class);
         for (Element elmt : elmts) {
@@ -33,10 +30,19 @@ public class InjectProcessor extends AbstractProcessor {
                     elmtModifiers.contains(Modifier.PRIVATE)) {
                 messager.printMessage(Diagnostic.Kind.ERROR, "Field must not be private, static or final");
             }
+
             Element parentClass = elmt.getEnclosingElement();
             Name fieldName = elmt.getSimpleName();
             TypeMirror fieldType = elmt.asType();
+
+            Setter setter = new Setter();
+            setter.setClassName(parentClass.getSimpleName() + "_Bean");
+            setter.setSuperClassName(parentClass.getSimpleName().toString());
+            setter.setFieldName(fieldName.toString());
+            setter.setFieldTypeName(fieldType.toString());
+            log(setter.toString());
         }
+        log("end");
 
 //        for (TypeElement te : annotations) {
 //            for (Element e : roundEnv.getElementsAnnotatedWith(te)) {
@@ -66,10 +72,5 @@ public class InjectProcessor extends AbstractProcessor {
 //        }
 
         return true;
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latestSupported();
     }
 }
