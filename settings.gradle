@@ -1,1 +1,2 @@
+include 'uapi.kernel.injector'
 include 'uapi.test', 'uapi.kernel', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.sample'

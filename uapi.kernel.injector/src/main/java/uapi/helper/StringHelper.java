@@ -13,38 +13,47 @@ public final class StringHelper {
         }
         StringBuilder buffer = new StringBuilder();
         boolean foundVarStart = false;
-        int idxDef = 0;
-        String idxSpecified = "";
+        int idxVar = 0;
+        int tmpIdx = -1;
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             if (c == VAR_START) {
                 foundVarStart = true;
             } else if (c == VAR_END) {
                 if (foundVarStart) {
-                    if (! Strings.isNullOrEmpty(idxSpecified)) {
-                        idxDef = Integer.parseInt(idxSpecified);
-                        idxSpecified = "";
+                    if (tmpIdx != -1) {
+                        idxVar = tmpIdx;
                     }
-                    if (args.length <= idxDef) {
-                        throw new IllegalArgumentException("No parameter for index - " + idxDef);
+                    if (args.length <= idxVar) {
+                        throw new IllegalArgumentException("The argument index is more than argument count");
                     }
-                    buffer.append(args[idxDef]);
+                    buffer.append(args[idxVar]);
                     foundVarStart = false;
-                    idxDef++;
+                    idxVar++;
+                    tmpIdx = -1;
                 } else {
                     buffer.append(c);
                 }
             } else {
                 if (foundVarStart) {
                     if (c >= '0' && c <= '9') {
-                        idxSpecified += c;
-                        continue;
+                        if (tmpIdx == -1) {
+                            tmpIdx = 0;
+                        }
+                        tmpIdx = tmpIdx * 10 + Character.getNumericValue(c);
+                    } else {
+                        buffer.append(VAR_START);
+                        if (tmpIdx != -1) {
+                            buffer.append(tmpIdx);
+                            tmpIdx = -1;
+                        } else {
+                            buffer.append(c);
+                        }
+                        foundVarStart = false;
                     }
-                    buffer.append(VAR_START).append(idxSpecified);
-                    idxSpecified = "";
-                    foundVarStart = false;
+                } else {
+                    buffer.append(c);
                 }
-                buffer.append(c);
             }
         }
         return buffer.toString();
