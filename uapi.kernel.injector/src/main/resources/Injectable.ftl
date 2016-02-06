@@ -1,6 +1,8 @@
 package ${packageName}
 
-public final class ${className} extends ${superClassName} {
+import uapi.injector.IInjectable;
+
+public final class ${className} extends ${superClassName} implements IInjectable {
 
     public ${className}() { }
 
@@ -15,4 +17,16 @@ public final class ${className} extends ${superClassName} {
     }
     </#if>
 </#list>
+
+    @Override
+    public Class<?>[] getDependentClasses() {
+<#list setters as setter>
+
+</#list>
+        return null;
+    }
+
+    @Override
+    public void inject(Object service) {
+    }
 }
