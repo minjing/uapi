@@ -13,8 +13,8 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
 import uapi.InvalidArgumentException;
-import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.KernelException;
 import uapi.helper.ClassHelper;
 import uapi.helper.Executor;
 import uapi.service.IAnnotationMethodHandler;

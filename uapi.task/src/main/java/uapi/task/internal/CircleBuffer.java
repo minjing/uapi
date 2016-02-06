@@ -1,11 +1,11 @@
 package uapi.task.internal;
 
+import uapi.KernelException;
+import uapi.helper.ArgumentChecker;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import uapi.KernelException;
-import uapi.helper.ArgumentChecker;
 
 /**
  * A buffer that support multiple read write threads

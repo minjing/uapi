@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import uapi.IStateWatcher;
@@ -19,7 +18,6 @@ import uapi.service.Type;
 import uapi.task.INotifier;
 import uapi.task.ISerialTask;
 import uapi.task.ITask;
-import uapi.task.ITaskEmitter;
 import uapi.task.ITaskManager;
 import uapi.task.ITaskProducer;
 

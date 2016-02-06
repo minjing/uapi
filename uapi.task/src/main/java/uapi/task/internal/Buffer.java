@@ -1,11 +1,11 @@
 package uapi.task.internal;
 
+import uapi.KernelException;
+import uapi.helper.ArgumentChecker;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import uapi.KernelException;
-import uapi.helper.ArgumentChecker;
 
 /**
  * A buffer is a fifo queue wrapper, it only support read/write at TWO threads environment.

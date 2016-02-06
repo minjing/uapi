@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import uapi.InvalidArgumentException;
-import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.KernelException;
 
 public class AnnotatedMethod {
 

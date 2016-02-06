@@ -1,6 +1,8 @@
 dependencies {
     compile 'com.google.auto.service:auto-service:1.0-rc2'
     compile 'org.freemarker:freemarker:2.3.23'
+
+    compile project(':uapi.kernel')
 }
 
 jar {

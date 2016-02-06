@@ -1,5 +1,4 @@
 dependencies {
-    compile project(':uapi.kernel.injector')
     testCompile project(':uapi.test')
 }
 

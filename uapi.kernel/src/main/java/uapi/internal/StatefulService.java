@@ -12,8 +12,8 @@ import com.google.common.base.Strings;
 
 import uapi.InvalidArgumentException;
 import uapi.InvalidStateException;
-import uapi.KernelException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.KernelException;
 import uapi.helper.ChangeableBoolean;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
