@@ -3,9 +3,13 @@ package uapi.injector;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import uapi.AnnotationProcessor;
+import uapi.helper.StringHelper;
 import uapi.injector.helper.ServiceHelper;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
@@ -13,6 +17,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.tools.FileObject;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
+import java.io.File;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -38,9 +47,53 @@ public class InjectProcessor extends AnnotationProcessor {
     }
 
     private void generateService(Map<String, ServiceMeta.Builder> serviceBuilders) {
-        serviceBuilders.forEach((qualifiedSvcName, svcBuilder) -> {
-
-        });
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
+        cfg.setDefaultEncoding("UTF-8");
+        cfg.setLocalizedLookup(false);
+        cfg.setTemplateLoader(new CompileTimeTemplateLoader(processingEnv, StringHelper.EMPTY));
+//        try {
+//            cfg.setDirectoryForTemplateLoading(
+//                    new File("/Users/min/workspace/repo/projects/uapi/uapi.kernel.injector/src/main/resources"));
+//        } catch (Exception ex) {
+//            error(ex);
+//        }
+//        try {
+//            Filer filer = processingEnv.getFiler();
+//            FileObject fObj = filer.getResource(StandardLocation.CLASS_PATH, "", "injectable.ftl");
+//            log(fObj.getName());
+//        } catch (Exception ex) {
+//            error(ex);
+//        }
+//        cfg.setClassForTemplateLoading(InjectProcessor.class, StringHelper.EMPTY);
+        Template temp;
+        try {
+            temp = cfg.getTemplate("injectable.ftl");
+        } catch (Exception ex) {
+            error(ex);
+            return;
+        }
+        for (Map.Entry<String, ServiceMeta.Builder> svcBuilderEntry : serviceBuilders.entrySet()) {
+            Writer srcWriter = null;
+            try {
+                ServiceMeta svcMeta = svcBuilderEntry.getValue().build();
+                JavaFileObject fileObj = processingEnv.getFiler().createSourceFile(
+                        svcMeta.getGeneratedClassName()
+                );
+                srcWriter = fileObj.openWriter();
+                temp.process(svcMeta, srcWriter);
+            } catch (Exception ex) {
+                error(ex);
+                return;
+            } finally {
+                if (srcWriter != null) {
+                    try {
+                        srcWriter.close();
+                    } catch (Exception ex) {
+                        error(ex);
+                    }
+                }
+            }
+        }
     }
 
     private Map<String, ServiceMeta.Builder> parseServices(Set<? extends Element> fieldElmts) {
@@ -66,12 +119,14 @@ public class InjectProcessor extends AnnotationProcessor {
 
                 PackageElement pkgElem = elemtUtil.getPackageOf(fieldElmt);
                 String svcClassName = classElement.getSimpleName().toString();
-                ServiceMeta.Builder builder = svcBuilders.get(svcClassName);
+                String key = pkgElem.getSimpleName().toString() + "." + svcClassName;
+                ServiceMeta.Builder builder = svcBuilders.get(key);
                 if (builder == null) {
                     builder = ServiceMeta.builder()
                             .setServicePackageName(pkgElem.getQualifiedName().toString())
                             .setServiceClassName(classElement.getSimpleName().toString())
                             .setGeneratedClassName(ServiceHelper.generateServiceName(svcClassName));
+                    svcBuilders.put(key, builder);
                 }
                 String fieldType = fieldElmt.asType().toString();
                 String injectSvcId = fieldType;
@@ -86,7 +141,6 @@ public class InjectProcessor extends AnnotationProcessor {
                         .build());
 
                 log(builder.toString());
-                svcBuilders.put(builder.getGeneratedClassName(), builder);
             }
         } catch (Exception ex) {
             error(ex);

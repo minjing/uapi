@@ -9,4 +9,7 @@ public class Test3 {
 
     @Inject
     int field3;
+
+    @Inject
+    String field4_3;
 }

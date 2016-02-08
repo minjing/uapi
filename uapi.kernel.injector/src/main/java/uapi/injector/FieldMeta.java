@@ -23,8 +23,8 @@ public class FieldMeta {
         return this._builder._injectServiceId;
     }
 
-    public boolean isList() {
-        return false;
+    public boolean getIsList() {
+        return this._builder._isList;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class FieldMeta {
         }
 
         @Override
-        public FieldMeta buildInstance() {
+        protected FieldMeta buildInstance() {
             checkStatus();
             ArgumentChecker.required(this._fieldName, "fieldName");
             ArgumentChecker.required(this._fieldTypeName, "fieldTypeName");

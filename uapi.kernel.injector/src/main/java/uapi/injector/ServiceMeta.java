@@ -87,7 +87,7 @@ public final class ServiceMeta {
         }
 
         @Override
-        public ServiceMeta buildInstance() {
+        protected ServiceMeta buildInstance() {
             ArgumentChecker.required(this._svcPackageName, "servicePackageName");
             ArgumentChecker.required(this._svcClassName, "serviceClassName");
             ArgumentChecker.required(this._generatedClassName, "generatedClassName");
