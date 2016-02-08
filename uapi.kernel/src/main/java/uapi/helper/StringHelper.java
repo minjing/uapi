@@ -4,8 +4,12 @@ import com.google.common.base.Strings;
 
 public final class StringHelper {
 
+    public static final String EMPTY    = "";
+
     private static final char VAR_START = '{';
     private static final char VAR_END   = '}';
+
+    private StringHelper() { }
 
     public static String makeString(String str, Object... args) {
         if (Strings.isNullOrEmpty(str)) {

@@ -9,11 +9,24 @@ public interface IServiceRegistry {
      * Find specific service based on specified service type
      * from the service registry
      *
-     * @param   serviceType
-     *          The specific service type
+     * @param   serviceId
+     *          The specific service id
      * @param   <T>
      *          The service type
      * @return  The specific service instance or null
      */
-    <T> T findService(Class<T> serviceType);
+    <T> T findService(String serviceId);
+
+    /**
+     * The IInjectable should be replaced by IService interface
+     * @param service
+     */
+    void register(uapi.IService service);
+
+    /**
+     * The method is used for registering service which is from outside of framework
+     * @param serviceId
+     * @param service
+     */
+    void register(String serviceId, Object service);
 }

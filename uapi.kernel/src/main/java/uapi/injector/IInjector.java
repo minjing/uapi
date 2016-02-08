@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface IInjector {
 
-    void inject(List<IInjectable> services, IServiceRegistry serviceRegistry);
+    void resolve(List<IInjectable> services, IServiceRegistry serviceRegistry);
 }

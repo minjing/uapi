@@ -1,6 +1,8 @@
 package uapi.injector;
 
-import uapi.service.IService;
+import uapi.IService;
+
+import java.util.List;
 
 /**
  * The service can be inject other services
@@ -12,7 +14,7 @@ public interface IInjectable extends IService {
      *
      * @return  Dependent service classes list
      */
-    Class<?>[] getDependentClasses();
+    List<String> getDependencies();
 
     /**
      * Inject specific service to this service
