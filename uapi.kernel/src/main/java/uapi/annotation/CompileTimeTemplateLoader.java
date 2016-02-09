@@ -1,4 +1,4 @@
-package uapi.injector;
+package uapi.annotation;
 
 import freemarker.cache.TemplateLoader;
 import uapi.KernelException;
@@ -23,20 +23,24 @@ public class CompileTimeTemplateLoader implements TemplateLoader {
             final String basePackagePath
     ) {
         ArgumentChecker.required(processingEnvironment, "processingEnvironment");
-//        ArgumentChecker.required(basePackagePath, "basePackagePath");
         this._procEnv = processingEnvironment;
         this._basePkgPath = basePackagePath;
     }
 
     @Override
-    public Object findTemplateSource(String name) throws IOException {
+    public Object findTemplateSource(
+            final String name
+    ) throws IOException {
+        ArgumentChecker.required(name, "name");
         FileObject fObj = this._procEnv.getFiler().getResource(
                 StandardLocation.CLASS_PATH, this._basePkgPath, name);
         return fObj;
     }
 
     @Override
-    public long getLastModified(Object templateSource) {
+    public long getLastModified(
+            final Object templateSource
+    ) {
         if (! (templateSource instanceof FileObject)) {
             throw new KernelException(
                     "The input must be a FileObject - {}",
@@ -47,7 +51,10 @@ public class CompileTimeTemplateLoader implements TemplateLoader {
     }
 
     @Override
-    public Reader getReader(Object templateSource, String encoding) throws IOException {
+    public Reader getReader(
+            final Object templateSource,
+            final String encoding
+    ) throws IOException {
         if (! (templateSource instanceof FileObject)) {
             throw new KernelException(
                     "The input must be a FileObject - {}",
@@ -58,7 +65,9 @@ public class CompileTimeTemplateLoader implements TemplateLoader {
     }
 
     @Override
-    public void closeTemplateSource(Object templateSource) throws IOException {
+    public void closeTemplateSource(
+            final Object templateSource
+    ) throws IOException {
         // Do nothing
     }
 }

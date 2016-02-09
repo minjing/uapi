@@ -1,4 +1,4 @@
-package uapi.injector;
+package uapi.annotation;
 
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
@@ -11,12 +11,12 @@ public class FieldMeta {
         this._builder = builder;
     }
 
-    public String getFieldName() {
-        return this._builder._fieldName;
+    public String getName() {
+        return this._builder._name;
     }
 
-    public String getFieldTypeName() {
-        return this._builder._fieldTypeName;
+    public String getTypeName() {
+        return this._builder._typeName;
     }
 
     public String getInjectServiceId() {
@@ -41,24 +41,24 @@ public class FieldMeta {
      */
     public static final class Builder extends uapi.helper.Builder<FieldMeta> {
 
-        private String _fieldName;
-        private String _fieldTypeName;
+        private String _name;
+        private String _typeName;
         private String _injectServiceId;
         private boolean _isList;
 
-        public Builder setFieldName(
-                final String fieldName
+        public Builder setName(
+                final String name
         ) {
             checkStatus();
-            this._fieldName = fieldName;
+            this._name = name;
             return this;
         }
 
-        public Builder setFieldTypeName(
-                final String fieldTypeName
+        public Builder setTypeName(
+                final String typeName
         ) {
             checkStatus();
-            this._fieldTypeName = fieldTypeName;
+            this._typeName = typeName;
             return this;
         }
 
@@ -81,8 +81,8 @@ public class FieldMeta {
         @Override
         protected FieldMeta buildInstance() {
             checkStatus();
-            ArgumentChecker.required(this._fieldName, "fieldName");
-            ArgumentChecker.required(this._fieldTypeName, "fieldTypeName");
+            ArgumentChecker.required(this._name, "fieldName");
+            ArgumentChecker.required(this._typeName, "fieldTypeName");
             ArgumentChecker.required(this._injectServiceId, "injectServiceId");
             return new FieldMeta(this);
         }
@@ -91,7 +91,7 @@ public class FieldMeta {
         public String toString() {
             return StringHelper.makeString(
                     "fieldName={}\nfieldTypeName={}\ninjectServiceId={}",
-                    this._fieldName, this._fieldTypeName, this._injectServiceId);
+                    this._name, this._typeName, this._injectServiceId);
         }
     }
 }

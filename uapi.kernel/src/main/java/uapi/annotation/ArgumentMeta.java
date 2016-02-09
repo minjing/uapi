@@ -1,0 +1,79 @@
+package uapi.annotation;
+
+import uapi.InvalidArgumentException;
+import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
+
+/**
+ * A meta object for actual argument
+ */
+public class ArgumentMeta {
+
+    private final Builder _builder;
+
+    private ArgumentMeta(
+            final Builder builder
+    ) {
+        this._builder = builder;
+    }
+
+    public String getName() {
+        return this._builder._name;
+    }
+
+    public String getValue() {
+        return this._builder._value;
+    }
+
+    public boolean getIsString() {
+        return this._builder._isString;
+    }
+
+    public static final class Builder
+            extends uapi.helper.Builder<ArgumentMeta> {
+
+        private String _name;
+        private String _value;
+        private boolean _isString;
+
+        public Builder setName(
+                final String name
+        ) {
+            super.checkStatus();
+            this._name = name;
+            return this;
+        }
+
+        public Builder setValue(
+                final String value
+        ) {
+            super.checkStatus();
+            this._value = value;
+            return this;
+        }
+
+        public Builder setIsString(
+                final boolean isString
+        ) {
+            super.checkStatus();
+            this._isString = isString;
+            return this;
+        }
+
+        @Override
+        protected ArgumentMeta buildInstance(
+        ) throws InvalidArgumentException {
+            ArgumentChecker.notEmpty(this._name, "name");
+            ArgumentChecker.notNull(this._value, "value");
+            return new ArgumentMeta(this);
+        }
+
+        @Override
+        public String toString() {
+            return StringHelper.makeString(
+                    "ArgumentMeta[name={}, value={}, isString={}]",
+                    this._name, this._value, this._isString
+            );
+        }
+    }
+}

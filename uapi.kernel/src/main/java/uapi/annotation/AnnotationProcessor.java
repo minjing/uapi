@@ -1,19 +1,35 @@
-package uapi;
+package uapi.annotation;
 
+import com.google.common.collect.ImmutableSet;
 import uapi.helper.ExceptionHelper;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import java.util.Set;
 
-public abstract class AnnotationProcessor extends AbstractProcessor {
+public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latestSupported();
+    }
+
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return ImmutableSet.of(
+                NotNull.class.getCanonicalName(),
+                NotEmpty.class.getCanonicalName());
+    }
+
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        return false;
     }
 
     protected void log(String msg) {

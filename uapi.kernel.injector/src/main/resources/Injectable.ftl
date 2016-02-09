@@ -1,4 +1,4 @@
-package ${servicePackageName};
+package ${packageName};
 
 import com.google.auto.service.AutoService;
 
@@ -11,12 +11,12 @@ import uapi.helper.ArgumentChecker;
 import uapi.injector.IInjectable;
 
 @AutoService(IService.class)
-public final class ${generatedClassName} extends ${serviceClassName} implements IInjectable {
+public final class ${generatedClassName} extends ${className} implements IInjectable {
 
     private final String _svcId;
 
     public ${generatedClassName}() {
-        this._svcId = "${serviceClassName}";
+        this._svcId = "${packageName}.${className}";
     }
 
     @Override
@@ -24,14 +24,14 @@ public final class ${generatedClassName} extends ${serviceClassName} implements 
         return this._svcId;
     }
 
-<#list fieldMetas as fieldMeta>
-    <#if fieldMeta.isList>
-    public void add${fieldMeta.fieldName}(${fieldMeta.fieldTypeName} obj) {
-        this.${fieldMeta.fieldName}.add(obj);
+<#list fields as field>
+    <#if field.isList>
+    public void add${field.name}(${field.typeName} obj) {
+        this.${field.name}.add(obj);
     }
     <#else>
-    public void set${fieldMeta.fieldName}(${fieldMeta.fieldTypeName} obj) {
-        this.${fieldMeta.fieldName} = obj;
+    public void set${field.name}(${field.typeName} obj) {
+        this.${field.name} = obj;
     }
     </#if>
 </#list>
@@ -39,8 +39,8 @@ public final class ${generatedClassName} extends ${serviceClassName} implements 
     @Override
     public List<String> getDependencies() {
         List<String> dependencies = new ArrayList<>();
-<#list fieldMetas as fieldMeta>
-        dependencies.add("${fieldMeta.fieldTypeName}");
+<#list fields as field>
+        dependencies.add("${field.typeName}");
 </#list>
         return dependencies;
     }
@@ -56,12 +56,12 @@ public final class ${generatedClassName} extends ${serviceClassName} implements 
             serviceId = service.getClass().getName();
         }
         switch (serviceId) {
-<#list fieldMetas as fieldMeta>
-        case "${fieldMeta.injectServiceId}":
-     <#if fieldMeta.isList>
-            add${fieldMeta.fieldName}((${fieldMeta.fieldTypeName}) service);
+<#list fields as field>
+        case "${field.injectServiceId}":
+     <#if field.isList>
+            add${field.name}((${field.typeName}) service);
      <#else>
-            set${fieldMeta.fieldName}((${fieldMeta.fieldTypeName}) service);
+            set${field.name}((${field.typeName}) service);
      </#if>
             break;
 </#list>
