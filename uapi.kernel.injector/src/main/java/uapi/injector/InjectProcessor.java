@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-//@AutoService(Processor.class)
+//@AutoService()
 public class InjectProcessor extends AnnotationProcessor {
 
     @Override
@@ -33,13 +33,13 @@ public class InjectProcessor extends AnnotationProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        log("Start processing Inject annotation");
+        this._logger.info("Start processing Inject annotation");
 
-        Set<? extends Element> fieldElmts = roundEnv.getElementsAnnotatedWith(Inject.class);
-        Map<String, ClassMeta.Builder> svcBuilders = parseServices(fieldElmts);
-        generateService(svcBuilders);
+//        Set<? extends Element> fieldElmts = roundEnv.getElementsAnnotatedWith(Inject.class);
+//        Map<String, ClassMeta.Builder> svcBuilders = parseServices(fieldElmts);
+//        generateService(svcBuilders);
 
-        log("End processing");
+        this._logger.info("End processing");
         return true;
     }
 
@@ -52,7 +52,7 @@ public class InjectProcessor extends AnnotationProcessor {
         try {
             temp = cfg.getTemplate("injectable.ftl");
         } catch (Exception ex) {
-            error(ex);
+            this._logger.error(ex);
             return;
         }
         for (Map.Entry<String, ClassMeta.Builder> svcBuilderEntry : serviceBuilders.entrySet()) {
@@ -65,14 +65,14 @@ public class InjectProcessor extends AnnotationProcessor {
                 srcWriter = fileObj.openWriter();
                 temp.process(svcMeta, srcWriter);
             } catch (Exception ex) {
-                error(ex);
+                this._logger.error(ex);
                 return;
             } finally {
                 if (srcWriter != null) {
                     try {
                         srcWriter.close();
                     } catch (Exception ex) {
-                        error(ex);
+                        this._logger.error(ex);
                     }
                 }
             }
@@ -117,16 +117,16 @@ public class InjectProcessor extends AnnotationProcessor {
                 if (!Strings.isNullOrEmpty(injectAnno.value())) {
                     injectSvcId = injectAnno.value();
                 }
-                builder.addProperty(FieldMeta.builder()
-                        .setName(fieldElmt.getSimpleName().toString())
-                        .setTypeName(fieldType)
-                        .setInjectServiceId(injectSvcId)
-                        .build());
+//                builder.addProperty(FieldMeta.builder()
+//                        .setName(fieldElmt.getSimpleName().toString())
+//                        .setTypeName(fieldType)
+//                        .setInjectServiceId(injectSvcId)
+//                        .build());
 
-                log(builder.toString());
+                this._logger.info(builder.toString());
             }
         } catch (Exception ex) {
-            error(ex);
+            this._logger.error(ex);
         }
         return svcBuilders;
     }
