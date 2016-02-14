@@ -30,3 +30,7 @@ subprojects {
 
     check.dependsOn jacocoTestReport
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.11'
+}
