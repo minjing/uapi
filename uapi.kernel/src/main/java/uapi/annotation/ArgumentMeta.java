@@ -7,7 +7,7 @@ import uapi.helper.StringHelper;
 /**
  * A meta object for actual argument
  */
-public class ArgumentMeta {
+public final class ArgumentMeta {
 
     private final Builder _builder;
 
@@ -29,7 +29,7 @@ public class ArgumentMeta {
         return this._builder._isString;
     }
 
-    public static final class Builder
+    static final class Builder
             extends uapi.helper.Builder<ArgumentMeta> {
 
         private String _name;

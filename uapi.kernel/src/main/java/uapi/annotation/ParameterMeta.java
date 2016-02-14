@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * A meta object for a formal parameter
  */
-public class ParameterMeta {
+public final class ParameterMeta {
 
     private final Builder _builder;
 

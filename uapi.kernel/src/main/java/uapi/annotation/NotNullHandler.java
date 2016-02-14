@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * Created by min on 16/2/10.
  */
-public class NotNullHandler extends AnnotationHandler<NotNull> {
+final class NotNullHandler extends AnnotationHandler<NotNull> {
 
     public NotNullHandler(LogSupport logger) {
         super(logger);
@@ -61,7 +61,7 @@ public class NotNullHandler extends AnnotationHandler<NotNull> {
             ParameterMeta.Builder paramBuilder = methodBuilder.findParameterBuilder(paramElement, builderCtx);
 
             String codes = StringHelper.makeString(
-                    "uapi.helper.ArgumentChecker.notNull({}, \"{}\")",
+                    "uapi.helper.ArgumentChecker.notNull({}, \"{}\");\n",
                     paramBuilder.getName(), paramBuilder.getName());
 
             methodBuilder.addCodes(codes);

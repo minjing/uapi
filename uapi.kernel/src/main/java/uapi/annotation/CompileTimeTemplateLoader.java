@@ -15,15 +15,15 @@ import java.io.Reader;
  */
 public class CompileTimeTemplateLoader implements TemplateLoader {
 
-    private final ProcessingEnvironment _procEnv;
+    private final BuilderContext _builderCtx;
     private final String _basePkgPath;
 
     public CompileTimeTemplateLoader(
-            final ProcessingEnvironment processingEnvironment,
+            final BuilderContext builderContext,
             final String basePackagePath
     ) {
-        ArgumentChecker.required(processingEnvironment, "processingEnvironment");
-        this._procEnv = processingEnvironment;
+        ArgumentChecker.notNull(builderContext, "builderContext");
+        this._builderCtx = builderContext;
         this._basePkgPath = basePackagePath;
     }
 
@@ -32,7 +32,7 @@ public class CompileTimeTemplateLoader implements TemplateLoader {
             final String name
     ) throws IOException {
         ArgumentChecker.required(name, "name");
-        FileObject fObj = this._procEnv.getFiler().getResource(
+        FileObject fObj = this._builderCtx.getFiler().getResource(
                 StandardLocation.CLASS_PATH, this._basePkgPath, name);
         return fObj;
     }

@@ -5,10 +5,10 @@ ${import};
 </#list>
 
 <#list annotations as annotation>
-${annotation.name}(<#list annotation.arguments as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}<#/if></#list>)
+${annotation.name}(<#list annotation.arguments as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}</#if></#list>)
 </#list>
 public final class ${generatedClassName} extends ${className}
-implements <#list implements as implement>${implement}<#sep>, </#sep></#list> {
+<#list implements>implements <#items as implement>${implement}<#sep>, </#sep></#items></#list> {
 
 <#list properties as property>
     <#if property.isList>
@@ -32,16 +32,11 @@ implements <#list implements as implement>${implement}<#sep>, </#sep></#list> {
 </#list>
 
 <#list methods as method>
-    ${method.modify} <#if method.isStatic>static</#if> ${method.returnType} (
+    ${method.modifiers} ${method.returnTypeName} ${method.name} (
     <#list method.parameters as parameter>
             ${parameter.type} ${parameter.name}<#sep>, </#sep>
     </#list>
-    ) <#list method.throws>throws<items as throw>${throw}<#sep>, </#sep></#items></#list> {
-    <#list method.parameters as parameter>
-        <#if parameter.notNull>
-            uapi.helper.ArgumentChecker.notNull(${parameter.name}, "${parameter.name}");
-        </#if>
-    </#list>
+    ) <#list method.throwTypeNames>throws<#items as throw>${throw}<#sep>, </#sep></#items></#list> {
     <#list method.codes as code>
         ${code}
     </#list>

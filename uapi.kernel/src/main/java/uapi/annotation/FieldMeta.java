@@ -3,7 +3,7 @@ package uapi.annotation;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 
-public class FieldMeta {
+public final class FieldMeta {
 
     private Builder _builder;
 
@@ -39,7 +39,7 @@ public class FieldMeta {
     /**
      * The builder for <code>FieldMeta</code>
      */
-    public static final class Builder extends uapi.helper.Builder<FieldMeta> {
+    static final class Builder extends uapi.helper.Builder<FieldMeta> {
 
         private String _name;
         private String _typeName;

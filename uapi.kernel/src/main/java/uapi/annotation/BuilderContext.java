@@ -3,6 +3,7 @@ package uapi.annotation;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
@@ -16,12 +17,11 @@ import java.util.stream.Collectors;
 final class BuilderContext {
 
     private final ProcessingEnvironment _procEnv;
-    private final Elements _elementUtil;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
 
     BuilderContext(final ProcessingEnvironment processingEnvironment) {
+        ArgumentChecker.notNull(processingEnvironment, "processingEnvironment");
         this._procEnv = processingEnvironment;
-        this._elementUtil = this._procEnv.getElementUtils();
     }
 
     ProcessingEnvironment getProcessingEnvironment() {
@@ -29,26 +29,39 @@ final class BuilderContext {
     }
 
     Elements getElementUtils() {
-        return this._elementUtil;
+        return this._procEnv.getElementUtils();
+    }
+
+    Filer getFiler() {
+        return this._procEnv.getFiler();
+    }
+
+    List<ClassMeta.Builder> getBuilders() {
+        return this._clsBuilders;
+    }
+
+    void clearBuilders() {
+        this._clsBuilders.clear();
     }
 
     ClassMeta.Builder findClassBuilder(Element classElement) {
         ArgumentChecker.notNull(classElement, "classElement");
-        ClassMeta.Builder classBuilder = ClassMeta.builder(classElement, this);
-//        Element pkgElem = this._procEnv.getElementUtils().getPackageOf(classElement);
-//        String pkgName = pkgElem.getSimpleName().toString();
-//        String className = classElement.getSimpleName().toString();
+        final ClassMeta.Builder expectedBuilder = ClassMeta.builder(classElement, this);
         List<ClassMeta.Builder> matchedClassBuilders = this._clsBuilders.parallelStream()
-                .filter(existing -> existing.equals(classBuilder))
+                .filter(existing -> existing.equals(expectedBuilder))
                 .collect(Collectors.toList());
-        if (matchedClassBuilders.size() != 1) {
+        ClassMeta.Builder clsBuilder;
+        if (matchedClassBuilders.size() == 0) {
+            this._clsBuilders.add(expectedBuilder);
+            clsBuilder = expectedBuilder;
+        } else if (matchedClassBuilders.size() == 1) {
+            clsBuilder = matchedClassBuilders.get(0);
+        } else {
             throw new KernelException(
                     "Expect found only 1 class builder for {}, but found {}",
-                    classBuilder.getPackageName() + "." + classBuilder.getClassName(),
+                    expectedBuilder.getPackageName() + "." + expectedBuilder.getClassName(),
                     matchedClassBuilders.size());
         }
-        ClassMeta.Builder clsBuilder = matchedClassBuilders.get(0);;
-        this._clsBuilders.add(clsBuilder);
         return clsBuilder;
     }
 

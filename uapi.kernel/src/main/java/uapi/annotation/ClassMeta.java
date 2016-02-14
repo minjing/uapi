@@ -35,12 +35,24 @@ public final class ClassMeta {
         return this._builder._generatedClassName;
     }
 
+    public List<String> getImports() {
+        return this._builder._imports;
+    }
+
+    public List<String> getImplements() {
+        return this._builder._implements;
+    }
+
     public List<AnnotationMeta> getAnnotations() {
         return this._builder._annotations;
     }
 
     public List<FieldMeta> getProperties() {
         return this._builder._properties;
+    }
+
+    public List<MethodMeta> getMethods() {
+        return this._builder._methods;
     }
 
     @Override
@@ -72,11 +84,12 @@ public final class ClassMeta {
 
     }
 
-    public static final class Builder extends uapi.helper.Builder<ClassMeta> {
+    static final class Builder extends uapi.helper.Builder<ClassMeta> {
 
         private String _pkgName;
         private String _className;
         private String _generatedClassName;
+        private List<String> _imports = new ArrayList<>();
         private List<String> _implements = new ArrayList<>();
         private List<AnnotationMeta> _annotations = new ArrayList<>();
         private List<AnnotationMeta.Builder> _annoBuilders = new ArrayList<>();
@@ -116,6 +129,15 @@ public final class ClassMeta {
         ) throws KernelException {
             checkStatus();
             this._generatedClassName = generatedClassName;
+            return this;
+        }
+
+        public Builder addImport(
+                final String importClassName
+        ) throws KernelException {
+            checkStatus();
+            ArgumentChecker.notEmpty(importClassName, "importClassName");
+            this._imports.add(importClassName);
             return this;
         }
 
@@ -181,9 +203,9 @@ public final class ClassMeta {
         @Override
         protected ClassMeta buildInstance(
         ) throws InvalidArgumentException {
-            ArgumentChecker.required(this._pkgName, "packageName");
-            ArgumentChecker.required(this._className, "className");
-            ArgumentChecker.required(this._generatedClassName, "generatedClassName");
+            ArgumentChecker.notEmpty(this._pkgName, "packageName");
+            ArgumentChecker.notEmpty(this._className, "className");
+            ArgumentChecker.notEmpty(this._generatedClassName, "generatedClassName");
             this._annoBuilders.forEach(annoBuilder ->
                 this._annotations.add(annoBuilder.buildInstance())
             );

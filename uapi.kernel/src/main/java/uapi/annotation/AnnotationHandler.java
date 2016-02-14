@@ -3,14 +3,13 @@ package uapi.annotation;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import java.lang.annotation.Annotation;
 
 /**
  * Created by min on 16/2/10.
  */
-public abstract class AnnotationHandler<T extends Annotation> {
+abstract class AnnotationHandler<T extends Annotation> {
 
     private final LogSupport _logger;
 
