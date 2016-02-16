@@ -40,6 +40,10 @@ public final class MethodMeta {
         return this._builder._rtnTypeName;
     }
 
+    public boolean getIsProperty() {
+        return this._builder._isProperty;
+    }
+
     public List<ParameterMeta> getParameters() {
         return this._builder._params;
     }
@@ -87,6 +91,7 @@ public final class MethodMeta {
         private String _name;
         private List<Modifier> _modifiers = new ArrayList<>();
         private String _rtnTypeName;
+        private boolean _isProperty = false;
         private List<ParameterMeta> _params = new ArrayList<>();
         private List<ParameterMeta.Builder> _paramBuilders = new ArrayList<>();
         private List<String> _throwTypeNames = new ArrayList<>();
@@ -113,6 +118,14 @@ public final class MethodMeta {
         ) throws KernelException {
             checkStatus();
             this._rtnTypeName = typeName;
+            return this;
+        }
+
+        public Builder setIsProperty(
+                final boolean isProperty
+        ) throws KernelException {
+            checkStatus();
+            this._isProperty = isProperty;
             return this;
         }
 

@@ -2,9 +2,14 @@ package uapi.annotation;
 
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import java.lang.annotation.Annotation;
+import java.util.Set;
 
 /**
  * Created by min on 16/2/10.
@@ -28,4 +33,18 @@ public abstract class AnnotationHandler<T extends Annotation> {
             final RoundEnvironment roundEnv,
             final BuilderContext buildCtx
     ) throws KernelException;
+
+    protected void checkModifiers(
+            final Element element,
+            final Modifier... unexpectedModifiers
+    ) throws KernelException {
+        Set<Modifier> existingModifiers = element.getModifiers();
+        if (CollectionHelper.contains(existingModifiers, unexpectedModifiers)) {
+            throw new KernelException(
+                    "The {} element [{}.{}] has NotNull annotation must not be private, static or final",
+                    element.getKind(),
+                    element.getEnclosingElement().getSimpleName().toString(),
+                    element.getSimpleName().toString());
+        }
+    }
 }

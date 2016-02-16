@@ -40,7 +40,9 @@ public final class ${generatedClassName} extends ${className}
     <#list method.codes as code>
         ${code}
     </#list>
+    <#if method.isProperty == false>
         super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
+    </#if>
     }
 </#list>
 }

@@ -7,6 +7,7 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,12 +25,16 @@ public final class BuilderContext {
         this._procEnv = processingEnvironment;
     }
 
-    ProcessingEnvironment getProcessingEnvironment() {
+    public ProcessingEnvironment getProcessingEnvironment() {
         return this._procEnv;
     }
 
-    Elements getElementUtils() {
+    public Elements getElementUtils() {
         return this._procEnv.getElementUtils();
+    }
+
+    public Types getTypeUtils() {
+        return this._procEnv.getTypeUtils();
     }
 
     Filer getFiler() {

@@ -16,10 +16,6 @@ import java.util.Set;
  */
 public final class NotNullHandler extends AnnotationHandler<NotNull> {
 
-//    public NotNullHandler(LogSupport logger) {
-//        super(logger);
-//    }
-
     @Override
     public Class<NotNull> getSupportAnnotationType() {
         return NotNull.class;
@@ -42,20 +38,8 @@ public final class NotNullHandler extends AnnotationHandler<NotNull> {
             }
             Element methodElement = paramElement.getEnclosingElement();
             Element classElement = methodElement.getEnclosingElement();
-            Set<Modifier> modifiers = methodElement.getModifiers();
-            if (CollectionHelper.contains(modifiers,
-                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)) {
-                throw new KernelException(
-                        "The method [{}] has NotNull annotation must not be private, static or final",
-                        methodElement.getSimpleName().toString());
-            }
-            modifiers = classElement.getModifiers();
-            if (CollectionHelper.contains(modifiers,
-                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)) {
-                throw new KernelException(
-                        "The class [{}] has NotNull annotation must not be private, static or final",
-                        classElement.getSimpleName().toString());
-            }
+            checkModifiers(methodElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            checkModifiers(classElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElement);
             MethodMeta.Builder methodBuilder = clsBuilder.findMethodBuilder(methodElement, builderCtx);
