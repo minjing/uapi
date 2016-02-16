@@ -71,7 +71,8 @@ public class InjectHandler extends AnnotationHandler<Inject> {
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
             clsBuilder.addMethodBuilder(MethodMeta.builder()
-                    .setName(setterName).setReturnTypeName("void")
+                    .setName(setterName)
+                    .setReturnTypeName("void")
                     .setIsProperty(true)
                     .addParameterBuilder(ParameterMeta.builder()
                             .setName(paramName)
