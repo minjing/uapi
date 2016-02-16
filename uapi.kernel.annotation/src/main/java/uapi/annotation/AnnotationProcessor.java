@@ -12,7 +12,11 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.util.*;
 
@@ -28,10 +32,57 @@ public class AnnotationProcessor extends AbstractProcessor {
         this._procEnv = processingEnv;
         this._logger = new LogSupport(processingEnv);
         this._processors = new HashMap<>();
-        initForHandler(new NotNullHandler(this._logger));
+        initForHandler(new NotNullHandler());
+        loadExternalHandler();
+    }
+
+    private void loadExternalHandler() {
+        FileObject fObj;
+        InputStream is = null;
+        Scanner scanner = null;
+        try {
+            fObj = this._procEnv.getFiler().getResource(
+                    StandardLocation.CLASS_PATH,
+                    StringHelper.EMPTY,
+                    AnnotationHandler.class.getCanonicalName());
+        } catch (IOException ex) {
+            this._logger.info("Can't found or read annotation handler file - " + AnnotationHandler.class.getCanonicalName());
+            return;
+        }
+
+        try {
+            is = fObj.openInputStream();
+            scanner = new Scanner(is);
+            while (scanner.hasNext()) {
+                String handlerClassName = scanner.nextLine();
+                this._logger.info("Initial external annotation handler - " + handlerClassName);
+                Class handlerClass = Class.forName(handlerClassName);
+                Object handler = handlerClass.newInstance();
+                if (! (handler instanceof AnnotationHandler)) {
+                    this._logger.error("");
+                    return;
+                }
+                initForHandler((AnnotationHandler) handler);
+            }
+        } catch (Exception ex) {
+            this._logger.error(ex);
+            return;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    this._logger.error(ex);
+                }
+            }
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
     }
 
     private void initForHandler(AnnotationHandler handler) {
+        handler.setLogger(this._logger);
         String handlerName = handler.getSupportAnnotationType().getCanonicalName();
         List<AnnotationHandler> handlers = this._processors.get(handlerName);
         if (handlers == null) {
@@ -48,6 +99,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
+        this._logger.info(this._processors.keySet().toString());
         return this._processors.keySet();
     }
 
@@ -63,6 +115,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             // Construct class type
             for (TypeElement annotation : annotations) {
                 String annoName = annotation.getQualifiedName().toString();
+                this._logger.info("Start handling annotation: " + annoName);
                 List<AnnotationHandler> handlers = this._processors.get(annoName);
                 if (handlers == null || handlers.size() == 0) {
                     this._logger.error("No handler for annotation - {}", annoName);

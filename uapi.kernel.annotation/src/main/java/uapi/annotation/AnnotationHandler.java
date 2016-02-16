@@ -11,11 +11,15 @@ import java.lang.annotation.Annotation;
  */
 public abstract class AnnotationHandler<T extends Annotation> {
 
-    private final LogSupport _logger;
+    private LogSupport _logger;
 
-    public AnnotationHandler(final LogSupport logger) {
+    public void setLogger(final LogSupport logger) {
         ArgumentChecker.notNull(logger, "logger");
         this._logger = logger;
+    }
+
+    public LogSupport getLogger() {
+        return this._logger;
     }
 
     public abstract Class<T> getSupportAnnotationType();

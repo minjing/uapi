@@ -16,9 +16,9 @@ import java.util.Set;
  */
 public final class NotNullHandler extends AnnotationHandler<NotNull> {
 
-    public NotNullHandler(LogSupport logger) {
-        super(logger);
-    }
+//    public NotNullHandler(LogSupport logger) {
+//        super(logger);
+//    }
 
     @Override
     public Class<NotNull> getSupportAnnotationType() {
