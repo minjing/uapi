@@ -6,9 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The annotation to apply on method argument
- * to indicate the argument can't be null
+ * The annotation to apply on method string argument to
+ * indicate the argument can't be null or empty string
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.SOURCE)
-public @interface NotNull { }
+public @interface NotNull {
+}

@@ -84,7 +84,7 @@ public final class ClassMeta {
 
     }
 
-    static final class Builder extends uapi.helper.Builder<ClassMeta> {
+    public static final class Builder extends uapi.helper.Builder<ClassMeta> {
 
         private String _pkgName;
         private String _className;

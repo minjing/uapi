@@ -26,7 +26,7 @@ public class TaskEmitter implements ITaskEmitter {
 
     @Override
     public void emit(ITask task, INotifier notifier) {
-        ArgumentChecker.isEmpty(task, "task");
+        ArgumentChecker.notNull(task, "task");
         ITask newTask = this._taskConverter.convert(task, notifier);
         this._taskBuffer.write(newTask);
     }

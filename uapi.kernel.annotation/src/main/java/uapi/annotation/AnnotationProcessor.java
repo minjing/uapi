@@ -3,6 +3,7 @@ package uapi.annotation;
 import com.google.auto.service.AutoService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import uapi.annotation.handler.NotNullHandler;
 import uapi.helper.StringHelper;
 
 import javax.annotation.processing.AbstractProcessor;

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * A context for building class builder
  */
-final class BuilderContext {
+public final class BuilderContext {
 
     private final ProcessingEnvironment _procEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
@@ -44,7 +44,7 @@ final class BuilderContext {
         this._clsBuilders.clear();
     }
 
-    ClassMeta.Builder findClassBuilder(Element classElement) {
+    public ClassMeta.Builder findClassBuilder(Element classElement) {
         ArgumentChecker.notNull(classElement, "classElement");
         final ClassMeta.Builder expectedBuilder = ClassMeta.builder(classElement, this);
         List<ClassMeta.Builder> matchedClassBuilders = this._clsBuilders.parallelStream()

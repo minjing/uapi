@@ -3,6 +3,7 @@ dependencies {
     compile 'org.freemarker:freemarker:2.3.23'
 
     compile project(':uapi.kernel')
+    compile project(':uapi.kernel.annotation')
 }
 
 jar {

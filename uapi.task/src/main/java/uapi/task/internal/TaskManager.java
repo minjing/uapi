@@ -162,22 +162,22 @@ public final class TaskManager
         private final INotifier _notifier;
 
         private TaskStateWatcher(final ITask task, final INotifier notifier) {
-            ArgumentChecker.isEmpty(task, "task");
-            ArgumentChecker.isEmpty(notifier, "notifier");
+            ArgumentChecker.notNull(task, "task");
+            ArgumentChecker.notNull(notifier, "notifier");
             this._task = task;
             this._notifier = notifier;
         }
 
         @Override
         public void stateChanged(IStateful which, int oldState, int newState) {
-            ArgumentChecker.isEmpty(which, "which");
+            ArgumentChecker.notNull(which, "which");
             TaskManager.this._taskTransfer.transferTask(
                     new NotifyStateTask(this._task, this._notifier, newState));
         }
 
         @Override
         public void stateChange(IStateful which, int oldState, int newState, Throwable t) {
-            ArgumentChecker.isEmpty(which, "which");
+            ArgumentChecker.notNull(which, "which");
             TaskManager.this._taskTransfer.transferTask(
                     new NotifyStateTask(this._task, this._notifier, newState, t));
         }
@@ -186,7 +186,7 @@ public final class TaskManager
     final class TaskConverter {
 
         ITask convert(ITask task, INotifier notifier) {
-            ArgumentChecker.isEmpty(task, "task");
+            ArgumentChecker.notNull(task, "task");
             TaskManager.this._logger.trace("Add a new task - {}", task.getDescription());
 
             // We need cover two cases:

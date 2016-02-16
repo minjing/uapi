@@ -13,7 +13,7 @@ import javax.tools.Diagnostic;
 /**
  * Created by min on 16/2/10.
  */
-final class LogSupport {
+public final class LogSupport {
 
     private final ProcessingEnvironment _procEnv;
     private final Messager _msger;

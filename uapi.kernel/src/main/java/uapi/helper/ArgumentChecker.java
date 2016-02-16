@@ -13,28 +13,6 @@ public class ArgumentChecker {
 
     private ArgumentChecker() { }
 
-    /**
-     * Check the argument is empty or not.
-     * For generic object the method only check it is null
-     * For string object the method will check it is empty string or not
-     * 
-     * @param   arg
-     *          The argument object which will be checked
-     * @param   argName
-     *          The argument name will be used in exception message if check failed
-     */
-    public static void isEmpty(Object arg, String argName) {
-        if (arg == null) {
-            throw new InvalidArgumentException(argName, InvalidArgumentType.EMPTY);
-        }
-
-        if (arg instanceof String) {
-            if (((String) arg).trim().length() == 0) {
-                throw new InvalidArgumentException(argName, InvalidArgumentType.EMPTY);
-            }
-        }
-    }
-
     public static void checkInt(int arg, String argName, int minValue, int maxValue) {
         if (arg < minValue || arg > maxValue) {
             throw new InvalidArgumentException(argName,
@@ -53,14 +31,23 @@ public class ArgumentChecker {
     }
 
     public static void notEmpty(
-            final String arg,
+            final String argument,
             final String argumentName
     ) throws InvalidArgumentException {
-        if (Strings.isNullOrEmpty(arg)) {
-            throw new InvalidArgumentException(argumentName, InvalidArgumentException.InvalidArgumentType.EMPTY);
+        if (Strings.isNullOrEmpty(argument)) {
+            throw new InvalidArgumentException(argumentName, InvalidArgumentType.EMPTY);
         }
     }
 
+    /**
+     * Ensure the argument is presented, if the argument is null or is empty string
+     * then the exception will be thrown.
+     *
+     * @param   argument
+     *          The argument object which will be checked
+     * @param   argumentName
+     *          The argument name will be used in exception message if check failed
+     */
     public static void required(
             final Object argument,
             final String argumentName

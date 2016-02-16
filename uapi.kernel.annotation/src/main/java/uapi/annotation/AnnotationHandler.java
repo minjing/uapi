@@ -9,7 +9,7 @@ import java.lang.annotation.Annotation;
 /**
  * Created by min on 16/2/10.
  */
-abstract class AnnotationHandler<T extends Annotation> {
+public abstract class AnnotationHandler<T extends Annotation> {
 
     private final LogSupport _logger;
 

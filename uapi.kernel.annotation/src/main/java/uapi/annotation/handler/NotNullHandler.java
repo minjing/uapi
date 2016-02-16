@@ -1,6 +1,7 @@
-package uapi.annotation;
+package uapi.annotation.handler;
 
 import uapi.KernelException;
+import uapi.annotation.*;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 /**
  * Created by min on 16/2/10.
  */
-final class NotNullHandler extends AnnotationHandler<NotNull> {
+public final class NotNullHandler extends AnnotationHandler<NotNull> {
 
     public NotNullHandler(LogSupport logger) {
         super(logger);

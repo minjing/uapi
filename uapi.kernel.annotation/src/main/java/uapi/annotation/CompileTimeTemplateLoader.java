@@ -4,7 +4,6 @@ import freemarker.cache.TemplateLoader;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.IOException;
