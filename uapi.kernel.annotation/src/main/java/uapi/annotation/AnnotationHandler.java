@@ -12,9 +12,12 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 
 /**
- * Created by min on 16/2/10.
+ * A generic annotation handler.
  */
 public abstract class AnnotationHandler<T extends Annotation> {
+
+    public static final String CODE_TAB_1   = "    ";
+    public static final String CODE_TAB_2   = "    ";
 
     private LogSupport _logger;
 

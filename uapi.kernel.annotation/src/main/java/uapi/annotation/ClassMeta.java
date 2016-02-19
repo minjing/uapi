@@ -200,6 +200,16 @@ public final class ClassMeta {
             return methodBuilder;
         }
 
+        public List<MethodMeta.Builder> findSetterBuilder() {
+            List<MethodMeta.Builder> setters = new ArrayList<>();
+            this._methodBuilders.forEach(methodBuilder -> {
+                if (methodBuilder.isSetter()) {
+                    setters.add(methodBuilder);
+                }
+            });
+            return setters;
+        }
+
         @Override
         protected ClassMeta buildInstance(
         ) throws InvalidArgumentException {

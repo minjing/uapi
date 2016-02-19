@@ -7,6 +7,9 @@ import uapi.helper.StringHelper;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,6 +32,10 @@ public final class ParameterMeta {
 
     public String getType() {
         return this._builder._type;
+    }
+
+    public List<Modifier> getModifiers() {
+        return this._builder._modifiers;
     }
 
     public static Builder builder() {
@@ -56,6 +63,7 @@ public final class ParameterMeta {
 
         private String _name;
         private String _type;
+        private List<Modifier> _modifiers = new ArrayList<>();
 
         private Builder() { }
 
@@ -79,6 +87,17 @@ public final class ParameterMeta {
             return this;
         }
 
+        public String getType() {
+            return this._type;
+        }
+
+        public Builder addModifier(javax.lang.model.element.Modifier modifier) {
+            checkStatus();
+            ArgumentChecker.notNull(modifier, "modifier");
+            this._modifiers.add(modifier);
+            return this;
+        }
+
         @Override
         protected ParameterMeta buildInstance() {
             ArgumentChecker.notEmpty(this._name, "name");
@@ -90,9 +109,10 @@ public final class ParameterMeta {
         public String toString() {
             return StringHelper.makeString(
                     "ParameterMeta[" +
+                            "modifiers={}, " +
                             "name={}, " +
                             "type={}, ",
-                    this._name, this._type
+                    this._modifiers, this._name, this._type
             );
         }
 

@@ -18,11 +18,13 @@ import java.util.stream.Collectors;
 /**
  * A meta class for method
  */
-public final class MethodMeta {
+public class MethodMeta {
+
+    public static final String TYPE_VOID    = "void";
 
     private final Builder _builder;
 
-    private MethodMeta(
+    protected MethodMeta(
             final Builder builder
     ) {
         this._builder = builder;
@@ -40,8 +42,16 @@ public final class MethodMeta {
         return this._builder._rtnTypeName;
     }
 
-    public boolean getIsProperty() {
-        return this._builder._isProperty;
+    public boolean getIsSetter() {
+        return this._builder._isSetter;
+    }
+
+    public boolean getInvokeSuperBefore() {
+        return this._builder._invokeSuper == InvokeSuper.BEFORE;
+    }
+
+    public boolean getInvokeSuperAfter() {
+        return this._builder._invokeSuper == InvokeSuper.AFTER;
     }
 
     public List<ParameterMeta> getParameters() {
@@ -86,18 +96,19 @@ public final class MethodMeta {
         return builder;
     }
 
-    public static final class Builder extends uapi.helper.Builder<MethodMeta> {
+    public static class Builder extends uapi.helper.Builder<MethodMeta> {
 
         private String _name;
         private List<Modifier> _modifiers = new ArrayList<>();
         private String _rtnTypeName;
-        private boolean _isProperty = false;
+        private boolean _isSetter = false;
+        private InvokeSuper _invokeSuper = InvokeSuper.NONE;
         private List<ParameterMeta> _params = new ArrayList<>();
         private List<ParameterMeta.Builder> _paramBuilders = new ArrayList<>();
         private List<String> _throwTypeNames = new ArrayList<>();
         private List<String> _codes = new ArrayList<>();
 
-        private Builder() { }
+        protected Builder() { }
 
         public Builder setName(
                 final String name
@@ -107,10 +118,15 @@ public final class MethodMeta {
             return this;
         }
 
-        public void addModifier(Modifier modifier) {
+        public String getName() {
+            return this._name;
+        }
+
+        public Builder addModifier(Modifier modifier) {
             checkStatus();
             ArgumentChecker.notNull(modifier, "modifier");
             this._modifiers.add(modifier);
+            return this;
         }
 
         public Builder setReturnTypeName(
@@ -121,12 +137,29 @@ public final class MethodMeta {
             return this;
         }
 
-        public Builder setIsProperty(
-                final boolean isProperty
+        public Builder setInvokeSuper(
+                final InvokeSuper invokeSuper
         ) throws KernelException {
             checkStatus();
-            this._isProperty = isProperty;
+            if (this._invokeSuper != InvokeSuper.NONE) {
+                throw new KernelException(
+                        "The invoke super can be set only once, current: {}, request: {}",
+                        this._invokeSuper, invokeSuper);
+            }
+            this._invokeSuper = invokeSuper;
             return this;
+        }
+
+        public Builder setIsSetter(
+                final boolean isSetter
+        ) throws KernelException {
+            checkStatus();
+            this._isSetter = isSetter;
+            return this;
+        }
+
+        public boolean isSetter() {
+            return this._isSetter;
         }
 
         public Builder addParameterBuilder(
@@ -183,6 +216,21 @@ public final class MethodMeta {
             return matchedBuilders.get(0);
         }
 
+        public ParameterMeta.Builder findParameterBuilder(
+                final String name
+        ) throws KernelException {
+            ArgumentChecker.notEmpty(name, "name");
+            List<ParameterMeta.Builder> params = this._paramBuilders.stream()
+                    .filter(paramBuilder -> paramBuilder.getName().equals(name))
+                    .collect(Collectors.toList());
+            if (params.size() == 0) {
+                throw new KernelException("Can't found parameter {} at {}", name, this._name);
+            } else if (params.size() > 1) {
+                throw new KernelException("Find duplicate parameter name {} at {}", name, this._name);
+            }
+            return params.get(0);
+        }
+
         @Override
         protected MethodMeta buildInstance(
         ) throws InvalidArgumentException {
@@ -202,12 +250,14 @@ public final class MethodMeta {
                             "returnTypeName={}, " +
                             "parameters={}, " +
                             "throwTypeNames={}, " +
+                            "invokeSuper={}" +
                             "codes={}]",
                     this._name,
                     this._modifiers,
                     this._rtnTypeName,
                     this._paramBuilders,
                     this._throwTypeNames,
+                    this._invokeSuper,
                     this._codes
             );
         }
@@ -233,5 +283,16 @@ public final class MethodMeta {
                     this._paramBuilders,
                     this._throwTypeNames);
         }
+    }
+
+    public static enum InvokeSuper {
+        // Call super method before execute self statement
+        BEFORE,
+
+        // Call super method after execute self statement
+        AFTER,
+
+        // Do not call super method any more
+        NONE
     }
 }

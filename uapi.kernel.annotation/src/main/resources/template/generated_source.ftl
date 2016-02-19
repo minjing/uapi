@@ -37,10 +37,13 @@ public final class ${generatedClassName} extends ${className}
             ${parameter.type} ${parameter.name}<#sep>, </#sep>
     </#list>
     ) <#list method.throwTypeNames>throws<#items as throw>${throw}<#sep>, </#sep></#items></#list> {
+    <#if method.invokeSuperBefore>
+        super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
+    </#if>
     <#list method.codes as code>
         ${code}
     </#list>
-    <#if method.isProperty == false>
+    <#if method.invokeSuperAfter>
         super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
     </#if>
     }

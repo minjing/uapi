@@ -1,4 +1,4 @@
 include 'uapi.kernel', 'uapi.kernel.annotation'
-include 'uapi.kernel.injector'
+include 'uapi.kernel.service', 'uapi.kernel.injector'
 include 'uapi.test', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.sample'
 
