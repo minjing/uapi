@@ -11,6 +11,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
@@ -136,13 +137,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void generateSource(BuilderContext builderContext) {
         List<ClassMeta.Builder> classBuilders = builderContext.getBuilders();
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
-        cfg.setDefaultEncoding("UTF-8");
-        cfg.setLocalizedLookup(false);
-        cfg.setTemplateLoader(new CompileTimeTemplateLoader(builderContext, StringHelper.EMPTY));
+        //System.out.println(classBuilders);
         Template temp;
         try {
-            temp = cfg.getTemplate("template/generated_source.ftl");
+            temp = builderContext.loadTemplate("template/generated_source.ftl");
         } catch (Exception ex) {
             this._logger.error(ex);
             return;
@@ -151,6 +149,8 @@ public class AnnotationProcessor extends AbstractProcessor {
             Writer srcWriter = null;
             try {
                 ClassMeta classMeta = classBuilder.build();
+                //System.out.println("1111111" + classBuilder);
+                //System.out.println("asdfsfas" + classMeta.getMethods().get(0).getCodes());
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
                         classMeta.getGeneratedClassName()
                 );

@@ -1,7 +1,10 @@
 package uapi.annotation;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -19,10 +22,17 @@ public final class BuilderContext {
 
     private final ProcessingEnvironment _procEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
+    private final Configuration _tempConf;
 
     BuilderContext(final ProcessingEnvironment processingEnvironment) {
         ArgumentChecker.notNull(processingEnvironment, "processingEnvironment");
         this._procEnv = processingEnvironment;
+        // Initialize freemarker template configuration
+        this._tempConf = new Configuration(Configuration.VERSION_2_3_22);
+        this._tempConf.setDefaultEncoding("UTF-8");
+        this._tempConf.setLocalizedLookup(false);
+        this._tempConf.setTemplateLoader(
+                new CompileTimeTemplateLoader(this, StringHelper.EMPTY));
     }
 
     public ProcessingEnvironment getProcessingEnvironment() {
@@ -41,12 +51,23 @@ public final class BuilderContext {
         return this._procEnv.getFiler();
     }
 
-    List<ClassMeta.Builder> getBuilders() {
+    public List<ClassMeta.Builder> getBuilders() {
         return this._clsBuilders;
     }
 
     void clearBuilders() {
         this._clsBuilders.clear();
+    }
+
+    public Template loadTemplate(String templatePath) {
+        ArgumentChecker.notEmpty(templatePath, "templatePath");
+        Template temp;
+        try {
+            temp = this._tempConf.getTemplate(templatePath);
+        } catch (Exception ex) {
+            throw new KernelException(ex);
+        }
+        return temp;
     }
 
     public ClassMeta.Builder findClassBuilder(Element classElement) {

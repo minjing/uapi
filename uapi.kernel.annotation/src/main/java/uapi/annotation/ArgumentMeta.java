@@ -61,10 +61,13 @@ public final class ArgumentMeta {
         }
 
         @Override
-        protected ArgumentMeta buildInstance(
-        ) throws InvalidArgumentException {
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._name, "name");
             ArgumentChecker.notNull(this._value, "value");
+        }
+
+        @Override
+        protected ArgumentMeta buildInstance() {
             return new ArgumentMeta(this);
         }
 

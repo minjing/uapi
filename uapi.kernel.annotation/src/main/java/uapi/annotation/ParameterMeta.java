@@ -99,9 +99,13 @@ public final class ParameterMeta {
         }
 
         @Override
-        protected ParameterMeta buildInstance() {
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._name, "name");
             ArgumentChecker.notEmpty(this._type, "type");
+        }
+
+        @Override
+        protected ParameterMeta buildInstance() {
             return new ParameterMeta(this);
         }
 

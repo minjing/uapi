@@ -49,7 +49,9 @@ public final class NotNullHandler extends AnnotationHandler<NotNull> {
                     "uapi.helper.ArgumentChecker.notNull({}, \"{}\");\n",
                     paramBuilder.getName(), paramBuilder.getName());
 
-            methodBuilder.addCodes(codes);
+            methodBuilder
+                    .setInvokeSuper(MethodMeta.InvokeSuper.AFTER)
+                    .addCodeBuilder(CodeMeta.builder().addRawCode(codes));
         });
     }
 }

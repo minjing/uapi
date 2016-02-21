@@ -10,9 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +20,7 @@ public class MethodMeta {
 
     public static final String TYPE_VOID    = "void";
 
-    private final Builder _builder;
+    protected final Builder _builder;
 
     protected MethodMeta(
             final Builder builder
@@ -58,12 +56,17 @@ public class MethodMeta {
         return this._builder._params;
     }
 
-    public List<String> getThrowTypeNames() {
+    public Set<String> getThrowTypeNames() {
         return this._builder._throwTypeNames;
     }
 
-    public List<String> getCodes() {
+    public List<CodeMeta> getCodes() {
         return this._builder._codes;
+    }
+
+    @Override
+    public String toString() {
+        return this._builder.toString();
     }
 
     public static Builder builder() {
@@ -105,8 +108,9 @@ public class MethodMeta {
         private InvokeSuper _invokeSuper = InvokeSuper.NONE;
         private List<ParameterMeta> _params = new ArrayList<>();
         private List<ParameterMeta.Builder> _paramBuilders = new ArrayList<>();
-        private List<String> _throwTypeNames = new ArrayList<>();
-        private List<String> _codes = new ArrayList<>();
+        private Set<String> _throwTypeNames = new HashSet<>();
+        private List<CodeMeta> _codes = new ArrayList<>();
+        private List<CodeMeta.Builder> _codeBuilders = new ArrayList<>();
 
         protected Builder() { }
 
@@ -189,11 +193,20 @@ public class MethodMeta {
             return this;
         }
 
-        public Builder addCodes(
-                final String code
-        ) throws KernelException {
+//        public Builder addCodes(
+//                final String code
+//        ) throws KernelException {
+//            checkStatus();
+//            this._codes.add(code);
+//            return this;
+//        }
+
+        public Builder addCodeBuilder(
+                final CodeMeta.Builder codeBuilder
+        ) throws InvalidArgumentException {
             checkStatus();
-            this._codes.add(code);
+            ArgumentChecker.notNull(codeBuilder, "codeBuilder");
+            this._codeBuilders.add(codeBuilder);
             return this;
         }
 
@@ -232,12 +245,19 @@ public class MethodMeta {
         }
 
         @Override
-        protected MethodMeta buildInstance(
-        ) throws InvalidArgumentException {
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._name, "name");
             ArgumentChecker.notEmpty(this._rtnTypeName, "returnTypeName");
-            this._paramBuilders.forEach(parameterBuilder ->
-                this._params.add(parameterBuilder.buildInstance()));
+            this._paramBuilders.forEach(paramBuilder -> paramBuilder.validation());
+            this._codeBuilders.forEach(codeBuilder -> codeBuilder.validation());
+        }
+
+        @Override
+        protected MethodMeta buildInstance() {
+            this._paramBuilders.forEach(paramBuilder ->
+                    this._params.add(paramBuilder.buildInstance()));
+            this._codeBuilders.forEach(codeBuilder ->
+                    this._codes.add(codeBuilder.buildInstance()));
             return new MethodMeta(this);
         }
 
@@ -250,15 +270,17 @@ public class MethodMeta {
                             "returnTypeName={}, " +
                             "parameters={}, " +
                             "throwTypeNames={}, " +
-                            "invokeSuper={}" +
-                            "codes={}]",
+                            "invokeSuper={}, " +
+                            "codes={}, " +
+                            "codeBuilders={}]",
                     this._name,
                     this._modifiers,
                     this._rtnTypeName,
                     this._paramBuilders,
                     this._throwTypeNames,
                     this._invokeSuper,
-                    this._codes
+                    this._codes,
+                    this._codeBuilders
             );
         }
 

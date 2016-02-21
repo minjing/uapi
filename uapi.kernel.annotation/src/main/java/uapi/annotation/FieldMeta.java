@@ -1,5 +1,7 @@
 package uapi.annotation;
 
+import uapi.InvalidArgumentException;
+import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 
@@ -48,7 +50,7 @@ public final class FieldMeta {
 
         public Builder setName(
                 final String name
-        ) {
+        ) throws KernelException {
             checkStatus();
             this._name = name;
             return this;
@@ -56,7 +58,7 @@ public final class FieldMeta {
 
         public Builder setTypeName(
                 final String typeName
-        ) {
+        ) throws KernelException {
             checkStatus();
             this._typeName = typeName;
             return this;
@@ -64,7 +66,7 @@ public final class FieldMeta {
 
         public Builder setInjectServiceId(
                 final String injectServiceId
-        ) {
+        ) throws KernelException {
             checkStatus();
             this._injectServiceId = injectServiceId;
             return this;
@@ -72,18 +74,21 @@ public final class FieldMeta {
 
         public Builder setIsList(
                 final boolean isList
-        ) {
+        ) throws KernelException {
             checkStatus();
             this._isList = isList;
             return this;
         }
 
         @Override
-        protected FieldMeta buildInstance() {
-            checkStatus();
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.required(this._name, "fieldName");
             ArgumentChecker.required(this._typeName, "fieldTypeName");
             ArgumentChecker.required(this._injectServiceId, "injectServiceId");
+        }
+
+        @Override
+        protected FieldMeta buildInstance() {
             return new FieldMeta(this);
         }
 

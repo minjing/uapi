@@ -200,7 +200,7 @@ public final class ClassMeta {
             return methodBuilder;
         }
 
-        public List<MethodMeta.Builder> findSetterBuilder() {
+        public List<MethodMeta.Builder> findSetterBuilders() {
             List<MethodMeta.Builder> setters = new ArrayList<>();
             this._methodBuilders.forEach(methodBuilder -> {
                 if (methodBuilder.isSetter()) {
@@ -211,11 +211,17 @@ public final class ClassMeta {
         }
 
         @Override
-        protected ClassMeta buildInstance(
-        ) throws InvalidArgumentException {
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._pkgName, "packageName");
             ArgumentChecker.notEmpty(this._className, "className");
             ArgumentChecker.notEmpty(this._generatedClassName, "generatedClassName");
+            this._annoBuilders.forEach(AnnotationMeta.Builder::validation);
+            this._propBuilders.forEach(FieldMeta.Builder::validation);
+            this._methodBuilders.forEach(MethodMeta.Builder::validation);
+        }
+
+        @Override
+        protected ClassMeta buildInstance() {
             this._annoBuilders.forEach(annoBuilder ->
                 this._annotations.add(annoBuilder.buildInstance())
             );

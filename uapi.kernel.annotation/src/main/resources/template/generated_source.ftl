@@ -28,7 +28,6 @@ public final class ${generatedClassName} extends ${className}
         this.${property.name} = ${property.name};
     }
     </#if>
-
 </#list>
 
 <#list methods as method>
@@ -41,11 +40,12 @@ public final class ${generatedClassName} extends ${className}
         super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
     </#if>
     <#list method.codes as code>
-        ${code}
+        ${code.code}
     </#list>
     <#if method.invokeSuperAfter>
         super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
     </#if>
     }
+
 </#list>
 }

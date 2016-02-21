@@ -1,5 +1,6 @@
 package uapi;
 
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 
 public class KernelException extends RuntimeException {
@@ -12,6 +13,12 @@ public class KernelException extends RuntimeException {
     public KernelException(String message, Object... arguments) {
         this._msg = message;
         this._args = arguments;
+    }
+
+    public KernelException(Throwable t) {
+        super(t);
+        this._msg = t.getMessage();
+        this._args = CollectionHelper.emptyArray;
     }
 
     public KernelException(Throwable t, String message, Object... arguments) {

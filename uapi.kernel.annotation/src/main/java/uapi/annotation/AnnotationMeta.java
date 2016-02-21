@@ -46,9 +46,12 @@ final class AnnotationMeta {
         }
 
         @Override
-        protected AnnotationMeta buildInstance()
-                throws InvalidArgumentException {
+        protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._name, "name");
+        }
+
+        @Override
+        protected AnnotationMeta buildInstance() {
             return new AnnotationMeta(this);
         }
 

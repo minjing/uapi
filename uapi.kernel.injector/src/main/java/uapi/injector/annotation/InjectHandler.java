@@ -1,11 +1,15 @@
 package uapi.injector.annotation;
 
 import com.google.common.base.Strings;
+import freemarker.template.Template;
+import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
 import uapi.injector.IInjectable;
+import uapi.injector.SetterMeta;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
@@ -14,7 +18,6 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by min on 16/2/16.
@@ -38,9 +41,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
         if (paramElements.size() == 0) {
             return;
         }
-//        List<ClassMeta.Builder> svcClasses = new ArrayList<>();
-        // setter name to inject id mapping
-        Map<String, String> setterInjectIdMapper = new HashMap<>();
+
         paramElements.forEach(fieldElement -> {
             if (fieldElement.getKind() != ElementKind.FIELD) {
                 throw new KernelException(
@@ -82,17 +83,20 @@ public class InjectHandler extends AnnotationHandler<Inject> {
             }
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            clsBuilder.addMethodBuilder(MethodMeta.builder()
+            clsBuilder.addMethodBuilder(SetterMeta.builder()
+                    .setInjectId(injectId)
+                    .setInjectType(fieldTypeName)
                     .setName(setterName)
                     .setReturnTypeName(MethodMeta.TYPE_VOID)
                     .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
-                    .setIsSetter(true)
                     .addParameterBuilder(ParameterMeta.builder()
                             .setName(paramName)
                             .setType(fieldTypeName))
-                    .addCodes(code));
-//            svcClasses.add(clsBuilder);
+                    .addCodeBuilder(CodeMeta.builder()
+                            .addRawCode(code)));
         });
+
+        implementIInjectable(builderCtx);
     }
 
     private boolean isCollection(Element fieldElement, BuilderContext builderCtx) {
@@ -129,44 +133,73 @@ public class InjectHandler extends AnnotationHandler<Inject> {
      *
      * @return code
      */
-    private void implementIInjectable(List<ClassMeta.Builder> classBuilders) {
+    private void implementIInjectable(
+//            final List<ClassMeta.Builder> classBuilders,
+            final BuilderContext builderContext
+    ) throws KernelException {
+        Template temp = builderContext.loadTemplate("template/inject_method.ftl");
+
         String methodName = "injectObject";
         String paramName = "injection";
         String paramType = "uapi.injector.Injection";
-        classBuilders.forEach(classBuilder -> {
-            StringBuffer codeBuilder = new StringBuffer();
-            AtomicBoolean hasIf = new AtomicBoolean(false);
-            classBuilder.findSetterBuilder().forEach(setterBuilder -> {
-                ParameterMeta.Builder param = setterBuilder.findParameterBuilder(SETTER_PARAM_NAME);
-                if (! hasIf.get()) {
-                    codeBuilder.append(StringHelper.makeString(
-                            "if (injection.getId().equals({})) {\n" +
-                                    "injection.checkType({}.class);\n" +
-                                    "{}(({}) injection.getObject())",
-                            "serviceId", param.getType(), setterBuilder.getName(), param.getType()));
-                    hasIf.set(true);
-                } else {
-
-                }
+        builderContext.getBuilders().forEach(classBuilder -> {
+            final List<SetterModel> setterModels = new ArrayList<>();
+            classBuilder.findSetterBuilders().forEach(methodBuilder -> {
+                SetterMeta.Builder setterBuilder = (SetterMeta.Builder) methodBuilder;
+                setterModels.add(new SetterModel(
+                        setterBuilder.getName(),
+                        setterBuilder.getInjectId(),
+                        setterBuilder.getInjectType()));
             });
-            if (hasIf.get()) {
-                codeBuilder.append(StringHelper.makeString(
-                        " else {\n" +
-                                "throw new uapi.KernelException(\"Can't inject object {} into service {}, injection, this);\n" +
-                                "}"));
-            } else {
+            if (setterModels.size() >= 0) {
+                Map<String, Object> tempModel = new HashMap<>();
+                tempModel.put("setters", setterModels);
 
+                classBuilder.addImplement(IInjectable.class.getCanonicalName())
+                        .addMethodBuilder(MethodMeta.builder()
+                                .addModifier(Modifier.PUBLIC)
+                                .setName(methodName)
+                                .setReturnTypeName(MethodMeta.TYPE_VOID)
+                                .addParameterBuilder(ParameterMeta.builder()
+                                        .addModifier(Modifier.FINAL)
+                                        .setName(paramName)
+                                        .setType(paramType))
+                                .addCodeBuilder(CodeMeta.builder()
+                                        .setModel(tempModel)
+                                        .setTemplate(temp)));
             }
-            classBuilder.addImplement(IInjectable.class.getCanonicalName())
-                    .addMethodBuilder(MethodMeta.builder()
-                            .addModifier(Modifier.PUBLIC)
-                            .setName(methodName)
-                            .setReturnTypeName(MethodMeta.TYPE_VOID)
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .addModifier(Modifier.FINAL)
-                                    .setName(paramName)
-                                    .setType(paramType))
-                            .addCodes(codeBuilder.toString()));
         });
+    }
+
+    public static final class SetterModel {
+
+        private String _name;
+        private String _injectId;
+        private String _injectType;
+
+        private SetterModel(
+                final String name,
+                final String injectId,
+                final String injectType
+        ) throws InvalidArgumentException {
+            ArgumentChecker.notEmpty(name, "name");
+            ArgumentChecker.notEmpty(injectId, "injectId");
+            ArgumentChecker.notEmpty(injectType, "injectType");
+            this._name = name;
+            this._injectId = injectId;
+            this._injectType = injectType;
+        }
+
+        public String getName() {
+            return this._name;
+        }
+
+        public String getInjectId() {
+            return this._injectId;
+        }
+
+        public String getInjectType() {
+            return this._injectType;
+        }
     }
 }

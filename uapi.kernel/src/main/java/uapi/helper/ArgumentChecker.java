@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 
+import java.util.Collection;
+
 /**
  * A utility for argument checker
  * 
@@ -56,6 +58,17 @@ public class ArgumentChecker {
             notEmpty((String) argument, argumentName);
         } else {
             notNull(argument, argumentName);
+        }
+    }
+
+    public static void notZero(
+            final Collection collection,
+            final String argumentName
+    ) throws InvalidArgumentException {
+        notNull(collection, "collection");
+        if (collection.size() == 0) {
+            throw new InvalidArgumentException(
+                    "The size of argument[{}] must be more then 0", argumentName);
         }
     }
 }
