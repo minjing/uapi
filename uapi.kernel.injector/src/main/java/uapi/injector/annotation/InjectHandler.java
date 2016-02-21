@@ -70,7 +70,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
             Inject inject = fieldElement.getAnnotation(Inject.class);
             String injectId = inject.value();
             if (Strings.isNullOrEmpty(injectId)) {
-                injectId = fieldName;
+                injectId = fieldTypeName;
             }
 
             String paramName = SETTER_PARAM_NAME;
@@ -144,6 +144,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                                 .addModifier(Modifier.PUBLIC)
                                 .setName(methodName)
                                 .setReturnTypeName(MethodMeta.TYPE_VOID)
+                                .addThrowTypeName("uapi.InvalidArgumentException")
                                 .addParameterBuilder(ParameterMeta.builder()
                                         .addModifier(Modifier.FINAL)
                                         .setName(paramName)

@@ -1,3 +1,4 @@
+uapi.helper.ArgumentChecker.notNull(injection, "injection");
 <#list setters as setter>
         if (injection.getId().equals("${setter.injectId}")) {
             if (! (injection.getObject() instanceof ${setter.injectType})) {
