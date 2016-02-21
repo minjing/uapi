@@ -50,6 +50,7 @@ public final class NotNullHandler extends AnnotationHandler<NotNull> {
                     paramBuilder.getName(), paramBuilder.getName());
 
             methodBuilder
+                    .addThrowTypeName("uapi.InvalidArgumentException")
                     .setInvokeSuper(MethodMeta.InvokeSuper.AFTER)
                     .addCodeBuilder(CodeMeta.builder().addRawCode(codes));
         });

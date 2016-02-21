@@ -47,8 +47,8 @@ public final class ClassMeta {
         return this._builder._annotations;
     }
 
-    public List<FieldMeta> getProperties() {
-        return this._builder._properties;
+    public List<FieldMeta> getFields() {
+        return this._builder._fields;
     }
 
     public List<MethodMeta> getMethods() {
@@ -93,8 +93,8 @@ public final class ClassMeta {
         private List<String> _implements = new ArrayList<>();
         private List<AnnotationMeta> _annotations = new ArrayList<>();
         private List<AnnotationMeta.Builder> _annoBuilders = new ArrayList<>();
-        private List<FieldMeta> _properties = new ArrayList<>();
-        private List<FieldMeta.Builder> _propBuilders = new ArrayList<>();
+        private List<FieldMeta> _fields = new ArrayList<>();
+        private List<FieldMeta.Builder> _fieldBuilders = new ArrayList<>();
         private List<MethodMeta> _methods = new ArrayList<>();
         private List<MethodMeta.Builder> _methodBuilders = new ArrayList<>();
 
@@ -158,11 +158,11 @@ public final class ClassMeta {
             return this;
         }
 
-        public Builder addPropertyBuilder(
+        public Builder addFieldBuilder(
                 final FieldMeta.Builder fieldMetaBuilder
         ) throws KernelException {
             checkStatus();
-            this._propBuilders.add(fieldMetaBuilder);
+            this._fieldBuilders.add(fieldMetaBuilder);
             return this;
         }
 
@@ -216,7 +216,7 @@ public final class ClassMeta {
             ArgumentChecker.notEmpty(this._className, "className");
             ArgumentChecker.notEmpty(this._generatedClassName, "generatedClassName");
             this._annoBuilders.forEach(AnnotationMeta.Builder::validation);
-            this._propBuilders.forEach(FieldMeta.Builder::validation);
+            this._fieldBuilders.forEach(FieldMeta.Builder::validation);
             this._methodBuilders.forEach(MethodMeta.Builder::validation);
         }
 
@@ -225,8 +225,8 @@ public final class ClassMeta {
             this._annoBuilders.forEach(annoBuilder ->
                 this._annotations.add(annoBuilder.buildInstance())
             );
-            this._propBuilders.forEach(propBuilder ->
-                this._properties.add(propBuilder.buildInstance())
+            this._fieldBuilders.forEach(fieldBuilder ->
+                this._fields.add(fieldBuilder.buildInstance())
             );
             this._methodBuilders.forEach(methodBuilder ->
                 this._methods.add(methodBuilder.buildInstance())
@@ -243,14 +243,16 @@ public final class ClassMeta {
                             "generatedClassName={}, " +
                             "implements={}, " +
                             "annotations={}, " +
-                            "properties={}, " +
+                            "fields={}, " +
+                            "fieldBuilders={}, " +
                             "methods={}]",
                     this._pkgName,
                     this._className,
                     this._generatedClassName,
                     this._implements,
                     this._annoBuilders,
-                    this._propBuilders,
+                    this._fields,
+                    this._fieldBuilders,
                     this._methodBuilders);
         }
 

@@ -73,7 +73,6 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                 injectId = fieldName;
             }
 
-
             String paramName = SETTER_PARAM_NAME;
             String code;
             if (isCollection) {
@@ -90,6 +89,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                     .setReturnTypeName(MethodMeta.TYPE_VOID)
                     .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
                     .addParameterBuilder(ParameterMeta.builder()
+                            .addModifier(Modifier.FINAL)
                             .setName(paramName)
                             .setType(fieldTypeName))
                     .addCodeBuilder(CodeMeta.builder()
@@ -118,23 +118,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
         return typeArgs;
     }
 
-    /**
-     * Generate inject method code like below:
-     * {@code
-     *      if (injection.getId().equals(xxx)) {
-     *          injection.checkType(xxx.class);
-     *          setter(injection.getObject());
-     *      } else if (xxx) {
-     *          ....
-     *      } else {
-     *          throw new KernelException("Can't inject object {} into service {}", injection, this);
-     *      }
-     * }
-     *
-     * @return code
-     */
     private void implementIInjectable(
-//            final List<ClassMeta.Builder> classBuilders,
             final BuilderContext builderContext
     ) throws KernelException {
         Template temp = builderContext.loadTemplate("template/inject_method.ftl");

@@ -3,7 +3,12 @@ package uapi.annotation;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
+
+import javax.lang.model.element.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class FieldMeta {
 
@@ -29,6 +34,10 @@ public final class FieldMeta {
         return this._builder._isList;
     }
 
+    public String getModifiers() {
+        return CollectionHelper.asString(this._builder._modifiers, " ");
+    }
+
     @Override
     public String toString() {
         return this._builder.toString();
@@ -47,6 +56,7 @@ public final class FieldMeta {
         private String _typeName;
         private String _injectServiceId;
         private boolean _isList;
+        private List<Modifier> _modifiers = new ArrayList<>();
 
         public Builder setName(
                 final String name
@@ -80,11 +90,20 @@ public final class FieldMeta {
             return this;
         }
 
+        public Builder addModifier(
+                final Modifier modifier
+        ) throws KernelException {
+            checkStatus();
+            ArgumentChecker.notNull(modifier, "modifier");
+            return this;
+        }
+
+
         @Override
         protected void validation() throws InvalidArgumentException {
             ArgumentChecker.required(this._name, "fieldName");
             ArgumentChecker.required(this._typeName, "fieldTypeName");
-            ArgumentChecker.required(this._injectServiceId, "injectServiceId");
+            //ArgumentChecker.required(this._injectServiceId, "injectServiceId");
         }
 
         @Override
@@ -95,8 +114,13 @@ public final class FieldMeta {
         @Override
         public String toString() {
             return StringHelper.makeString(
-                    "fieldName={}\nfieldTypeName={}\ninjectServiceId={}",
-                    this._name, this._typeName, this._injectServiceId);
+                    "FieldMeta[" +
+                            "fieldName={}, " +
+                            "fieldTypeName={}," +
+                            "injectServiceId={}",
+                    this._name,
+                    this._typeName,
+                    this._injectServiceId);
         }
     }
 }

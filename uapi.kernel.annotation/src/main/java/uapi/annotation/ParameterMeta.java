@@ -3,6 +3,7 @@ package uapi.annotation;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 
 import javax.lang.model.element.Element;
@@ -34,8 +35,8 @@ public final class ParameterMeta {
         return this._builder._type;
     }
 
-    public List<Modifier> getModifiers() {
-        return this._builder._modifiers;
+    public String getModifiers() {
+        return CollectionHelper.asString(this._builder._modifiers, " ");
     }
 
     public static Builder builder() {
