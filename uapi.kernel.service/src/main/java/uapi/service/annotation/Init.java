@@ -6,7 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The method with this annotation must be invoked after the service instance created.
+ * The method with this annotation must be invoked
+ * after the service instance created and all dependent
+ * services has been injected..
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)

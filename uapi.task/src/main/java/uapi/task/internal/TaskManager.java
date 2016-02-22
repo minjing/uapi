@@ -11,7 +11,7 @@ import uapi.IStateful;
 import uapi.config.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Inject;
 import uapi.service.Registration;
 import uapi.service.Type;
@@ -25,7 +25,7 @@ import uapi.task.ITaskProducer;
     @Type(TaskManager.class)
 })
 public final class TaskManager
-    implements ITaskManager, IService {
+    implements ITaskManager, IService1 {
 
     @Inject
     private ILogger _logger;

@@ -26,7 +26,7 @@ import uapi.service.OnInit;
 
 final class StatefulService {
 
-    private final ServiceRepository         _serviceRepo;
+    private final Service1Repository _serviceRepo;
     private final Class<?>                  _type;
     private final Object                    _instance;
     private final Map<String, Dependency>   _dependencies;
@@ -36,11 +36,11 @@ final class StatefulService {
     private boolean     _lazyInit;
     private Method      _initMethod;
 
-    StatefulService(ServiceRepository serviceRepository, Object instance) {
+    StatefulService(Service1Repository serviceRepository, Object instance) {
         this(serviceRepository, instance, null);
     }
 
-    StatefulService(ServiceRepository serviceRepository, Object instance, String name) {
+    StatefulService(Service1Repository serviceRepository, Object instance, String name) {
         if (serviceRepository == null) {
             throw new InvalidArgumentException("serviceRepository", InvalidArgumentType.EMPTY);
         }

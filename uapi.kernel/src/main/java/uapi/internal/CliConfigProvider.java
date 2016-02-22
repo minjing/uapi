@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import uapi.helper.Pair;
-import uapi.service.IService;
+import uapi.service.IService1;
 
 import com.google.common.base.Strings;
 
 public final class CliConfigProvider
     extends TraceableConfigProvider
-    implements IService {
+    implements IService1 {
 
     private static final String OPTION_PREFIX       = "-";
     private static final String OPTION_VALUE_TAG    = "=";

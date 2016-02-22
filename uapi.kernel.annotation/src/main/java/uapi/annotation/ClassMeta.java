@@ -221,16 +221,23 @@ public final class ClassMeta {
         }
 
         @Override
-        protected ClassMeta buildInstance() {
-            this._annoBuilders.forEach(annoBuilder ->
-                this._annotations.add(annoBuilder.buildInstance())
-            );
-            this._fieldBuilders.forEach(fieldBuilder ->
-                this._fields.add(fieldBuilder.buildInstance())
-            );
-            this._methodBuilders.forEach(methodBuilder ->
-                this._methods.add(methodBuilder.buildInstance())
-            );
+        protected void initProperties() {
+            this._annoBuilders.forEach(annoBuilder -> {
+                annoBuilder.initProperties();
+                this._annotations.add(annoBuilder.createInstance());
+            });
+            this._fieldBuilders.forEach(fieldBuilder -> {
+                fieldBuilder.initProperties();
+                this._fields.add(fieldBuilder.createInstance());
+            });
+            this._methodBuilders.forEach(methodBuilder -> {
+                methodBuilder.initProperties();
+                this._methods.add(methodBuilder.createInstance());
+            });
+        }
+
+        @Override
+        protected ClassMeta createInstance() {
             return new ClassMeta(this);
         }
 

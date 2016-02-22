@@ -6,7 +6,6 @@ import uapi.helper.CollectionHelper;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -15,9 +14,6 @@ import java.util.Set;
  * A generic annotation handler.
  */
 public abstract class AnnotationHandler<T extends Annotation> {
-
-    public static final String CODE_TAB_1   = "    ";
-    public static final String CODE_TAB_2   = "    ";
 
     private LogSupport _logger;
 

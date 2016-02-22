@@ -2,12 +2,12 @@ package uapi.sample;
 
 import uapi.config.Config;
 import uapi.log.ILogger;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.InitAtLaunch;
 import uapi.service.Inject;
 
 @InitAtLaunch
-public final class SampleService implements IService {
+public final class SampleService1 implements IService1 {
 
     @Inject
     private ILogger _logger;

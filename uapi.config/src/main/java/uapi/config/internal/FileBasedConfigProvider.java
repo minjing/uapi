@@ -14,14 +14,14 @@ import uapi.config.Config;
 import uapi.config.IConfigFileParser;
 import uapi.internal.TraceableConfigProvider;
 import uapi.log.ILogger;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.InitAtLaunch;
 import uapi.service.Inject;
 
 @InitAtLaunch
 public class FileBasedConfigProvider
     extends TraceableConfigProvider
-    implements IService {
+    implements IService1 {
 
     private static final String CFG_QUALIFIER   = "config";
 

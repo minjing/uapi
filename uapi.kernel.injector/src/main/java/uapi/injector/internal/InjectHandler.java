@@ -1,5 +1,6 @@
-package uapi.injector.annotation;
+package uapi.injector.internal;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
 import freemarker.template.Template;
 import uapi.InvalidArgumentException;
@@ -10,6 +11,7 @@ import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
 import uapi.injector.IInjectable;
 import uapi.injector.SetterMeta;
+import uapi.injector.annotation.Inject;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.*;
@@ -22,6 +24,7 @@ import java.util.*;
 /**
  * Created by min on 16/2/16.
  */
+@AutoService(AnnotationHandler.class)
 public class InjectHandler extends AnnotationHandler<Inject> {
 
     private static final String SETTER_PARAM_NAME   = "value";
@@ -36,7 +39,6 @@ public class InjectHandler extends AnnotationHandler<Inject> {
             final RoundEnvironment roundEnv,
             final BuilderContext builderCtx
     ) throws KernelException {
-        getLogger().info("IN InjectHandler!!!!");
         Set<? extends Element> paramElements = roundEnv.getElementsAnnotatedWith(Inject.class);
         if (paramElements.size() == 0) {
             return;

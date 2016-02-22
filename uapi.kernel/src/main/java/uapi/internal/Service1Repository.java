@@ -18,13 +18,13 @@ import uapi.KernelException;
 import uapi.helper.ClassHelper;
 import uapi.helper.Executor;
 import uapi.service.IAnnotationMethodHandler;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Inject;
 import uapi.service.OnInit;
 import uapi.service.Registration;
 import uapi.service.Type;
 
-public class ServiceRepository implements IService {
+public class Service1Repository implements IService1 {
 
     private final Lock _uninitedSvcsLock;
     private final Lock _initedSvcsLock;
@@ -36,7 +36,7 @@ public class ServiceRepository implements IService {
     @Inject
     private final Map<Class<?>, List<IAnnotationMethodHandler<?>>> _annotationHandlers;
 
-    public ServiceRepository() {
+    public Service1Repository() {
         this._uninitedSvcsLock      = new ReentrantLock();
         this._initedSvcsLock        = new ReentrantLock();
         this._uninitedSvcs          = LinkedListMultimap.create();
@@ -45,8 +45,8 @@ public class ServiceRepository implements IService {
         this._annotationHandlers    = new HashMap<>();
     }
 
-    public void addServices(List<IService> services) {
-        for (IService service : services) {
+    public void addServices(List<IService1> services) {
+        for (IService1 service : services) {
             addService(service);
         }
     }

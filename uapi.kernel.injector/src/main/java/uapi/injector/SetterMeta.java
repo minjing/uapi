@@ -76,8 +76,12 @@ public class SetterMeta extends MethodMeta {
         }
 
         @Override
-        protected SetterMeta buildInstance() {
-            super.buildInstance();
+        protected void initProperties() {
+            super.initProperties();
+        }
+
+        @Override
+        protected SetterMeta createInstance() {
             return new SetterMeta(this);
         }
     }

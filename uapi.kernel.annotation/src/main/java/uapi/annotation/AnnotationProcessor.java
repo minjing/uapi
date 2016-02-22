@@ -24,6 +24,9 @@ import java.util.*;
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
 
+    private static final String PATH_ANNOTAION_HANDLER =
+            "META-INF/services/" + AnnotationHandler.class.getCanonicalName();
+
     private Map<String, List<AnnotationHandler>> _processors;
     private ProcessingEnvironment _procEnv;
     protected LogSupport _logger;
@@ -45,7 +48,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             fObj = this._procEnv.getFiler().getResource(
                     StandardLocation.CLASS_PATH,
                     StringHelper.EMPTY,
-                    AnnotationHandler.class.getCanonicalName());
+                    PATH_ANNOTAION_HANDLER);
         } catch (IOException ex) {
             this._logger.info("Can't found or read annotation handler file - " + AnnotationHandler.class.getCanonicalName());
             return;

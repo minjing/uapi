@@ -11,7 +11,7 @@ import uapi.config.Config;
 import uapi.config.IConfigTracer;
 import uapi.service.AnnotatedMethod;
 import uapi.service.IAnnotationMethodHandler;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -23,7 +23,7 @@ import com.google.common.base.Strings;
         @Type(IConfigTracer.class)
 })
 public final class Configurator
-    implements IService, IAnnotationMethodHandler<Config>, IConfigTracer {
+    implements IService1, IAnnotationMethodHandler<Config>, IConfigTracer {
 
     private final Map<String /* qualifier */, Object> _cgfs;
     private final Map<String /* qualifier */, List<ConfigurableServiceMethod>> _svcDescs;

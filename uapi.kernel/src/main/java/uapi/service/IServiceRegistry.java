@@ -18,7 +18,7 @@ public interface IServiceRegistry {
     <T> T findService(String serviceId);
 
     /**
-     * The IInjectable should be replaced by IService interface
+     * The IInjectable should be replaced by IService1 interface
      * @param service
      */
     void register(uapi.IService service);

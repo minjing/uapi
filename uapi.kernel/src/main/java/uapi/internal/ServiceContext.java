@@ -13,9 +13,9 @@ import uapi.service.Type;
 public class ServiceContext implements IServiceContext {
 
     @Inject
-    private ServiceRepository _serviceRepository;
+    private Service1Repository _serviceRepository;
 
-    public void setServiceRepository(ServiceRepository serviceRepository) {
+    public void setServiceRepository(Service1Repository serviceRepository) {
         if (serviceRepository == null) {
             throw new InvalidArgumentException("serviceRepository", InvalidArgumentType.EMPTY);
         }

@@ -6,12 +6,12 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import uapi.KernelException;
 import uapi.log.ILogger;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Inject;
 import uapi.task.ITask;
 
 class TaskTransfer
-    implements ITaskTransfer, IService {
+    implements ITaskTransfer, IService1 {
 
     private static final int TASK_QUEUE_CAPACITY    = 32;
     private static final int WAIT_TIME              = 1000;

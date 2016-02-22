@@ -12,7 +12,7 @@ import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.KernelException;
 import uapi.config.IConfigFileParser;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -20,7 +20,7 @@ import uapi.service.Type;
     @Type(IConfigFileParser.class)
 })
 public class JsonFileParser
-    implements IService, IConfigFileParser {
+    implements IService1, IConfigFileParser {
 
     private static final String JSON_FILE_EXT   = "json";
 

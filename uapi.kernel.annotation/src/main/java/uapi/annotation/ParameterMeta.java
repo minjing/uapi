@@ -106,7 +106,10 @@ public final class ParameterMeta {
         }
 
         @Override
-        protected ParameterMeta buildInstance() {
+        protected void initProperties() { }
+
+        @Override
+        protected ParameterMeta createInstance() {
             return new ParameterMeta(this);
         }
 

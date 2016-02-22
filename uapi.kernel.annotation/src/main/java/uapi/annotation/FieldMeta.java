@@ -107,7 +107,10 @@ public final class FieldMeta {
         }
 
         @Override
-        protected FieldMeta buildInstance() {
+        protected void initProperties() { }
+
+        @Override
+        protected FieldMeta createInstance() {
             return new FieldMeta(this);
         }
 

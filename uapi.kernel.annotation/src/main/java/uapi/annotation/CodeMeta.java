@@ -92,7 +92,10 @@ public class CodeMeta {
         }
 
         @Override
-        protected CodeMeta buildInstance() {
+        protected void initProperties() { }
+
+        @Override
+        protected CodeMeta createInstance() {
             return new CodeMeta(this);
         }
 

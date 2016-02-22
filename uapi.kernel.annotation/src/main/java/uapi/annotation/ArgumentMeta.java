@@ -67,7 +67,10 @@ public final class ArgumentMeta {
         }
 
         @Override
-        protected ArgumentMeta buildInstance() {
+        protected void initProperties() { }
+
+        @Override
+        protected ArgumentMeta createInstance() {
             return new ArgumentMeta(this);
         }
 

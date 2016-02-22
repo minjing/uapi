@@ -193,14 +193,6 @@ public class MethodMeta {
             return this;
         }
 
-//        public Builder addCodes(
-//                final String code
-//        ) throws KernelException {
-//            checkStatus();
-//            this._codes.add(code);
-//            return this;
-//        }
-
         public Builder addCodeBuilder(
                 final CodeMeta.Builder codeBuilder
         ) throws InvalidArgumentException {
@@ -253,11 +245,19 @@ public class MethodMeta {
         }
 
         @Override
-        protected MethodMeta buildInstance() {
-            this._paramBuilders.forEach(paramBuilder ->
-                    this._params.add(paramBuilder.buildInstance()));
-            this._codeBuilders.forEach(codeBuilder ->
-                    this._codes.add(codeBuilder.buildInstance()));
+        protected void initProperties() {
+            this._paramBuilders.forEach(paramBuilder -> {
+                paramBuilder.initProperties();
+                this._params.add(paramBuilder.createInstance());
+            });
+            this._codeBuilders.forEach(codeBuilder -> {
+                codeBuilder.initProperties();
+                this._codes.add(codeBuilder.createInstance());
+            });
+        }
+
+        @Override
+        protected MethodMeta createInstance() {
             return new MethodMeta(this);
         }
 

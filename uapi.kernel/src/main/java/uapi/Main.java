@@ -8,9 +8,9 @@ import java.util.concurrent.Semaphore;
 import uapi.helper.StringHelper;
 import uapi.helper.TimeHelper;
 import uapi.internal.CliConfigProvider;
-import uapi.internal.ServiceRepository;
+import uapi.internal.Service1Repository;
 import uapi.log.ILogger;
-import uapi.service.IService;
+import uapi.service.IService1;
 
 public final class Main {
 
@@ -23,18 +23,18 @@ public final class Main {
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
 
-        ServiceLoader<IService> svcLoaders = ServiceLoader.load(IService.class);
-        ServiceRepository svcRepo = null;
-        List<IService> svcs = new ArrayList<>();
-        // find out ServiceRepository first and then put all services into it;
-        for (IService svc : svcLoaders) {
-            if (ServiceRepository.class.equals(svc.getClass())) {
-                svcRepo = (ServiceRepository) svc;
+        ServiceLoader<IService1> svcLoaders = ServiceLoader.load(IService1.class);
+        Service1Repository svcRepo = null;
+        List<IService1> svcs = new ArrayList<>();
+        // find out Service1Repository first and then put all services into it;
+        for (IService1 svc : svcLoaders) {
+            if (Service1Repository.class.equals(svc.getClass())) {
+                svcRepo = (Service1Repository) svc;
             }
             svcs.add(svc);
         }
         if (svcRepo == null) {
-            throw new KernelException("Can't find out ServiceRepository instance");
+            throw new KernelException("Can't find out Service1Repository instance");
         }
         svcRepo.addServices(svcs);
 
@@ -42,7 +42,7 @@ public final class Main {
         CliConfigProvider cliCfgSrc = svcRepo.getService(CliConfigProvider.class);
         cliCfgSrc.parse(args);
 
-        svcRepo = svcRepo.getService(ServiceRepository.class);
+        svcRepo = svcRepo.getService(Service1Repository.class);
 
         long expend = System.currentTimeMillis() - startTime;
         long expendSecond = expend / TimeHelper.MS_OF_SECOND;

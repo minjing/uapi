@@ -51,7 +51,10 @@ final class AnnotationMeta {
         }
 
         @Override
-        protected AnnotationMeta buildInstance() {
+        protected void initProperties() { }
+
+        @Override
+        protected AnnotationMeta createInstance() {
             return new AnnotationMeta(this);
         }
 

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Map;
 
 import uapi.config.IConfigFileParser;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Registration;
 import uapi.service.Type;
 
@@ -12,7 +12,7 @@ import uapi.service.Type;
     @Type(IConfigFileParser.class)
 })
 public final class PropertiesFileParser
-    implements IService, IConfigFileParser {
+    implements IService1, IConfigFileParser {
 
     @Override
     public String[] supportedFileExtensions() {

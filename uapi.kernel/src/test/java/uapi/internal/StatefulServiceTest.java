@@ -9,9 +9,7 @@ import java.util.List;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import uapi.internal.ServiceRepository;
-import uapi.internal.StatefulService;
-import uapi.service.IService;
+import uapi.service.IService1;
 import uapi.service.Inject;
 import uapi.service.OnInit;
 import uapi.service.Registration;
@@ -20,38 +18,39 @@ import uapi.test.MockitoTest;
 
 public class StatefulServiceTest extends MockitoTest {
 
-    @Mock ServiceRepository _svcRepo;
+    @Mock
+    Service1Repository _svcRepo;
 
     @Test
     public void testServiceWithoutId() {
-        TestService svcInst = new TestService();
+        TestService1 svcInst = new TestService1();
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getName());
+        assertEquals(TestService1.class.getName(), stateService.getName());
         assertTrue(stateService.hasInitMethod());
         assertTrue(stateService.isLazyInit());
     }
 
     @Test
     public void testServiceWithDependency() {
-        TestService svcInst = new TestService();
+        TestService1 svcInst = new TestService1();
         when(this._svcRepo.getService(String.class.getName(), svcInst)).thenReturn("Hello");
 
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getName());
-        assertEquals("Hello", ((TestService) stateService.getInstance(null))._message);
+        assertEquals(TestService1.class.getName(), stateService.getName());
+        assertEquals("Hello", ((TestService1) stateService.getInstance(null))._message);
 
         verify(this._svcRepo, times(1)).getService(String.class.getName(), svcInst);
     }
 
     @Test
     public void testServiceInit() {
-        TestService svcInst = new TestService();
+        TestService1 svcInst = new TestService1();
 
         when(this._svcRepo.getService(String.class.getName(), svcInst)).thenReturn("Hello");
 
         StatefulService stateService = new StatefulService(this._svcRepo, svcInst);
-        assertEquals(TestService.class.getName(), stateService.getName());
-        assertTrue(((TestService) stateService.getInstance(null)).isInit());
+        assertEquals(TestService1.class.getName(), stateService.getName());
+        assertTrue(((TestService1) stateService.getInstance(null)).isInit());
     }
 
     @Test
@@ -67,7 +66,7 @@ public class StatefulServiceTest extends MockitoTest {
         assertTrue(inst._messages.contains("Jing"));
     }
 
-    final class TestService implements IService {
+    final class TestService1 implements IService1 {
 
         private boolean _initialized = false;
 
@@ -88,11 +87,11 @@ public class StatefulServiceTest extends MockitoTest {
         }
     }
 
-    @Registration(names="TestServiceWithId")
-    final class TestServiceWithId implements IService { }
+    @Registration(names="TestService1WithId")
+    final class TestService1WithId implements IService1 { }
 
-    @Registration({@Type(IService.class)})
-    final class TestServiceWithType implements IService { }
+    @Registration({@Type(IService1.class)})
+    final class TestService1WithType implements IService1 { }
 
     final class MultipleDependenciesService {
 

@@ -10,7 +10,8 @@ public abstract class Builder<T> {
     public T build() throws KernelException {
         checkStatus();
         validation();
-        T obj = buildInstance();
+        initProperties();
+        T obj = createInstance();
         this._built = true;
         return obj;
     }
@@ -23,5 +24,7 @@ public abstract class Builder<T> {
 
     protected abstract void validation() throws InvalidArgumentException;
 
-    protected abstract T buildInstance();
+    protected abstract void initProperties();
+
+    protected abstract T createInstance();
 }

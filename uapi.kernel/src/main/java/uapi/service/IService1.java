@@ -6,7 +6,7 @@ package uapi.service;
  * 
  * @author min
  */
-public interface IService {
+public interface IService1 {
 
 //    Class<?>[] getFriendTypes();
 }
