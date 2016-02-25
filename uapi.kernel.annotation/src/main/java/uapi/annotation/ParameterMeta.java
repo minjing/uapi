@@ -45,7 +45,7 @@ public final class ParameterMeta {
 
     public static Builder builder(
             final Element parameterElement,
-            final BuilderContext builderContext
+            final IBuilderContext builderContext
     ) throws KernelException {
         ArgumentChecker.notNull(parameterElement, "parameterElement");
         ArgumentChecker.notNull(builderContext, "builderContext");

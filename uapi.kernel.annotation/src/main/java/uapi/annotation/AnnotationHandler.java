@@ -30,7 +30,7 @@ public abstract class AnnotationHandler<T extends Annotation> {
 
     public abstract void handle(
             final RoundEnvironment roundEnv,
-            final BuilderContext buildCtx
+            final IBuilderContext buildCtx
     ) throws KernelException;
 
     protected void checkModifiers(

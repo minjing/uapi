@@ -2,6 +2,7 @@ dependencies {
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.injector')
+    compile project(':uapi.kernel.service')
 }
 
 jar {

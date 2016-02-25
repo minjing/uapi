@@ -36,6 +36,10 @@ public class MethodMeta {
         return CollectionHelper.asString(this._builder._modifiers, " ");
     }
 
+    public List<AnnotationMeta> getAnnotations() {
+        return this._builder._annos;
+    }
+
     public String getReturnTypeName() {
         return this._builder._rtnTypeName;
     }
@@ -75,7 +79,7 @@ public class MethodMeta {
 
     public static Builder builder(
             final Element methodElement,
-            final BuilderContext builderContext
+            final IBuilderContext builderContext
     ) throws KernelException {
         ArgumentChecker.notNull(methodElement, "methodElement");
         ArgumentChecker.notNull(builderContext, "builderContext");
@@ -103,6 +107,8 @@ public class MethodMeta {
 
         private String _name;
         private List<Modifier> _modifiers = new ArrayList<>();
+        private List<AnnotationMeta> _annos = new ArrayList<>();
+        private List<AnnotationMeta.Builder> _annoBuilders = new ArrayList<>();
         private String _rtnTypeName;
         private boolean _isSetter = false;
         private InvokeSuper _invokeSuper = InvokeSuper.NONE;
@@ -130,6 +136,15 @@ public class MethodMeta {
             checkStatus();
             ArgumentChecker.notNull(modifier, "modifier");
             this._modifiers.add(modifier);
+            return this;
+        }
+
+        public Builder addAnnotationBuilder(
+                final AnnotationMeta.Builder builder
+        ) throws KernelException {
+            checkStatus();
+            ArgumentChecker.notNull(builder, "builder");
+            this._annoBuilders.add(builder);
             return this;
         }
 
@@ -185,6 +200,10 @@ public class MethodMeta {
             return null;
         }
 
+        public int getParameterCount() {
+            return this._paramBuilders.size();
+        }
+
         public Builder addThrowTypeName(
                 String typeName
         ) throws KernelException {
@@ -204,7 +223,7 @@ public class MethodMeta {
 
         public ParameterMeta.Builder findParameterBuilder(
                 final Element parameterElement,
-                final BuilderContext builderContext
+                final IBuilderContext builderContext
         ) throws KernelException {
             ArgumentChecker.notNull(parameterElement, "parameterElement");
             ArgumentChecker.notNull(builderContext, "builderContext");
@@ -240,12 +259,17 @@ public class MethodMeta {
         protected void validation() throws InvalidArgumentException {
             ArgumentChecker.notEmpty(this._name, "name");
             ArgumentChecker.notEmpty(this._rtnTypeName, "returnTypeName");
-            this._paramBuilders.forEach(paramBuilder -> paramBuilder.validation());
-            this._codeBuilders.forEach(codeBuilder -> codeBuilder.validation());
+            this._annoBuilders.forEach(AnnotationMeta.Builder::validation);
+            this._paramBuilders.forEach(ParameterMeta.Builder::validation);
+            this._codeBuilders.forEach(CodeMeta.Builder::validation);
         }
 
         @Override
         protected void initProperties() {
+            this._annoBuilders.forEach(annoBuilder -> {
+                annoBuilder.initProperties();
+                this._annos.add(annoBuilder.createInstance());
+            });
             this._paramBuilders.forEach(paramBuilder -> {
                 paramBuilder.initProperties();
                 this._params.add(paramBuilder.createInstance());
@@ -265,6 +289,8 @@ public class MethodMeta {
         public String toString() {
             return StringHelper.makeString(
                     "MethodMeta[" +
+                            "annotation={}, " +
+                            "annotationBuilders={}, " +
                             "name={}, " +
                             "modifiers={}, " +
                             "returnTypeName={}, " +
@@ -273,6 +299,8 @@ public class MethodMeta {
                             "invokeSuper={}, " +
                             "codes={}, " +
                             "codeBuilders={}]",
+                    this._annos,
+                    this._annoBuilders,
                     this._name,
                     this._modifiers,
                     this._rtnTypeName,

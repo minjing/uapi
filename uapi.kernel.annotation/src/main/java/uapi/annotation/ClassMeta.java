@@ -2,6 +2,7 @@ package uapi.annotation;
 
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
+import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 
@@ -146,6 +147,7 @@ public final class ClassMeta {
         ) throws KernelException {
             checkStatus();
             ArgumentChecker.notNull(implement, "implement");
+            this._implements.add(implement);
             return this;
         }
 
@@ -181,7 +183,7 @@ public final class ClassMeta {
 
         public MethodMeta.Builder findMethodBuilder(
                 final Element methodElement,
-                final BuilderContext builderContext
+                final IBuilderContext builderContext
         ) throws KernelException {
             ArgumentChecker.notNull(methodElement, "methodElement");
             MethodMeta.Builder methodBuilder = MethodMeta.builder(methodElement, builderContext);
@@ -208,6 +210,15 @@ public final class ClassMeta {
                 }
             });
             return setters;
+        }
+
+        public List<MethodMeta.Builder> findMethodBuilders(
+                final String methodName
+        ) throws InvalidArgumentException {
+            ArgumentChecker.notEmpty(methodName, "methodName");
+            return this._methodBuilders.parallelStream()
+                    .filter(methodBuilder -> methodBuilder.getName().equals(methodName))
+                    .collect(Collectors.toList());
         }
 
         @Override

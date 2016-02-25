@@ -30,9 +30,12 @@ public final class CollectionHelper {
     }
 
     public static String asString(Collection collection, String separator) {
+        if (collection.size() == 0) {
+            return StringHelper.EMPTY;
+        }
         StringBuilder sb = new StringBuilder();
         collection.forEach(item ->
             sb.append(item).append(separator));
-        return sb.toString();
+        return sb.deleteCharAt(sb.length() - 1).toString();
     }
 }

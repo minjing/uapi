@@ -37,7 +37,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
     @Override
     public void handle(
             final RoundEnvironment roundEnv,
-            final BuilderContext builderCtx
+            final IBuilderContext builderCtx
     ) throws KernelException {
         Set<? extends Element> paramElements = roundEnv.getElementsAnnotatedWith(Inject.class);
         if (paramElements.size() == 0) {
@@ -101,7 +101,9 @@ public class InjectHandler extends AnnotationHandler<Inject> {
         implementIInjectable(builderCtx);
     }
 
-    private boolean isCollection(Element fieldElement, BuilderContext builderCtx) {
+    private boolean isCollection(
+            final Element fieldElement,
+            final IBuilderContext builderCtx) {
         Elements elemtUtils = builderCtx.getElementUtils();
         Types typeUtils = builderCtx.getTypeUtils();
         WildcardType wildcardType = typeUtils.getWildcardType(null, null);
@@ -121,7 +123,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
     }
 
     private void implementIInjectable(
-            final BuilderContext builderContext
+            final IBuilderContext builderContext
     ) throws KernelException {
         Template temp = builderContext.loadTemplate("template/inject_method.ftl");
 
@@ -143,10 +145,12 @@ public class InjectHandler extends AnnotationHandler<Inject> {
 
                 classBuilder.addImplement(IInjectable.class.getCanonicalName())
                         .addMethodBuilder(MethodMeta.builder()
+                                .addAnnotationBuilder(AnnotationMeta.builder()
+                                        .setName("Override"))
                                 .addModifier(Modifier.PUBLIC)
                                 .setName(methodName)
                                 .setReturnTypeName(MethodMeta.TYPE_VOID)
-                                .addThrowTypeName("uapi.InvalidArgumentException")
+                                .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
                                 .addParameterBuilder(ParameterMeta.builder()
                                         .addModifier(Modifier.FINAL)
                                         .setName(paramName)

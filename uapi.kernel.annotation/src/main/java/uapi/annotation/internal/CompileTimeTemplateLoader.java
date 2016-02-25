@@ -1,4 +1,4 @@
-package uapi.annotation;
+package uapi.annotation.internal;
 
 import freemarker.cache.TemplateLoader;
 import uapi.KernelException;

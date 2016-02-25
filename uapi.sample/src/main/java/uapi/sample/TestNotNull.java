@@ -2,6 +2,7 @@ package uapi.sample;
 
 import uapi.annotation.NotNull;
 import uapi.injector.annotation.Inject;
+import uapi.service.annotation.Init;
 
 import java.util.List;
 
@@ -20,5 +21,10 @@ public class TestNotNull {
             @NotNull final String name
     ) {
         System.out.print("Hello " + name);
+    }
+
+    @Init
+    public void init2() {
+
     }
 }

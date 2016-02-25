@@ -1,8 +1,11 @@
-package uapi.annotation;
+package uapi.annotation.internal;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import uapi.KernelException;
+import uapi.annotation.ClassMeta;
+import uapi.annotation.IBuilderContext;
+import uapi.annotation.internal.CompileTimeTemplateLoader;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 
@@ -18,13 +21,13 @@ import java.util.stream.Collectors;
 /**
  * A context for building class builder
  */
-public final class BuilderContext {
+public final class BuilderContext implements IBuilderContext {
 
     private final ProcessingEnvironment _procEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
     private final Configuration _tempConf;
 
-    BuilderContext(final ProcessingEnvironment processingEnvironment) {
+    public BuilderContext(final ProcessingEnvironment processingEnvironment) {
         ArgumentChecker.notNull(processingEnvironment, "processingEnvironment");
         this._procEnv = processingEnvironment;
         // Initialize freemarker template configuration
@@ -35,30 +38,37 @@ public final class BuilderContext {
                 new CompileTimeTemplateLoader(this, StringHelper.EMPTY));
     }
 
+    @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this._procEnv;
     }
 
+    @Override
     public Elements getElementUtils() {
         return this._procEnv.getElementUtils();
     }
 
+    @Override
     public Types getTypeUtils() {
         return this._procEnv.getTypeUtils();
     }
 
-    Filer getFiler() {
+    @Override
+    public Filer getFiler() {
         return this._procEnv.getFiler();
     }
 
+    @Override
     public List<ClassMeta.Builder> getBuilders() {
         return this._clsBuilders;
     }
 
-    void clearBuilders() {
+    @Override
+    public void clearBuilders() {
         this._clsBuilders.clear();
     }
 
+    @Override
     public Template loadTemplate(String templatePath) {
         ArgumentChecker.notEmpty(templatePath, "templatePath");
         Template temp;
@@ -70,6 +80,7 @@ public final class BuilderContext {
         return temp;
     }
 
+    @Override
     public ClassMeta.Builder findClassBuilder(Element classElement) {
         ArgumentChecker.notNull(classElement, "classElement");
         final ClassMeta.Builder expectedBuilder = ClassMeta.builder(classElement, this);
@@ -91,7 +102,7 @@ public final class BuilderContext {
         return clsBuilder;
     }
 
-    private String generateSubClassName(String superClassName) {
-        return superClassName + "_Generated";
-    }
+//    private String generateSubClassName(String superClassName) {
+//        return superClassName + "_Generated";
+//    }
 }

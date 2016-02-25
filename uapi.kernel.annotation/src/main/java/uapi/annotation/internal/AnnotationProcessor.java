@@ -1,30 +1,28 @@
-package uapi.annotation;
+package uapi.annotation.internal;
 
 import com.google.auto.service.AutoService;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
-import uapi.annotation.handler.NotNullHandler;
-import uapi.helper.StringHelper;
+import uapi.annotation.AnnotationHandler;
+import uapi.annotation.ClassMeta;
+import uapi.annotation.LogSupport;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.URL;
 import java.util.*;
 
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
 
-    private static final String PATH_ANNOTAION_HANDLER =
+    private static final String PATH_ANNOTATION_HANDLER =
             "META-INF/services/" + AnnotationHandler.class.getCanonicalName();
 
     private Map<String, List<AnnotationHandler>> _processors;
@@ -41,32 +39,28 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void loadExternalHandler() {
-        FileObject fObj;
         InputStream is = null;
         Scanner scanner = null;
-        try {
-            fObj = this._procEnv.getFiler().getResource(
-                    StandardLocation.CLASS_PATH,
-                    StringHelper.EMPTY,
-                    PATH_ANNOTAION_HANDLER);
-        } catch (IOException ex) {
-            this._logger.info("Can't found or read annotation handler file - " + AnnotationHandler.class.getCanonicalName());
-            return;
-        }
 
         try {
-            is = fObj.openInputStream();
-            scanner = new Scanner(is);
-            while (scanner.hasNext()) {
-                String handlerClassName = scanner.nextLine();
-                this._logger.info("Initial external annotation handler - " + handlerClassName);
-                Class handlerClass = Class.forName(handlerClassName);
-                Object handler = handlerClass.newInstance();
-                if (! (handler instanceof AnnotationHandler)) {
-                    this._logger.error("");
-                    return;
+            final Enumeration<URL> systemResources =
+                    this.getClass().getClassLoader().getResources(PATH_ANNOTATION_HANDLER);
+            while (systemResources.hasMoreElements()) {
+                is = systemResources.nextElement().openStream();
+                scanner = new Scanner(is);
+                while (scanner.hasNext()) {
+                    String handlerClassName = scanner.nextLine();
+                    this._logger.info("Initial external annotation handler - " + handlerClassName);
+                    Class handlerClass = Class.forName(handlerClassName);
+                    Object handler = handlerClass.newInstance();
+                    if (!(handler instanceof AnnotationHandler)) {
+                        this._logger.error(
+                                "The handler [{}] is not an instance of AnnotationHandler",
+                                handler.getClass().getName());
+                        return;
+                    }
+                    initForHandler((AnnotationHandler) handler);
                 }
-                initForHandler((AnnotationHandler) handler);
             }
         } catch (Exception ex) {
             this._logger.error(ex);

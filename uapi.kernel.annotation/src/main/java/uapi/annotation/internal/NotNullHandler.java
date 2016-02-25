@@ -1,4 +1,4 @@
-package uapi.annotation.handler;
+package uapi.annotation.internal;
 
 import uapi.KernelException;
 import uapi.annotation.*;
@@ -24,7 +24,7 @@ public final class NotNullHandler extends AnnotationHandler<NotNull> {
     @Override
     public void handle(
             final RoundEnvironment roundEnv,
-            final BuilderContext builderCtx
+            final IBuilderContext builderCtx
     ) throws KernelException {
         Set<? extends Element> paramElements = roundEnv.getElementsAnnotatedWith(NotNull.class);
         if (paramElements.size() == 0) {

@@ -7,7 +7,7 @@ import uapi.helper.StringHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-final class AnnotationMeta {
+public final class AnnotationMeta {
 
     private final Builder _builder;
 
@@ -23,9 +23,11 @@ final class AnnotationMeta {
         return this._builder._args;
     }
 
-    public static final Builder builder = new Builder();
+    public static Builder builder() {
+        return new Builder();
+    }
 
-    static final class Builder extends uapi.helper.Builder<AnnotationMeta> {
+    public static final class Builder extends uapi.helper.Builder<AnnotationMeta> {
 
         private String _name;
         private List<ArgumentMeta> _args = new ArrayList<>();

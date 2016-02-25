@@ -5,7 +5,7 @@ ${import};
 </#list>
 
 <#list annotations as annotation>
-${annotation.name}(<#list annotation.arguments as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}</#if></#list>)
+@${annotation.name}(<#list annotation.arguments as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}</#if></#list>)
 </#list>
 public final class ${generatedClassName}
 extends ${className}
@@ -21,6 +21,9 @@ extends ${className}
 </#list>
 
 <#list methods as method>
+    <#list method.annotations as annotation>
+    @${annotation.name}<#list annotation.arguments>(<#items as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}</#if></#items>)</#list>
+    </#list>
     ${method.modifiers} ${method.returnTypeName} ${method.name} (
     <#list method.parameters as parameter>
             ${parameter.modifiers} ${parameter.type} ${parameter.name}<#sep>, </#sep>
