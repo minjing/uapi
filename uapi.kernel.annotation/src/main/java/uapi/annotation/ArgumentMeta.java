@@ -29,12 +29,18 @@ public final class ArgumentMeta {
         return this._builder._isString;
     }
 
-    static final class Builder
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder
             extends uapi.helper.Builder<ArgumentMeta> {
 
         private String _name;
         private String _value;
         private boolean _isString;
+
+        private Builder() { }
 
         public Builder setName(
                 final String name

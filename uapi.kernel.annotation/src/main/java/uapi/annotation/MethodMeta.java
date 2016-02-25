@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
  */
 public class MethodMeta {
 
-    public static final String TYPE_VOID    = "void";
-
     protected final Builder _builder;
 
     protected MethodMeta(
@@ -294,6 +292,7 @@ public class MethodMeta {
                             "name={}, " +
                             "modifiers={}, " +
                             "returnTypeName={}, " +
+                            "isSetter={}, " +
                             "parameters={}, " +
                             "throwTypeNames={}, " +
                             "invokeSuper={}, " +
@@ -304,6 +303,7 @@ public class MethodMeta {
                     this._name,
                     this._modifiers,
                     this._rtnTypeName,
+                    this._isSetter,
                     this._paramBuilders,
                     this._throwTypeNames,
                     this._invokeSuper,

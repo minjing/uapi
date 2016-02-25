@@ -27,6 +27,7 @@ import java.util.*;
 @AutoService(AnnotationHandler.class)
 public class InjectHandler extends AnnotationHandler<Inject> {
 
+    private static final String TEMPLATE_FILE       = "template/inject_method.ftl";
     private static final String SETTER_PARAM_NAME   = "value";
 
     @Override
@@ -88,7 +89,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                     .setInjectId(injectId)
                     .setInjectType(fieldTypeName)
                     .setName(setterName)
-                    .setReturnTypeName(MethodMeta.TYPE_VOID)
+                    .setReturnTypeName(Type.VOID)
                     .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
                     .addParameterBuilder(ParameterMeta.builder()
                             .addModifier(Modifier.FINAL)
@@ -125,7 +126,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
     private void implementIInjectable(
             final IBuilderContext builderContext
     ) throws KernelException {
-        Template temp = builderContext.loadTemplate("template/inject_method.ftl");
+        Template temp = builderContext.loadTemplate(TEMPLATE_FILE);
 
         String methodName = "injectObject";
         String paramName = "injection";
@@ -149,7 +150,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                                         .setName("Override"))
                                 .addModifier(Modifier.PUBLIC)
                                 .setName(methodName)
-                                .setReturnTypeName(MethodMeta.TYPE_VOID)
+                                .setReturnTypeName(Type.VOID)
                                 .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
                                 .addParameterBuilder(ParameterMeta.builder()
                                         .addModifier(Modifier.FINAL)

@@ -146,7 +146,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             Writer srcWriter = null;
             try {
                 ClassMeta classMeta = classBuilder.build();
-                //System.out.println("1111111" + classBuilder);
+                System.out.println("1111111" + classBuilder.findSetterBuilders());
                 //System.out.println("asdfsfas" + classMeta.getMethods().get(0).getCodes());
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
                         classMeta.getGeneratedClassName()

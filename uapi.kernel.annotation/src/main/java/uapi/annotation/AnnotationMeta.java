@@ -9,6 +9,9 @@ import java.util.List;
 
 public final class AnnotationMeta {
 
+    public static final String OVERRIDE     = "Override";
+    public static final String AUTO_SERVICE = "AutoService";
+
     private final Builder _builder;
 
     private AnnotationMeta(Builder builder) {
@@ -31,6 +34,7 @@ public final class AnnotationMeta {
 
         private String _name;
         private List<ArgumentMeta> _args = new ArrayList<>();
+        private List<ArgumentMeta.Builder> _argBuilders = new ArrayList<>();
 
         public Builder setName(
                 final String name
@@ -40,10 +44,10 @@ public final class AnnotationMeta {
         }
 
         public Builder addArgument(
-                final ArgumentMeta argumentMeta
+                final ArgumentMeta.Builder builder
         ) throws InvalidArgumentException {
-            ArgumentChecker.notNull(argumentMeta, "argumentMeta");
-            this._args.add(argumentMeta);
+            ArgumentChecker.notNull(builder, "builder");
+            this._argBuilders.add(builder);
             return this;
         }
 
@@ -53,7 +57,12 @@ public final class AnnotationMeta {
         }
 
         @Override
-        protected void initProperties() { }
+        protected void initProperties() {
+            this._argBuilders.forEach(argBuilder -> {
+                argBuilder.initProperties();
+                this._args.add(argBuilder.createInstance());
+            });
+        }
 
         @Override
         protected AnnotationMeta createInstance() {

@@ -4,11 +4,11 @@ import com.google.auto.service.AutoService;
 import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.StringHelper;
+import uapi.service.IInitial;
 import uapi.service.IService;
 import uapi.service.annotation.Init;
 
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -66,7 +66,7 @@ public final class InitHandler extends AnnotationHandler<Init> {
             String code = StringHelper.makeString(
                     "super.{}();", methodName);
             clsBuilder
-                    .addImplement(IService.class.getCanonicalName())
+                    .addImplement(IInitial.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()
                             .addModifier(Modifier.PUBLIC)
                             .setName(METHOD_INIT_NAME)
