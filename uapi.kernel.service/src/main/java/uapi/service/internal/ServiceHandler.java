@@ -31,10 +31,9 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
 
     @Override
     public void handle(
-            final RoundEnvironment roundEnv,
-            final IBuilderContext buildCtx
+            final IBuilderContext builderCtx
     ) throws KernelException {
-        Set<? extends Element> classElements = roundEnv.getElementsAnnotatedWith(Service.class);
+        Set<? extends Element> classElements = builderCtx.getElementsAnnotatedWith(Service.class);
         if (classElements.size() == 0) {
             return;
         }
@@ -47,7 +46,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             }
             checkModifiers(classElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
-            ClassMeta.Builder classBuilder = buildCtx.findClassBuilder(classElement);
+            ClassMeta.Builder classBuilder = builderCtx.findClassBuilder(classElement);
             Service service = classElement.getAnnotation(Service.class);
             String[] serviceIds = service.value();
             if (serviceIds == null || serviceIds.length == 0) {
@@ -58,7 +57,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                                 classElement.getSimpleName().toString())};
             }
 
-            Template temp = buildCtx.loadTemplate(TEMPLATE_FILE);
+            Template temp = builderCtx.loadTemplate(TEMPLATE_FILE);
             Map<String, Object> tempModel = new HashMap<>();
             tempModel.put("serviceIds", serviceIds);
             classBuilder

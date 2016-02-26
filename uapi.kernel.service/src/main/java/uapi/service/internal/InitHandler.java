@@ -30,10 +30,9 @@ public final class InitHandler extends AnnotationHandler<Init> {
 
     @Override
     public void handle(
-            final RoundEnvironment roundEnv,
-            final IBuilderContext buildCtx
+            final IBuilderContext builderCtx
     ) throws KernelException {
-        Set<? extends Element> methodElements = roundEnv.getElementsAnnotatedWith(Init.class);
+        Set<? extends Element> methodElements = builderCtx.getElementsAnnotatedWith(Init.class);
         if (methodElements.size() == 0) {
             return;
         }
@@ -47,7 +46,7 @@ public final class InitHandler extends AnnotationHandler<Init> {
             checkModifiers(methodElement, Modifier.PRIVATE, Modifier.STATIC);
             Element classElemt = methodElement.getEnclosingElement();
             checkModifiers(classElemt, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-            MethodMeta.Builder methodBuilder = MethodMeta.builder(methodElement, buildCtx);
+            MethodMeta.Builder methodBuilder = MethodMeta.builder(methodElement, builderCtx);
             if (methodBuilder.getParameterCount() > 0) {
                 throw new KernelException(
                         "The method [{}:{}] with Init annotation can not has any parameter",
@@ -56,7 +55,7 @@ public final class InitHandler extends AnnotationHandler<Init> {
             }
 
             String methodName = methodElement.getSimpleName().toString();
-            ClassMeta.Builder clsBuilder = buildCtx.findClassBuilder(classElemt);
+            ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
             List<MethodMeta.Builder> exising = clsBuilder.findMethodBuilders(METHOD_INIT_NAME);
             if (exising.size() > 0) {
                 throw new KernelException(

@@ -29,7 +29,6 @@ public abstract class AnnotationHandler<T extends Annotation> {
     public abstract Class<T> getSupportAnnotationType();
 
     public abstract void handle(
-            final RoundEnvironment roundEnv,
             final IBuilderContext buildCtx
     ) throws KernelException;
 

@@ -11,11 +11,14 @@ import uapi.helper.StringHelper;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -24,12 +27,17 @@ import java.util.stream.Collectors;
 public final class BuilderContext implements IBuilderContext {
 
     private final ProcessingEnvironment _procEnv;
+    private final RoundEnvironment _roundEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
     private final Configuration _tempConf;
 
-    public BuilderContext(final ProcessingEnvironment processingEnvironment) {
+    public BuilderContext(
+            final ProcessingEnvironment processingEnvironment,
+            final RoundEnvironment roundEnvironment) {
         ArgumentChecker.notNull(processingEnvironment, "processingEnvironment");
+        ArgumentChecker.notNull(roundEnvironment, "roundEnvironment");
         this._procEnv = processingEnvironment;
+        this._roundEnv = roundEnvironment;
         // Initialize freemarker template configuration
         this._tempConf = new Configuration(Configuration.VERSION_2_3_22);
         this._tempConf.setDefaultEncoding("UTF-8");
@@ -41,6 +49,11 @@ public final class BuilderContext implements IBuilderContext {
     @Override
     public ProcessingEnvironment getProcessingEnvironment() {
         return this._procEnv;
+    }
+
+    @Override
+    public RoundEnvironment getRoundEnvironment() {
+        return this._roundEnv;
     }
 
     @Override
@@ -56,6 +69,13 @@ public final class BuilderContext implements IBuilderContext {
     @Override
     public Filer getFiler() {
         return this._procEnv.getFiler();
+    }
+
+    @Override
+    public Set<? extends Element> getElementsAnnotatedWith (
+            final Class<? extends Annotation> annotationType) {
+        ArgumentChecker.notNull(annotationType, "annotationType");
+        return this._roundEnv.getElementsAnnotatedWith(annotationType);
     }
 
     @Override

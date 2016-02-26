@@ -37,10 +37,9 @@ public class InjectHandler extends AnnotationHandler<Inject> {
 
     @Override
     public void handle(
-            final RoundEnvironment roundEnv,
             final IBuilderContext builderCtx
     ) throws KernelException {
-        Set<? extends Element> paramElements = roundEnv.getElementsAnnotatedWith(Inject.class);
+        Set<? extends Element> paramElements = builderCtx.getElementsAnnotatedWith(Inject.class);
         if (paramElements.size() == 0) {
             return;
         }

@@ -109,7 +109,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         try {
-            BuilderContext buildCtx = new BuilderContext(this._procEnv);
+            BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
             // Construct class type
             for (TypeElement annotation : annotations) {
                 String annoName = annotation.getQualifiedName().toString();
@@ -119,7 +119,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     this._logger.error("No handler for annotation - {}", annoName);
                     return false;
                 }
-                handlers.forEach(handler -> handler.handle(roundEnv, buildCtx));
+                handlers.forEach(handler -> handler.handle(buildCtx));
             }
             // Generate source
             generateSource(buildCtx);
