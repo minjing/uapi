@@ -5,16 +5,15 @@ import freemarker.template.Template;
 import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.StringHelper;
+import uapi.injector.SetterMeta;
 import uapi.service.IService;
 import uapi.service.annotation.Service;
 
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A annotation handler used to handler Service annotation
@@ -22,7 +21,8 @@ import java.util.Set;
 @AutoService(AnnotationHandler.class)
 public final class ServiceHandler extends AnnotationHandler<Service> {
 
-    private static final String TEMPLATE_FILE = "template/init_method.ftl";
+    private static final String TEMPLATE_INIT               = "template/init_method.ftl";
+    private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
 
     @Override
     public Class<Service> getSupportAnnotationType() {
@@ -46,6 +46,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             }
             checkModifiers(classElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
+            // Receive service id array
             ClassMeta.Builder classBuilder = builderCtx.findClassBuilder(classElement);
             Service service = classElement.getAnnotation(Service.class);
             String[] serviceIds = service.value();
@@ -56,10 +57,31 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                                 classBuilder.getPackageName(),
                                 classElement.getSimpleName().toString())};
             }
+            Template tempInit = builderCtx.loadTemplate(TEMPLATE_INIT);
+            Map<String, Object> tempModelInit = new HashMap<>();
+            tempModelInit.put("serviceIds", serviceIds);
 
-            Template temp = builderCtx.loadTemplate(TEMPLATE_FILE);
-            Map<String, Object> tempModel = new HashMap<>();
-            tempModel.put("serviceIds", serviceIds);
+            // Receive service dependency id list
+            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
+            List<String> dependentIds = setterBuilders.parallelStream()
+                    .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
+                    .collect(Collectors.toList());
+            // Check duplicated dependency
+            dependentIds.stream()
+                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
+                    .forEach((dependSvc, counter) -> {
+                        if (counter > 1) {
+                            throw new KernelException(StringHelper.makeString(
+                                    "The service {}.{} has duplicated dependency on same service {}",
+                                    classBuilder.getPackageName(),
+                                    classBuilder.getClassName(),
+                                    dependSvc));
+                        }});
+            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
+            Map<String, Object> tempModelDependentIds = new HashMap<>();
+            tempModelDependentIds.put("dependentIds", dependentIds);
+
+            // Build class builder
             classBuilder
                     .addAnnotationBuilder(AnnotationMeta.builder()
                             .setName(AutoService.class.getCanonicalName())
@@ -75,8 +97,17 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                             .addModifier(Modifier.PUBLIC)
                             .setReturnTypeName(IService.METHOD_GETIDS_RETURN_TYPE)
                             .addCodeBuilder(CodeMeta.builder()
-                                    .setTemplate(temp)
-                                    .setModel(tempModel)));
+                                    .setTemplate(tempInit)
+                                    .setModel(tempModelInit)))
+                    .addMethodBuilder(MethodMeta.builder()
+                            .addAnnotationBuilder(AnnotationMeta.builder()
+                                    .setName(AnnotationMeta.OVERRIDE))
+                            .setName(IService.METHOD_GET_DEPENDENT_ID)
+                            .addModifier(Modifier.PUBLIC)
+                            .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
+                            .addCodeBuilder(CodeMeta.builder()
+                                    .setTemplate(tempDependentIds)
+                                    .setModel(tempModelDependentIds)));
         });
     }
 }

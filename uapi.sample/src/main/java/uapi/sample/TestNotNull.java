@@ -16,7 +16,7 @@ public class TestNotNull {
     @Inject
     protected String test;
 
-    @Inject
+    @Inject("test.string")
     List<String> tests;
 
     public void sayHello(
