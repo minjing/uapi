@@ -41,6 +41,16 @@ public class ArgumentChecker {
         }
     }
 
+    public static <T> void notEmpty(
+            final T[] argument,
+            final String argumentName
+    ) throws InvalidArgumentException {
+        notNull(argument, "argument");
+        if (argument.length == 0) {
+            throw new InvalidArgumentException(argumentName, InvalidArgumentType.EMPTY);
+        }
+    }
+
     /**
      * Ensure the argument is presented, if the argument is null or is empty string
      * then the exception will be thrown.

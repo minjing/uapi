@@ -3,7 +3,7 @@ subprojects {
     apply plugin: 'eclipse'
     apply plugin: 'jacoco'
 
-    version = '1.0'
+    version = "${project_version}"
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
@@ -13,11 +13,11 @@ subprojects {
 
     dependencies {
         compile (
-            'com.google.guava:guava:18.0'
+            "com.google.guava:guava:${guava_version}"
         )
         testCompile (
-            'junit:junit:4.+',
-            'org.mockito:mockito-core:2.0.8-beta'
+            "junit:junit:${junit_vesion}",
+            "org.mockito:mockito-core:${mockito_version}"
         )
     }
 
@@ -32,5 +32,5 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.11'
+    gradleVersion = "${gradle_version}"
 }
