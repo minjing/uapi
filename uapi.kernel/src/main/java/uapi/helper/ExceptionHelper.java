@@ -8,10 +8,10 @@ import java.io.StringWriter;
  */
 public final class ExceptionHelper {
 
-    public static String getStackString(Exception ex) {
-        ArgumentChecker.required(ex, "ex");
+    public static String getStackString(Throwable t) {
+        ArgumentChecker.required(t, "t");
         StringWriter strWriter = new StringWriter();
-        ex.printStackTrace(new PrintWriter(strWriter));
+        t.printStackTrace(new PrintWriter(strWriter));
         return strWriter.toString();
     }
 

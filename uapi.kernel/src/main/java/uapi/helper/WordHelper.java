@@ -7,11 +7,11 @@ import java.util.regex.Pattern;
 
 public class WordHelper {
 
-    private static List<RuleAndReplacement> plurals = new ArrayList<RuleAndReplacement>();
+    private static List<RuleAndReplacement> plurals = new ArrayList<>();
 
-    private static List<RuleAndReplacement> singulars = new ArrayList<RuleAndReplacement>();
+    private static List<RuleAndReplacement> singulars = new ArrayList<>();
 
-    private static List<String> uncountables = new ArrayList<String>();
+    private static List<String> uncountables = new ArrayList<>();
 
     static {
         initialize();

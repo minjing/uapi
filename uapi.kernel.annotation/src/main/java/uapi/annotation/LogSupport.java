@@ -36,7 +36,7 @@ public final class LogSupport {
         this._msger.printMessage(Diagnostic.Kind.ERROR, msg, element, annotation);
     }
 
-    public void error(Exception ex) {
-        this._msger.printMessage(Diagnostic.Kind.ERROR, ExceptionHelper.getStackString(ex));
+    public void error(Throwable t) {
+        this._msger.printMessage(Diagnostic.Kind.ERROR, ExceptionHelper.getStackString(t));
     }
 }

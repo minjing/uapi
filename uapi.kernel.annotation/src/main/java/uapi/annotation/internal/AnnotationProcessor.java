@@ -2,6 +2,8 @@ package uapi.annotation.internal;
 
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
+import rx.*;
+import rx.Observable;
 import uapi.annotation.AnnotationHandler;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.LogSupport;
@@ -18,16 +20,19 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
 
     private static final String PATH_ANNOTATION_HANDLER =
             "META-INF/services/" + AnnotationHandler.class.getCanonicalName();
+    private static final String TEMP_FILE = "template/generated_source.ftl";
 
     private Map<String, List<AnnotationHandler>> _processors;
     private ProcessingEnvironment _procEnv;
     protected LogSupport _logger;
+    private Template _temp;
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
@@ -97,36 +102,49 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        this._logger.info(this._processors.keySet().toString());
+//        this._logger.info(this._processors.keySet().toString());
         return this._processors.keySet();
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public boolean process(
+            final Set<? extends TypeElement> annotations,
+            final RoundEnvironment roundEnv) {
         this._logger.info("Start processing annotation: " + roundEnv.getRootElements());
         if (roundEnv.processingOver() || annotations.size() == 0) {
             return false;
         }
 
-        try {
-            BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
-            // Construct class type
-            for (TypeElement annotation : annotations) {
-                String annoName = annotation.getQualifiedName().toString();
-                this._logger.info("Start handling annotation: " + annoName);
-                List<AnnotationHandler> handlers = this._processors.get(annoName);
-                if (handlers == null || handlers.size() == 0) {
-                    this._logger.error("No handler for annotation - {}", annoName);
-                    return false;
-                }
-                handlers.forEach(handler -> handler.handle(buildCtx));
-            }
-            // Generate source
-            generateSource(buildCtx);
-            buildCtx.clearBuilders();
-        } catch (Exception ex) {
-            this._logger.error(ex);
-        }
+        BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
+        Observable.from(annotations.stream()
+                .map(annotation -> annotation.getQualifiedName().toString())
+                .collect(Collectors.toList()))
+        .flatMap(annoName -> Observable.from(_processors.get(annoName)))
+        .subscribe(handler -> handler.handle(buildCtx), throwable -> _logger.error(throwable));
+
+        // Generate source
+        generateSource(buildCtx);
+        buildCtx.clearBuilders();
+
+//        try {
+//            BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
+//            // Construct class type
+//            for (TypeElement annotation : annotations) {
+//                String annoName = annotation.getQualifiedName().toString();
+//                this._logger.info("Start handling annotation: " + annoName);
+//                List<AnnotationHandler> handlers = this._processors.get(annoName);
+//                if (handlers == null || handlers.size() == 0) {
+//                    this._logger.error("No handler for annotation - {}", annoName);
+//                    return false;
+//                }
+//                handlers.forEach(handler -> handler.handle(buildCtx));
+//            }
+//            // Generate source
+//            generateSource(buildCtx);
+//            buildCtx.clearBuilders();
+//        } catch (Exception ex) {
+//            this._logger.error(ex);
+//        }
 
         this._logger.info("End processing");
         return true;
@@ -137,16 +155,17 @@ public class AnnotationProcessor extends AbstractProcessor {
         //System.out.println(classBuilders);
         Template temp;
         try {
-            temp = builderContext.loadTemplate("template/generated_source.ftl");
+            temp = builderContext.loadTemplate(TEMP_FILE);
         } catch (Exception ex) {
             this._logger.error(ex);
             return;
         }
+
         for (ClassMeta.Builder classBuilder : classBuilders) {
             Writer srcWriter = null;
             try {
                 ClassMeta classMeta = classBuilder.build();
-                System.out.println("1111111" + classBuilder.findSetterBuilders());
+                //System.out.println("1111111" + classBuilder.findSetterBuilders());
                 //System.out.println("asdfsfas" + classMeta.getMethods().get(0).getCodes());
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
                         classMeta.getGeneratedClassName()
