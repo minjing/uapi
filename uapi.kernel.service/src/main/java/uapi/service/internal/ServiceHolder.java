@@ -38,7 +38,7 @@ final class ServiceHolder {
         return this._svcId;
     }
 
-    boolean setDependency(ServiceHolder service) {
+    void setDependency(ServiceHolder service) {
         ArgumentChecker.notNull(service, "service");
         if (! service.isResolved()) {
             throw new KernelException("The service {} is not resolved", service._svcId);
@@ -47,7 +47,6 @@ final class ServiceHolder {
             throw new KernelException("The service {} does not depend on service {}", this._svcId, service._svcId);
         }
         this._dependencies.put(service._svcId, service);
-        return isResolved();
     }
 
 //    void setDependency(String serviceId, ServiceHolder service) {
@@ -57,7 +56,7 @@ final class ServiceHolder {
 //        this._dependencies.put(serviceId, service);
 //    }
 
-    boolean dependsOn(final String serviceId) {
+    boolean isDependsOn(final String serviceId) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         return this._dependencies.containsKey(serviceId);
     }

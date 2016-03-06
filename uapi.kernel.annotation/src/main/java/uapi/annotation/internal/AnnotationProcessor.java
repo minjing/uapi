@@ -4,9 +4,13 @@ import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.*;
 import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func0;
+import rx.functions.Func1;
 import uapi.annotation.AnnotationHandler;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.LogSupport;
+import uapi.helper.ExceptionHelper;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -32,7 +36,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Map<String, List<AnnotationHandler>> _processors;
     private ProcessingEnvironment _procEnv;
     protected LogSupport _logger;
-    private Template _temp;
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
@@ -44,6 +47,57 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void loadExternalHandler() {
+//        Enumeration<URL> systemResources =
+//                this.getClass().getClassLoader().getResources(PATH_ANNOTATION_HANDLER);
+//        Func0<Scanner> resFactory = () -> {
+//            try {
+//                if (systemResources.hasMoreElements()) {
+//                    return new Scanner(systemResources.nextElement().openStream());
+//                }
+//                return null;
+//            } catch (Exception ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        };
+//        Func1<Scanner, Observable<String>> obsFactory = scanner -> Observable.create(
+//                new Observable.OnSubscribe<String>() {
+//                    @Override
+//                    public void call(Subscriber<? super String> subscriber) {
+//                        while (scanner.hasNext()) {
+//                            subscriber.onNext(scanner.nextLine());
+//                        }
+//                        subscriber.onCompleted();
+//                    }
+//                });
+//        Action1<Scanner> dispose = scanner -> {
+//            try {
+//                scanner.close();
+//            } catch (Exception ex) {
+//                _logger.error(ex);
+//            }
+//        };
+//
+//        Observable.using(resFactory, obsFactory, dispose)
+//                .map(handlerClassName -> {
+//                    try {
+//                        return Class.forName(handlerClassName).newInstance();
+//                    } catch (Exception ex) {
+//                        throw new RuntimeException(ex);
+//                    }
+//                })
+//                .filter(handler -> {
+//                    if (handler instanceof AnnotationHandler) {
+//                        return true;
+//                    } else {
+//                        this._logger.error(
+//                                "The handler [{}] is not an instance of AnnotationHandler",
+//                                handler.getClass().getName());
+//                        return false;
+//                    }
+//                })
+//                .map(handler -> (AnnotationHandler) handler)
+//                .subscribe(handler -> initForHandler(handler));
+
         InputStream is = null;
         Scanner scanner = null;
 
@@ -119,8 +173,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         Observable.from(annotations.stream()
                 .map(annotation -> annotation.getQualifiedName().toString())
                 .collect(Collectors.toList()))
-        .flatMap(annoName -> Observable.from(_processors.get(annoName)))
-        .subscribe(handler -> handler.handle(buildCtx), throwable -> _logger.error(throwable));
+            .flatMap(annoName -> Observable.from(_processors.get(annoName)))
+            .subscribe(handler -> handler.handle(buildCtx), throwable -> _logger.error(throwable));
 
         // Generate source
         generateSource(buildCtx);

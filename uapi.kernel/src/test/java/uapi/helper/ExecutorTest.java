@@ -35,7 +35,7 @@ public class ExecutorTest {
     @Test
     public void testGuardResult() {
         FakeLock lock = new FakeLock();
-        String result = Executor.create().guardBy(lock).getResult(() -> { return "Hello"; });
+        String result = Executor.create().guardBy(lock).runForResult(() -> { return "Hello"; });
         assertEquals("Hello", result);
         assertEquals(1, lock._lockCount);
         assertEquals(1, lock._unlockCount);
@@ -44,7 +44,7 @@ public class ExecutorTest {
     @Test
     public void testNoGuardResult() {
         FakeLock lock = new FakeLock();
-        String result = Executor.create().getResult(() -> { return "Hello"; });
+        String result = Executor.create().runForResult(() -> { return "Hello"; });
         assertEquals("Hello", result);
         assertEquals(0, lock._lockCount);
         assertEquals(0, lock._unlockCount);

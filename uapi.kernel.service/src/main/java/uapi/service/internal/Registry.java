@@ -3,23 +3,35 @@ package uapi.service.internal;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import rx.Observable;
 import uapi.InvalidArgumentException;
+import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.Executor;
 import uapi.service.IRegistry;
 import uapi.service.IService;
 
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Implementation of IRegistry
  */
+@ThreadSafe
 @AutoService(IService.class)
 public class Registry implements IRegistry, IService {
 
+    private final Lock _resolvedLock;
+    private final Lock _unresolvedLock;
     private final Multimap<String, ServiceHolder> _resolvedSvcs;
     private final Multimap<String, ServiceHolder> _unresolvedSvcs;
 
     public Registry() {
+        this._resolvedLock = new ReentrantLock();
+        this._unresolvedLock = new ReentrantLock();
         this._resolvedSvcs = LinkedListMultimap.create();
         this._unresolvedSvcs = LinkedListMultimap.create();
     }
@@ -49,7 +61,7 @@ public class Registry implements IRegistry, IService {
     ) throws InvalidArgumentException {
         ArgumentChecker.notNull(object, "object");
         ArgumentChecker.notEmpty(serviceIds, "serviceIds");
-        register(object, serviceIds);
+        registerService(object, serviceIds);
     }
 
     private void registerService(
@@ -57,9 +69,9 @@ public class Registry implements IRegistry, IService {
             final String[] svcIds) {
         Stream.of(svcIds).map(svcId -> {
             ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
-            this._resolvedSvcs.put(svcId, svcHolder);
+            Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
             return svcHolder;
-        }).forEach(svcHolder -> newResolveService(svcHolder));
+        }).forEach(svcHolder -> newResolvedService(svcHolder));
     }
 
     private void registerService(
@@ -73,9 +85,9 @@ public class Registry implements IRegistry, IService {
         if (dependencyIds == null || dependencyIds.length == 0) {
             Stream.of(svcIds).map(svcId -> {
                 ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
-                this._resolvedSvcs.put(svcId, svcHolder);
+                Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
                 return svcHolder;
-            }).forEach(svcHolder -> newResolveService(svcHolder));
+            }).forEach(svcHolder -> newResolvedService(svcHolder));
 
 //            Observable.from(svcIds)
 //                    .flatMap(svcId -> Observable.from(
@@ -83,7 +95,8 @@ public class Registry implements IRegistry, IService {
 //                    .filter(serviceHolder -> serviceHolder.setDependency(serviceHolder))
 //                    .subscribe(serviceHolder -> serviceHolder.setDependency())
         } else {
-            Stream.of(svcIds).forEach(svcId -> this._unresolvedSvcs.put(svcId, new ServiceHolder(svc, svcId)));
+            Stream.of(svcIds).forEach(svcId -> Executor.create().guardBy(this._unresolvedLock).run(
+                    () -> this._unresolvedSvcs.put(svcId, new ServiceHolder(svc, svcId))));
         }
 
 //        Stream.of(svcIds).forEach(svcId -> {
@@ -97,24 +110,21 @@ public class Registry implements IRegistry, IService {
 //        });
     }
 
-    private void newResolveService(final ServiceHolder svcHolder) {
-//        Observable.from(svcHolders)
-//                .map(ServiceHolder::getId)
-//                .flatMap(svcId -> Observable.from(
-//                        this._unresolvedSvcs.values().stream().filter(service -> service.dependsOn(svcId)).collect(Collectors.toList())))
-//                .filter(serviceHolder -> serviceHolder.setDependency(serviceHolder))
-//                .subscribe(serviceHolder -> newResolveService())
+    private void newResolvedService(final ServiceHolder resolvedService) {
+        final String resolvedSvcId = resolvedService.getId();
 
-        final String svcId = svcHolder.getId();
-        this._unresolvedSvcs.values().stream()
-                .filter(service -> service.dependsOn(svcId))
-                .filter(serviceHolder -> serviceHolder.setDependency(serviceHolder))
-                .map(serviceHolder -> {
-                    this._unresolvedSvcs.remove(svcId, svcHolder);
-                    this._resolvedSvcs.put(svcId, svcHolder);
-                    return svcHolder;
+        List<ServiceHolder> dependSvcs = Executor.create().guardBy(this._unresolvedLock).runForResult(
+                () -> this._unresolvedSvcs.values().stream()
+                        .filter(serviceHolder -> serviceHolder.isDependsOn(resolvedSvcId)).collect(Collectors.toList()));
+        Observable.from(dependSvcs)
+                .doOnNext(serviceHolder -> serviceHolder.setDependency(resolvedService))
+                .filter(ServiceHolder::isResolved)
+                .doOnNext(serviceHolder -> {
+                    Executor.create().guardBy(this._unresolvedLock).run(
+                            () -> this._unresolvedSvcs.remove(serviceHolder.getId(), serviceHolder));
+                    Executor.create().guardBy(this._resolvedLock).run(
+                            () -> this._resolvedSvcs.put(serviceHolder.getId(), serviceHolder));
                 })
-                .forEach(svcHOlder -> newResolveService(svcHolder));
-
+                .forEach(serviceHolder -> newResolvedService(serviceHolder));
     }
 }

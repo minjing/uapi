@@ -2,6 +2,7 @@ package uapi.helper;
 
 import java.util.concurrent.locks.Lock;
 
+import com.sun.org.apache.xpath.internal.Arg;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 
@@ -16,17 +17,13 @@ public final class Executor {
     }
 
     public Executor guardBy(Lock lock) {
-        if (lock == null) {
-            throw new InvalidArgumentException("lock", InvalidArgumentType.EMPTY);
-        }
+        ArgumentChecker.notNull(lock, "lock");
         this._lock = lock;
         return this;
     }
 
     public void run(Runnable run) {
-        if (run == null) {
-            throw new InvalidArgumentException("run", InvalidArgumentType.EMPTY);
-        }
+        ArgumentChecker.notNull(run, "run");
         if (this._lock != null) {
             runByGuard(run);
         } else {
@@ -35,10 +32,8 @@ public final class Executor {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getResult(Resultful<?> run) {
-        if (run == null) {
-            throw new InvalidArgumentException("run", InvalidArgumentType.EMPTY);
-        }
+    public <T> T runForResult(Resultful<?> run) {
+        ArgumentChecker.notNull(run, "run");
         Object rtn;
         if (this._lock != null) {
             rtn = resultByGuard(run);

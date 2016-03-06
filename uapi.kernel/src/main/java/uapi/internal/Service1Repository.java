@@ -135,7 +135,7 @@ public class Service1Repository implements IService1 {
         }
         final List<Object> svcInsts = new ArrayList<>();
         // Find service from initialized map
-        Collection<StatefulService> svcs = Executor.create().guardBy(this._initedSvcsLock).getResult(() -> {
+        Collection<StatefulService> svcs = Executor.create().guardBy(this._initedSvcsLock).runForResult(() -> {
             return this._initedSvcs.get(serviceId);
         });
         if (svcs != null) {
@@ -144,7 +144,7 @@ public class Service1Repository implements IService1 {
                 .forEach((svcInst) -> { svcInsts.add(svcInst); });
         }
         // Find service from un-initialized map
-        svcs = Executor.create().guardBy(this._uninitedSvcsLock).getResult(() -> {
+        svcs = Executor.create().guardBy(this._uninitedSvcsLock).runForResult(() -> {
             return this._uninitedSvcs.removeAll(serviceId);
         });
         if (svcs != null) {

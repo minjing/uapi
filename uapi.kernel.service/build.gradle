@@ -1,4 +1,5 @@
 dependencies {
+    compile "io.reactivex:rxjava:${rxjava_version}"
     compile "com.google.auto.service:auto-service:${auto_service_version}"
 
     compile project(':uapi.kernel')
