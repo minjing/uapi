@@ -4,6 +4,8 @@ import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
+import uapi.helper.StringHelper;
+import uapi.service.IInitial;
 
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +21,7 @@ final class ServiceHolder {
     private final Object _svc;
     private final String _svcId;
     private final Map<String, ServiceHolder> _dependencies;
+    private boolean _inited = false;
 
     ServiceHolder(final Object service, String serviceId) {
         this(service, serviceId, CollectionHelper.empty());
@@ -36,6 +39,10 @@ final class ServiceHolder {
 
     String getId() {
         return this._svcId;
+    }
+
+    Object getService() {
+        return this._svc;
     }
 
     void setDependency(ServiceHolder service) {
@@ -65,5 +72,24 @@ final class ServiceHolder {
         Optional<Map.Entry<String, ServiceHolder>> unresolvedSvc =
                 this._dependencies.entrySet().stream().filter(entry -> entry.getValue() == null).findFirst();
         return ! unresolvedSvc.isPresent();
+    }
+
+    void initService() {
+        if (this._inited) {
+            return;
+        }
+        if (! isResolved()) {
+            throw new KernelException("Unresolved service can't be initialized");
+        }
+        if (this._svc instanceof IInitial) {
+            ((IInitial) this._svc).init();
+            this._inited = true;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("Service[id={}, type={}, dependencies={}]",
+                this._svcId, this._svc.getClass().getName(), this._dependencies);
     }
 }

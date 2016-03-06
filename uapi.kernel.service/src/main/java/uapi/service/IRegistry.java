@@ -2,6 +2,8 @@ package uapi.service;
 
 import uapi.InvalidArgumentException;
 
+import java.util.List;
+
 /**
  * A registry for storing service, it has following features:
  *  * Hold service in local map
@@ -22,6 +24,18 @@ public interface IRegistry {
     ) throws InvalidArgumentException;
 
     /**
+     * Register more service
+     *
+     * @param   services
+     *          The services which will be registered
+     * @throws  InvalidArgumentException
+     *          The exception will be thrown when the service is null
+     */
+    void register(
+            final IService... services
+    ) throws InvalidArgumentException;
+
+    /**
      * Register a generic object as a service
      *
      * @param   service
@@ -35,4 +49,8 @@ public interface IRegistry {
             final Object service,
             String... serviceIds
     ) throws InvalidArgumentException;
+
+    Object findService(final String serviceId);
+
+    List<Object> findServices(final String serviceId);
 }
