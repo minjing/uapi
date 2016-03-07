@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @AutoService(AnnotationHandler.class)
 public final class ServiceHandler extends AnnotationHandler<Service> {
 
-    private static final String TEMPLATE_INIT               = "template/init_method.ftl";
+    private static final String TEMPLATE_GET_IDS            = "template/getIds_method.ftl";
     private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
 
     @Override
@@ -57,7 +57,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                                 classBuilder.getPackageName(),
                                 classElement.getSimpleName().toString())};
             }
-            Template tempInit = builderCtx.loadTemplate(TEMPLATE_INIT);
+            Template tempGetIds = builderCtx.loadTemplate(TEMPLATE_GET_IDS);
             Map<String, Object> tempModelInit = new HashMap<>();
             tempModelInit.put("serviceIds", serviceIds);
 
@@ -97,7 +97,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                             .addModifier(Modifier.PUBLIC)
                             .setReturnTypeName(IService.METHOD_GETIDS_RETURN_TYPE)
                             .addCodeBuilder(CodeMeta.builder()
-                                    .setTemplate(tempInit)
+                                    .setTemplate(tempGetIds)
                                     .setModel(tempModelInit)))
                     .addMethodBuilder(MethodMeta.builder()
                             .addAnnotationBuilder(AnnotationMeta.builder()

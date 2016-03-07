@@ -2,6 +2,8 @@ package uapi.app.internal;
 
 import rx.Observable;
 import uapi.KernelException;
+import uapi.helper.StringHelper;
+import uapi.helper.TimeHelper;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IService;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Stream;
 
 /**
  * Created by min on 16/3/6.
@@ -41,12 +44,18 @@ public class Launcher {
         IRegistry svcRegistry = svcRegistries.get(0);
         svcRegistry.register(svcs);
 
-//        try {
-//            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(logger)));
-//            semaphore.acquire();
-//        } catch (InterruptedException e) {
-//            logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
-//        }
+        long expend = System.currentTimeMillis() - startTime;
+        long expendSecond = expend / TimeHelper.MS_OF_SECOND;
+        long expendMs = expend - (expend / TimeHelper.MS_OF_SECOND);
+
+        ILogger logger = svcRegistry.findService(ILogger.class);
+        logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
+        try {
+            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(logger)));
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
+        }
 
         System.exit(0);
     }

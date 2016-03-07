@@ -74,24 +74,39 @@ public class Registry implements IRegistry, IService {
     }
 
     @Override
-    public Object findService(final String serviceId) {
+    public <T> T findService(final Class<T> serviceType) {
+        ArgumentChecker.notNull(serviceType, "serviceType");
+        return findService(serviceType.getName());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T findService(final String serviceId) {
+        ArgumentChecker.notEmpty(serviceId, "serviceId");
         List<Object> svcs = findServices(serviceId);
         if (svcs.size() == 0) {
             return null;
         }
         if (svcs.size() == 1) {
-            return svcs.get(0);
+            return (T) svcs.get(0);
         }
         throw new KernelException("Find multiple service by service id {}", serviceId);
     }
 
     @Override
-    public List<Object> findServices(final String serviceId) {
+    public <T> List<T> findServices(final Class<T> serviceType) {
+        ArgumentChecker.notNull(serviceType, "serviceType");
+        return findService(serviceType.getName());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> List<T> findServices(final String serviceId) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
-        List<Object> resolvedSvcs = new ArrayList<>();
+        List<T> resolvedSvcs = new ArrayList<>();
         Observable.from(this._resolvedSvcs.values())
                 .map(ServiceHolder::getService)
-                .subscribe(resolvedSvcs::add);
+                .subscribe(svc -> resolvedSvcs.add((T) svc));
         Observable.from(this._unresolvedSvcs.values())
                 .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                 .first()

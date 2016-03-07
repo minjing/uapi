@@ -50,7 +50,11 @@ public interface IRegistry {
             String... serviceIds
     ) throws InvalidArgumentException;
 
-    Object findService(final String serviceId);
+    <T> T findService(final String serviceId);
 
-    List<Object> findServices(final String serviceId);
+    <T> T findService(final Class<T> serviceType);
+
+    <T> List<T> findServices(final String serviceId);
+
+    <T> List<T> findServices(final Class<T> serviceType);
 }
