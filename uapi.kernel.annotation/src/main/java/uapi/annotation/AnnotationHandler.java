@@ -29,7 +29,7 @@ public abstract class AnnotationHandler<T extends Annotation> {
     public abstract Class<T> getSupportAnnotationType();
 
     public abstract void handle(
-            final IBuilderContext buildCtx
+            final IBuilderContext builderCtx
     ) throws KernelException;
 
     protected void checkModifiers(

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by xquan on 2/18/2016.
+ * Indicate the annotated class is a service
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
