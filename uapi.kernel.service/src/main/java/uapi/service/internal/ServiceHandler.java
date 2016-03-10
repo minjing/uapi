@@ -76,6 +76,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             tempModelInit.put("serviceIds", serviceIds);
 
             // Receive service dependency id list
+            // TODO: The issue is if the ServiceHandler is invoked before InjectHandle then the setters can't be retrieved
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
             List<String> dependentIds = setterBuilders.parallelStream()
                     .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
