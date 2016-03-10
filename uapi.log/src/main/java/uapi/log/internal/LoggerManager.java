@@ -5,15 +5,11 @@ import org.slf4j.LoggerFactory;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.log.ILogger;
-import uapi.service.IService1;
-import uapi.service.IServiceGenerator;
-import uapi.service.Registration;
-import uapi.service.Type;
+import uapi.service.*;
+import uapi.service.annotation.Service;
 
-@Registration({
-    @Type(ILogger.class)
-})
-public class LoggerManager implements IService1, IServiceGenerator<ILogger> {
+@Service
+public class LoggerManager implements IServiceFactory<ILogger> {
 
     @Override
     public ILogger createService(Object serveFor) {

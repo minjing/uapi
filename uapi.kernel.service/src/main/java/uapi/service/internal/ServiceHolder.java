@@ -28,7 +28,7 @@ final class ServiceHolder {
     private boolean _inited = false;
 
     ServiceHolder(final Object service, String serviceId) {
-        this(service, serviceId, CollectionHelper.empty());
+        this(service, serviceId, new String[0]);
     }
 
     ServiceHolder(final Object service, String serviceId, String[] dependencies) {

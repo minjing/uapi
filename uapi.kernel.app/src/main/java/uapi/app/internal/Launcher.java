@@ -2,28 +2,23 @@ package uapi.app.internal;
 
 import rx.Observable;
 import uapi.KernelException;
-import uapi.helper.StringHelper;
 import uapi.helper.TimeHelper;
+import uapi.injector.annotation.Inject;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IService;
+import uapi.service.annotation.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
-import java.util.stream.Stream;
 
 /**
- * Created by min on 16/3/6.
+ * The UAPI application entry point
  */
+@Service
 public class Launcher {
-
-    private static final Semaphore semaphore;
-
-    static {
-        semaphore = new Semaphore(1);
-    }
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
@@ -42,37 +37,53 @@ public class Launcher {
             throw new KernelException("Found multiple IRegistry instance {}", svcRegistries);
         }
         IRegistry svcRegistry = svcRegistries.get(0);
-        svcRegistry.register(svcs);
+        svcRegistry.register(svcs.toArray(new IService[svcs.size()]));
 
+        Launcher launcher = svcRegistry.findService(Launcher.class);
+        launcher.launch(startTime);
+    }
+
+    @Inject
+    protected IRegistry _svcReg;
+
+    @Inject
+    protected ILogger _logger;
+
+    private final Semaphore _semaphore;
+
+    public Launcher() {
+        this._semaphore = new Semaphore(1);
+    }
+
+    void launch(long startTime) {
         long expend = System.currentTimeMillis() - startTime;
         long expendSecond = expend / TimeHelper.MS_OF_SECOND;
         long expendMs = expend - (expend / TimeHelper.MS_OF_SECOND);
 
-        ILogger logger = svcRegistry.findService(ILogger.class);
+        ILogger logger = this._svcReg.findService(ILogger.class);
         logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
         try {
-            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(logger)));
-            semaphore.acquire();
+            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(this._logger)));
+            this._semaphore.acquire();
         } catch (InterruptedException e) {
-            logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
+            this._logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
-
         System.exit(0);
     }
 
-    private static final class ShutdownHook implements Runnable {
+    private final class ShutdownHook implements Runnable {
 
         private final ILogger _logger;
 
         private ShutdownHook(ILogger logger) throws InterruptedException {
             this._logger = logger;
-            semaphore.acquire();
+            Launcher.this._semaphore.acquire();
         }
 
         @Override
         public void run() {
             this._logger.info("The system is going to shutdown...");
-            semaphore.release();
+            Launcher.this._semaphore.release();
         }
     }
 }

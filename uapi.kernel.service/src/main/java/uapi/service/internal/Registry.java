@@ -105,6 +105,7 @@ public class Registry implements IRegistry, IService {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         List<T> resolvedSvcs = new ArrayList<>();
         Observable.from(this._resolvedSvcs.values())
+                .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                 .map(ServiceHolder::getService)
                 .subscribe(svc -> resolvedSvcs.add((T) svc));
         Observable.from(this._unresolvedSvcs.values())
@@ -112,7 +113,7 @@ public class Registry implements IRegistry, IService {
                 .first()
                 .subscribe(svcHolder -> {
                     throw new KernelException("Found unresolved service {}", svcHolder);
-                });
+                }, t -> { });
         return resolvedSvcs;
     }
 

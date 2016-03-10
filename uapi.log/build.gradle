@@ -2,6 +2,7 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.3'
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.injector')
+    compile project(':uapi.kernel.service')
 }
 
 jar {

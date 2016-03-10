@@ -3,6 +3,7 @@ dependencies {
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.injector')
     compile project(':uapi.kernel.service')
+    runtime project(':uapi.log')
 }
 
 jar {

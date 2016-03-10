@@ -16,7 +16,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,22 +58,18 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             Service service = classElement.getAnnotation(Service.class);
             String[] serviceIds = service.value();
             if (serviceIds == null || serviceIds.length == 0) {
-                // http://stackoverflow.com/questions/29922668/get-typeelement-from-generic-typeparameterelement-for-java-annotation-processor
-                // TODO: Get correct service type if the service is a service factory
-//                Observable.from(((TypeElement) classElement).getInterfaces())
-//                        .filter(declareType -> declareType.toString().startsWith(IServiceFactory.class.getName()))
-//                        .map(declareType -> (DeclaredType) declareType)
-//                        .flatMap(declareType -> declareType.getTypeArguments());
-//                Observable.from(builderCtx.getTypeUtils().directSupertypes(classElement.asType()))
-//                        .map(superType -> ((DeclaredType) superType).asElement())
-//                        .filter(superElement -> IService.class.getName().equals(superElement.toString()))
-//                        .map(superElement -> superElement.get)
-//                        .subscribe(superElement -> getLogger().info(superElement.toString()));
-                serviceIds = new String[] {
-                        StringHelper.makeString(
-                                "{}.{}",
-                                classBuilder.getPackageName(),
-                                classElement.getSimpleName().toString())};
+                final StringBuilder svcId = new StringBuilder();
+                // Check service factory type argument first
+                Observable.from(((TypeElement) classElement).getInterfaces())
+                        .filter(declareType -> declareType.toString().startsWith(IServiceFactory.class.getName()))
+                        .map(declareType -> ((DeclaredType) declareType).getTypeArguments().get(0))
+                        .subscribe(svcId::append);
+                if (svcId.length() == 0) {
+                    // If the service is not a factory, using service class type
+                    svcId.append(StringHelper.makeString("{}.{}",
+                            classBuilder.getPackageName(), classElement.getSimpleName().toString()));
+                }
+                serviceIds = new String[] { svcId.toString() };
             }
             Template tempGetIds = builderCtx.loadTemplate(TEMPLATE_GET_IDS);
             Map<String, Object> tempModelInit = new HashMap<>();
