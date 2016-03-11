@@ -137,13 +137,13 @@ public class Registry implements IRegistry, IService {
         String[] dependencyIds = svc.getDependentIds();
         if (dependencyIds == null || dependencyIds.length == 0) {
             Stream.of(svcIds).map(svcId -> {
-                ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
+                ServiceHolder svcHolder = new ServiceHolder(svc, svcId, svc.getDependentIds());
                 Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
                 return svcHolder;
             }).forEach(this::newResolvedService);
         } else {
             Stream.of(svcIds).forEach(svcId -> Executor.create().guardBy(this._unresolvedLock).run(
-                    () -> this._unresolvedSvcs.put(svcId, new ServiceHolder(svc, svcId))));
+                    () -> this._unresolvedSvcs.put(svcId, new ServiceHolder(svc, svcId, svc.getDependentIds()))));
         }
     }
 

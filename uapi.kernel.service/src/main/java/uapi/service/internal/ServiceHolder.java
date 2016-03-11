@@ -4,16 +4,15 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
-import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 import uapi.injector.IInjectable;
 import uapi.injector.Injection;
 import uapi.service.IInitial;
 import uapi.service.IServiceFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -37,7 +36,7 @@ final class ServiceHolder {
         ArgumentChecker.notNull(dependencies, "dependencies");
         this._svc = service;
         this._svcId = serviceId;
-        this._dependencies = new ConcurrentHashMap<>();
+        this._dependencies = new HashMap<>();
         Stream.of(dependencies).forEach(dependency -> this._dependencies.put(dependency, null));
     }
 

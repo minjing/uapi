@@ -2,15 +2,10 @@ package uapi.annotation.internal;
 
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
-import rx.*;
 import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func0;
-import rx.functions.Func1;
 import uapi.annotation.AnnotationHandler;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.LogSupport;
-import uapi.helper.ExceptionHelper;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -25,6 +20,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
@@ -33,73 +29,24 @@ public class AnnotationProcessor extends AbstractProcessor {
             "META-INF/services/" + AnnotationHandler.class.getCanonicalName();
     private static final String TEMP_FILE = "template/generated_source.ftl";
 
-    private Map<String, List<AnnotationHandler>> _processors;
-    private ProcessingEnvironment _procEnv;
     protected LogSupport _logger;
+    private ProcessingEnvironment _procEnv;
+    private Map<String, List<AnnotationHandler>> _handlers;
+    private List<String> _orderedAnnotations;
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         this._procEnv = processingEnv;
         this._logger = new LogSupport(processingEnv);
-        this._processors = new HashMap<>();
+        this._handlers = new HashMap<>();
         initForHandler(new NotNullHandler());
         loadExternalHandler();
     }
 
     private void loadExternalHandler() {
-//        Enumeration<URL> systemResources =
-//                this.getClass().getClassLoader().getResources(PATH_ANNOTATION_HANDLER);
-//        Func0<Scanner> resFactory = () -> {
-//            try {
-//                if (systemResources.hasMoreElements()) {
-//                    return new Scanner(systemResources.nextElement().openStream());
-//                }
-//                return null;
-//            } catch (Exception ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        };
-//        Func1<Scanner, Observable<String>> obsFactory = scanner -> Observable.create(
-//                new Observable.OnSubscribe<String>() {
-//                    @Override
-//                    public void call(Subscriber<? super String> subscriber) {
-//                        while (scanner.hasNext()) {
-//                            subscriber.onNext(scanner.nextLine());
-//                        }
-//                        subscriber.onCompleted();
-//                    }
-//                });
-//        Action1<Scanner> dispose = scanner -> {
-//            try {
-//                scanner.close();
-//            } catch (Exception ex) {
-//                _logger.error(ex);
-//            }
-//        };
-//
-//        Observable.using(resFactory, obsFactory, dispose)
-//                .map(handlerClassName -> {
-//                    try {
-//                        return Class.forName(handlerClassName).newInstance();
-//                    } catch (Exception ex) {
-//                        throw new RuntimeException(ex);
-//                    }
-//                })
-//                .filter(handler -> {
-//                    if (handler instanceof AnnotationHandler) {
-//                        return true;
-//                    } else {
-//                        this._logger.error(
-//                                "The handler [{}] is not an instance of AnnotationHandler",
-//                                handler.getClass().getName());
-//                        return false;
-//                    }
-//                })
-//                .map(handler -> (AnnotationHandler) handler)
-//                .subscribe(handler -> initForHandler(handler));
-
         InputStream is = null;
         Scanner scanner = null;
+        AnnotationOrder annoOrder = new AnnotationOrder(this._logger);
 
         try {
             final Enumeration<URL> systemResources =
@@ -119,8 +66,11 @@ public class AnnotationProcessor extends AbstractProcessor {
                         return;
                     }
                     initForHandler((AnnotationHandler) handler);
+                    annoOrder.doOrder((AnnotationHandler) handler);
                 }
             }
+            this._orderedAnnotations = annoOrder.getOrderedAnnotations();
+            this._logger.info(this._orderedAnnotations.toString());
         } catch (Exception ex) {
             this._logger.error(ex);
             return;
@@ -141,10 +91,10 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void initForHandler(AnnotationHandler handler) {
         handler.setLogger(this._logger);
         String handlerName = handler.getSupportAnnotationType().getCanonicalName();
-        List<AnnotationHandler> handlers = this._processors.get(handlerName);
+        List<AnnotationHandler> handlers = this._handlers.get(handlerName);
         if (handlers == null) {
             handlers = new ArrayList<>();
-            this._processors.put(handlerName, handlers);
+            this._handlers.put(handlerName, handlers);
         }
         handlers.add(handler);
     }
@@ -156,8 +106,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-//        this._logger.info(this._processors.keySet().toString());
-        return this._processors.keySet();
+//        this._logger.info(this._handlers.keySet().toString());
+        return this._handlers.keySet();
     }
 
     @Override
@@ -170,35 +120,27 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
 
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
-        Observable.from(annotations.stream()
-                .map(annotation -> annotation.getQualifiedName().toString())
-                .collect(Collectors.toList()))
-            .flatMap(annoName -> Observable.from(_processors.get(annoName)))
-            .subscribe(handler -> handler.handle(buildCtx), throwable -> _logger.error(throwable));
+        // we need apply handle in order
+        Observable.from(this._orderedAnnotations)
+                .filter(annoName -> {
+                    for (TypeElement annoElem : annotations) {
+                        if (annoElem.getQualifiedName().toString().equals(annoName)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }).flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+                .subscribe(handler -> handler.handle(buildCtx), _logger::error);
+
+//        Observable.from(annotations.stream()
+//                .map(annotation -> annotation.getQualifiedName().toString())
+//                .collect(Collectors.toList()))
+//            .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+//            .subscribe(handler -> handler.handle(buildCtx), _logger::error);
 
         // Generate source
         generateSource(buildCtx);
         buildCtx.clearBuilders();
-
-//        try {
-//            BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
-//            // Construct class type
-//            for (TypeElement annotation : annotations) {
-//                String annoName = annotation.getQualifiedName().toString();
-//                this._logger.info("Start handling annotation: " + annoName);
-//                List<AnnotationHandler> handlers = this._processors.get(annoName);
-//                if (handlers == null || handlers.size() == 0) {
-//                    this._logger.error("No handler for annotation - {}", annoName);
-//                    return false;
-//                }
-//                handlers.forEach(handler -> handler.handle(buildCtx));
-//            }
-//            // Generate source
-//            generateSource(buildCtx);
-//            buildCtx.clearBuilders();
-//        } catch (Exception ex) {
-//            this._logger.error(ex);
-//        }
 
         this._logger.info("End processing");
         return true;

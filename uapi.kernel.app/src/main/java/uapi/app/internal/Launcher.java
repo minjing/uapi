@@ -60,8 +60,7 @@ public class Launcher {
         long expendSecond = expend / TimeHelper.MS_OF_SECOND;
         long expendMs = expend - (expend / TimeHelper.MS_OF_SECOND);
 
-        ILogger logger = this._svcReg.findService(ILogger.class);
-        logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
+        this._logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(this._logger)));
             this._semaphore.acquire();

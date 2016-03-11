@@ -7,6 +7,7 @@ import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.StringHelper;
 import uapi.injector.SetterMeta;
+import uapi.injector.annotation.Inject;
 import uapi.service.IService;
 import uapi.service.IServiceFactory;
 import uapi.service.annotation.Service;
@@ -34,6 +35,11 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
     @Override
     public Class<Service> getSupportAnnotationType() {
         return Service.class;
+    }
+
+    @Override
+    public Class[] afterHandledAnnotations() {
+        return new Class[] { Inject.class };
     }
 
     @Override
