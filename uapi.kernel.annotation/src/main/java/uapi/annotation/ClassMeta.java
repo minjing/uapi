@@ -173,7 +173,9 @@ public final class ClassMeta {
         ) throws KernelException {
             checkStatus();
             ArgumentChecker.notNull(methodMetaBuilder, "methodMetaBuilder");
-            this._methodBuilders.add(methodMetaBuilder);
+            if (! this._methodBuilders.contains(methodMetaBuilder)) {
+                this._methodBuilders.add(methodMetaBuilder);
+            }
             return this;
         }
 
@@ -219,6 +221,47 @@ public final class ClassMeta {
             return this._methodBuilders.parallelStream()
                     .filter(methodBuilder -> methodBuilder.getName().equals(methodName))
                     .collect(Collectors.toList());
+        }
+
+        public MethodMeta.Builder findMethodBuilder(
+                final MethodMeta.Builder methodBuilder
+        ) throws InvalidArgumentException {
+            ArgumentChecker.notNull(methodBuilder, "methodBuilder");
+            List<MethodMeta.Builder> matchedMethods = this._methodBuilders.parallelStream()
+                    .filter(existing -> existing.equals(methodBuilder))
+                    .collect(Collectors.toList());
+            if (matchedMethods.size() == 0) {
+                return null;
+            }
+            if (matchedMethods.size() == 1) {
+                return matchedMethods.get(0);
+            }
+            throw new KernelException("Found not only one method builder - {}" + matchedMethods);
+        }
+
+        public MethodMeta.Builder addMethodBuilderIfAbsent(
+                final MethodMeta.Builder methodBuilder
+        ) throws InvalidArgumentException {
+            checkStatus();
+            MethodMeta.Builder foundBuilder = findMethodBuilder(methodBuilder);
+            if (foundBuilder == null) {
+                addMethodBuilder(methodBuilder);
+                return methodBuilder;
+            } else {
+                return foundBuilder;
+            }
+//            ArgumentChecker.notNull(methodBuilder, "methodBuilder");
+//            List<MethodMeta.Builder> matchedMethods = this._methodBuilders.parallelStream()
+//                    .filter(existing -> existing.equals(methodBuilder))
+//                    .collect(Collectors.toList());
+//            if (matchedMethods.size() == 0) {
+//                addMethodBuilder(methodBuilder);
+//                return methodBuilder;
+//            }
+//            if (matchedMethods.size() == 1) {
+//                return matchedMethods.get(0);
+//            }
+//            throw new KernelException("Found not only one method builder - {}" + matchedMethods);
         }
 
         @Override

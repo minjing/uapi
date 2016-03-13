@@ -2,8 +2,11 @@ package uapi.app.internal;
 
 import rx.Observable;
 import uapi.KernelException;
+import uapi.app.IAppLifecycle;
+import uapi.app.ILauncher;
 import uapi.helper.TimeHelper;
 import uapi.injector.annotation.Inject;
+import uapi.injector.annotation.Optional;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IService;
@@ -18,7 +21,7 @@ import java.util.concurrent.Semaphore;
  * The UAPI application entry point
  */
 @Service
-public class Launcher {
+public class Launcher implements ILauncher {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
@@ -44,10 +47,11 @@ public class Launcher {
     }
 
     @Inject
-    protected IRegistry _svcReg;
+    protected ILogger _logger;
 
     @Inject
-    protected ILogger _logger;
+    @Optional
+    protected List<IAppLifecycle> _lifecycles;
 
     private final Semaphore _semaphore;
 
@@ -55,33 +59,34 @@ public class Launcher {
         this._semaphore = new Semaphore(1);
     }
 
-    void launch(long startTime) {
+    @Override
+    public void launch(long startTime) {
+        Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
+
         long expend = System.currentTimeMillis() - startTime;
         long expendSecond = expend / TimeHelper.MS_OF_SECOND;
         long expendMs = expend - (expend / TimeHelper.MS_OF_SECOND);
 
         this._logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
         try {
-            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(this._logger)));
+            Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
             this._semaphore.acquire();
         } catch (InterruptedException e) {
             this._logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
-        System.exit(0);
+
+        Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStopped);
     }
 
     private final class ShutdownHook implements Runnable {
 
-        private final ILogger _logger;
-
-        private ShutdownHook(ILogger logger) throws InterruptedException {
-            this._logger = logger;
+        private ShutdownHook() throws InterruptedException {
             Launcher.this._semaphore.acquire();
         }
 
         @Override
         public void run() {
-            this._logger.info("The system is going to shutdown...");
+            Launcher.this._logger.info("The system is going to shutdown...");
             Launcher.this._semaphore.release();
         }
     }

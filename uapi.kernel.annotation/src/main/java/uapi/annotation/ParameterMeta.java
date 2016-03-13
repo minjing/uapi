@@ -130,7 +130,8 @@ public final class ParameterMeta {
             if (o == null || getClass() != o.getClass()) return false;
             Builder builder = (Builder) o;
             return Objects.equals(_name, builder._name) &&
-                    Objects.equals(_type, builder._type);
+                    Objects.equals(_type, builder._type) &&
+                    CollectionHelper.equals(_modifiers, builder._modifiers);
         }
 
         @Override

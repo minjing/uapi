@@ -35,6 +35,7 @@ public final class InitHandler extends AnnotationHandler<Init> {
             return;
         }
 
+        getLogger().info("Start processing Init annotation");
         methodElements.forEach(methodElement -> {
             if (methodElement.getKind() != ElementKind.METHOD) {
                 throw new KernelException(

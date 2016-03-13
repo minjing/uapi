@@ -1,5 +1,7 @@
 package uapi.service.internal;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.ThreadSafe;
@@ -18,12 +20,11 @@ import java.util.stream.Stream;
 /**
  * Created by min on 16/2/29.
  */
-@ThreadSafe
 final class ServiceHolder {
 
     private final Object _svc;
     private final String _svcId;
-    private final Map<String, ServiceHolder> _dependencies;
+    private final Multimap<String, ServiceHolder> _dependencies;
     private boolean _inited = false;
 
     ServiceHolder(final Object service, String serviceId) {
@@ -36,7 +37,7 @@ final class ServiceHolder {
         ArgumentChecker.notNull(dependencies, "dependencies");
         this._svc = service;
         this._svcId = serviceId;
-        this._dependencies = new HashMap<>();
+        this._dependencies = LinkedListMultimap.create();
         Stream.of(dependencies).forEach(dependency -> this._dependencies.put(dependency, null));
     }
 
@@ -66,7 +67,10 @@ final class ServiceHolder {
 
     boolean isResolved() {
         Optional<Map.Entry<String, ServiceHolder>> unresolvedSvc =
-                this._dependencies.entrySet().stream().filter(entry -> entry.getValue() == null).findFirst();
+                this._dependencies.entries().stream()
+                        .filter(entry -> entry.getValue() == null)
+                        .filter(entry -> ! ((IInjectable) this._svc).isOptional(entry.getKey()))
+                        .findFirst();
         return ! unresolvedSvc.isPresent();
     }
 

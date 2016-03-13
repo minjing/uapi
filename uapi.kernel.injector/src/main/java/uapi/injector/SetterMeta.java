@@ -18,14 +18,20 @@ public class SetterMeta extends MethodMeta {
         return ((Builder) this._builder)._injectType;
     }
 
-    public static final Builder builder() {
+    public boolean getIsOptional() {
+        return ((Builder) this._builder)._isOptional;
+    }
+
+    public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder extends MethodMeta.Builder {
 
+        private String _fieldName;
         private String _injectId;
         private String _injectType;
+        private boolean _isOptional = false;
 
         private Builder() {
             super.setIsSetter(true);
@@ -41,6 +47,19 @@ public class SetterMeta extends MethodMeta {
                         "The setter method isSetter property can't be set to false");
             }
             return this;
+        }
+
+        public Builder setFieldName(
+                final String fieldName
+        ) throws InvalidArgumentException {
+            checkStatus();
+            ArgumentChecker.notEmpty(fieldName, "fieldName");
+            this._fieldName = fieldName;
+            return this;
+        }
+
+        public String getFieldName() {
+            return this._fieldName;
         }
 
         public Builder setInjectId(
@@ -69,9 +88,21 @@ public class SetterMeta extends MethodMeta {
             return this._injectType;
         }
 
+        public Builder setIsOptional(
+                final boolean isOptional) {
+            checkStatus();
+            this._isOptional = isOptional;
+            return this;
+        }
+
+        public boolean getIsOptional() {
+            return this._isOptional;
+        }
+
         @Override
         protected void validation() {
             super.validation();
+            ArgumentChecker.notEmpty(this._fieldName, "fieldName");
             ArgumentChecker.notEmpty(this._injectType, "injectType");
         }
 

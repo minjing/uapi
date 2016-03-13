@@ -154,6 +154,10 @@ public class MethodMeta {
             return this;
         }
 
+        public String getReturnTypeName() {
+            return this._rtnTypeName;
+        }
+
         public Builder setInvokeSuper(
                 final InvokeSuper invokeSuper
         ) throws KernelException {
@@ -217,6 +221,40 @@ public class MethodMeta {
             ArgumentChecker.notNull(codeBuilder, "codeBuilder");
             this._codeBuilders.add(codeBuilder);
             return this;
+        }
+
+        public CodeMeta.Builder addCodeBuilderIfAbsent(
+                final CodeMeta.Builder codeBuilder
+        ) throws InvalidArgumentException {
+            checkStatus();
+            ArgumentChecker.notNull(codeBuilder, "codeBuilder");
+            List<CodeMeta.Builder> matchedBuilders = this._codeBuilders.parallelStream()
+                    .filter(existing -> existing.equals(codeBuilder))
+                    .collect(Collectors.toList());
+            if (matchedBuilders.size() == 0) {
+                addCodeBuilder(codeBuilder);
+                return codeBuilder;
+            }
+            if (matchedBuilders.size() == 1) {
+                return matchedBuilders.get(0);
+            }
+            throw new KernelException("Found not only one code builder - {}" + matchedBuilders);
+        }
+
+        public CodeMeta.Builder findCodeBuilder(
+                final String templateSourceName
+        ) throws InvalidArgumentException {
+            ArgumentChecker.notNull(templateSourceName, "templateSourceName");
+            List<CodeMeta.Builder> matchedBuilders = this._codeBuilders.parallelStream()
+                    .filter(existing -> existing.getTemplateSourceName().equals(templateSourceName))
+                    .collect(Collectors.toList());
+            if (matchedBuilders.size() == 0) {
+                return null;
+            }
+            if (matchedBuilders.size() == 1) {
+                return matchedBuilders.get(0);
+            }
+            throw new KernelException("Found more than one code builder associated with tempate source name - {}", templateSourceName);
         }
 
         public ParameterMeta.Builder findParameterBuilder(
@@ -318,10 +356,10 @@ public class MethodMeta {
             if (o == null || getClass() != o.getClass()) return false;
             Builder builder = (Builder) o;
             return Objects.equals(this._name, builder._name) &&
-                    Objects.equals(this._modifiers, builder._modifiers) &&
+                    CollectionHelper.equals(this._modifiers, builder._modifiers) &&
                     Objects.equals(this._rtnTypeName, builder._rtnTypeName) &&
-                    Objects.equals(this._paramBuilders, builder._paramBuilders) &&
-                    Objects.equals(this._throwTypeNames, builder._throwTypeNames);
+                    CollectionHelper.equals(this._paramBuilders, builder._paramBuilders) &&
+                    CollectionHelper.equals(this._throwTypeNames, builder._throwTypeNames);
         }
 
         @Override

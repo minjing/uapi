@@ -1,5 +1,7 @@
 package uapi.service;
 
+import uapi.InvalidArgumentException;
+import uapi.KernelException;
 import uapi.annotation.Type;
 
 /**

@@ -9,6 +9,7 @@ import uapi.helper.StringHelper;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by min on 16/2/20.
@@ -63,6 +64,10 @@ public class CodeMeta {
             return this;
         }
 
+        public Object getModel() {
+            return this._model;
+        }
+
         public Builder setTemplate(
                 final Template template
         ) throws KernelException {
@@ -81,6 +86,10 @@ public class CodeMeta {
             return this;
         }
 
+        public String getTemplateSourceName() {
+            return this._temp == null ? null : this._temp.getSourceName();
+        }
+
         @Override
         protected void validation() throws InvalidArgumentException {
             if (this._temp != null) {
@@ -97,6 +106,18 @@ public class CodeMeta {
         @Override
         protected CodeMeta createInstance() {
             return new CodeMeta(this);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            CodeMeta.Builder other = (CodeMeta.Builder) obj;
+            if (this._temp == null || other._temp == null) {
+                return false;
+            }
+            return this._temp.getSourceName().equals(other._temp.getSourceName());
         }
 
         @Override

@@ -113,7 +113,7 @@ public class Registry implements IRegistry, IService {
                 .first()
                 .subscribe(svcHolder -> {
                     throw new KernelException("Found unresolved service {}", svcHolder);
-                }, t -> { });
+                }, t -> { /* Do nothing */ });
         return resolvedSvcs;
     }
 
@@ -142,8 +142,18 @@ public class Registry implements IRegistry, IService {
                 return svcHolder;
             }).forEach(this::newResolvedService);
         } else {
-            Stream.of(svcIds).forEach(svcId -> Executor.create().guardBy(this._unresolvedLock).run(
-                    () -> this._unresolvedSvcs.put(svcId, new ServiceHolder(svc, svcId, svc.getDependentIds()))));
+            Stream.of(svcIds)
+                    .map(svcId -> new ServiceHolder(svc, svcId, svc.getDependentIds()))
+                    .forEach(svcHolder -> {
+                        if (svcHolder.isResolved()) {
+                            Executor.create().guardBy(this._resolvedLock).run(
+                                    () -> this._resolvedSvcs.put(svcHolder.getId(), svcHolder));
+                            newResolvedService(svcHolder);
+                        } else {
+                            Executor.create().guardBy(this._unresolvedLock).run(
+                                    () -> this._unresolvedSvcs.put(svcHolder.getId(), svcHolder));
+                        }
+            });
         }
     }
 

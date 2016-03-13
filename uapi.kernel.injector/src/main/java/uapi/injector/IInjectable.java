@@ -22,4 +22,15 @@ public interface IInjectable {
     void injectObject(
             final Injection injection
     ) throws InvalidArgumentException, KernelException;
+
+    /**
+     * Indicate specified service id is optional depends on or not
+     *
+     * @param   id
+     *          The service id which will be checked
+     * @return  Return true if the service is optional depends on, otherwise return false
+     * @throws  InvalidArgumentException
+     *          If the specified id is null
+     */
+    boolean isOptional(final String id) throws InvalidArgumentException;
 }

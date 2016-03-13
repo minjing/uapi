@@ -7,7 +7,8 @@ import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.StringHelper;
 import uapi.injector.SetterMeta;
-import uapi.injector.annotation.Inject;
+import uapi.injector.annotation.*;
+import uapi.injector.annotation.Optional;
 import uapi.service.IService;
 import uapi.service.IServiceFactory;
 import uapi.service.annotation.Service;
@@ -17,10 +18,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +37,7 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
 
     @Override
     public Class[] afterHandledAnnotations() {
-        return new Class[] { Inject.class };
+        return new Class[] { Inject.class, Optional.class };
     }
 
     @Override
@@ -82,7 +80,6 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             tempModelInit.put("serviceIds", serviceIds);
 
             // Receive service dependency id list
-            // TODO: The issue is if the ServiceHandler is invoked before InjectHandle then the setters can't be retrieved
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
             List<String> dependentIds = setterBuilders.parallelStream()
                     .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
@@ -101,6 +98,10 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
             Map<String, Object> tempModelDependentIds = new HashMap<>();
             tempModelDependentIds.put("dependentIds", dependentIds);
+
+//            Template tempIsOptional = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
+//            Map<String, List<String>> tempModelIsOptional = new HashMap<>();
+//            tempModelIsOptional.put("optionals", new LinkedList<>());
 
             // Build class builder
             classBuilder
@@ -129,6 +130,26 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempDependentIds)
                                     .setModel(tempModelDependentIds)));
+//                    .addMethodBuilder(createIsOptionalMethod(builderCtx));
         });
     }
+
+//    static MethodMeta.Builder createIsOptionalMethod (
+//            final IBuilderContext builderCtx) {
+//        Template tempIsOptional = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
+//        Map<String, List<String>> tempModelIsOptional = new HashMap<>();
+//        tempModelIsOptional.put("optionals", new LinkedList<>());
+//
+//        return MethodMeta.builder()
+//                .setName(IService.METHOD_IS_OPTIONAL)
+//                .addModifier(Modifier.PUBLIC)
+//                .addThrowTypeName(InvalidArgumentException.class.getName())
+//                .setReturnTypeName(IService.METHOD_IS_OPTIONAL_RETURN_TYPE)
+//                .addParameterBuilder(ParameterMeta.builder()
+//                        .setName(IService.METHOD_IS_OPTIONAL_PARAM_ID)
+//                        .setName(IService.METHOD_IS_OPTIONAL_PARAM_ID_TYPE))
+//                .addCodeBuilder(CodeMeta.builder()
+//                        .setTemplate(tempIsOptional)
+//                        .setModel(tempModelIsOptional));
+//    }
 }

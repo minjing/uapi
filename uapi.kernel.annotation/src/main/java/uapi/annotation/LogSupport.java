@@ -28,6 +28,10 @@ public final class LogSupport {
         this._msger.printMessage(Diagnostic.Kind.NOTE, msg);
     }
 
+    public void info(String msg, Object... args) {
+        this._msger.printMessage(Diagnostic.Kind.NOTE, StringHelper.makeString(msg, args));
+    }
+
     public void error(String msg, Object... args) {
         this._msger.printMessage(Diagnostic.Kind.ERROR, StringHelper.makeString(msg, args));
     }

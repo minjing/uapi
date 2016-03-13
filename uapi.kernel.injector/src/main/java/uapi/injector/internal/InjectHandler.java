@@ -85,6 +85,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
             clsBuilder.addMethodBuilder(SetterMeta.builder()
+                    .setFieldName(fieldName)
                     .setInjectId(injectId)
                     .setInjectType(fieldTypeName)
                     .setName(setterName)

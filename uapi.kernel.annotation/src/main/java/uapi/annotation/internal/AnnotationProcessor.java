@@ -114,22 +114,23 @@ public class AnnotationProcessor extends AbstractProcessor {
     public boolean process(
             final Set<? extends TypeElement> annotations,
             final RoundEnvironment roundEnv) {
-        this._logger.info("Start processing annotation: " + roundEnv.getRootElements());
         if (roundEnv.processingOver() || annotations.size() == 0) {
             return false;
         }
-
+        this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
         // we need apply handle in order
         Observable.from(this._orderedAnnotations)
-                .filter(annoName -> {
-                    for (TypeElement annoElem : annotations) {
-                        if (annoElem.getQualifiedName().toString().equals(annoName)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }).flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+//                .filter(annoName -> {
+//                    for (TypeElement annoElem : annotations) {
+//                        if (annoElem.getQualifiedName().toString().equals(annoName)) {
+//                            return true;
+//                        }
+//                    }
+//                    return false;
+//                })
+                .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+                .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
                 .subscribe(handler -> handler.handle(buildCtx), _logger::error);
 
 //        Observable.from(annotations.stream()
@@ -139,6 +140,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 //            .subscribe(handler -> handler.handle(buildCtx), _logger::error);
 
         // Generate source
+        this._logger.info("Starting generate source");
         generateSource(buildCtx);
         buildCtx.clearBuilders();
 
@@ -148,7 +150,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     private void generateSource(BuilderContext builderContext) {
         List<ClassMeta.Builder> classBuilders = builderContext.getBuilders();
-        //System.out.println(classBuilders);
+
         Template temp;
         try {
             temp = builderContext.loadTemplate(TEMP_FILE);
@@ -160,9 +162,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (ClassMeta.Builder classBuilder : classBuilders) {
             Writer srcWriter = null;
             try {
+                this._logger.info("Generate source for -> {}", classBuilder);
                 ClassMeta classMeta = classBuilder.build();
-                //System.out.println("1111111" + classBuilder.findSetterBuilders());
-                //System.out.println("asdfsfas" + classMeta.getMethods().get(0).getCodes());
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
                         classMeta.getGeneratedClassName()
                 );
