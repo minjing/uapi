@@ -57,6 +57,7 @@ final class ServiceHolder {
         if (! this._dependencies.containsKey(service._svcId)) {
             throw new KernelException("The service {} does not depend on service {}", this._svcId, service._svcId);
         }
+        this._dependencies.remove(service._svcId, null);
         this._dependencies.put(service._svcId, service);
     }
 
@@ -84,13 +85,14 @@ final class ServiceHolder {
         if (this._dependencies.size() > 0) {
             if (this._svc instanceof IInjectable) {
                 Observable.from(this._dependencies.values())
+                        .filter(dependency -> dependency != null)
                         .subscribe(dependency -> {
                             Object injectedSvc = dependency._svc;
                             if (dependency._svc instanceof IServiceFactory) {
                                 injectedSvc = ((IServiceFactory) dependency._svc).createService(this._svc);
                             }
                             ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
-                        });
+                        }, (throwable -> throwable.printStackTrace()));
             } else {
                 throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
             }

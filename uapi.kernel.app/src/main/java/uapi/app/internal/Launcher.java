@@ -56,6 +56,7 @@ public class Launcher implements ILauncher {
     private final Semaphore _semaphore;
 
     public Launcher() {
+        this._lifecycles = new ArrayList<>();
         this._semaphore = new Semaphore(1);
     }
 
