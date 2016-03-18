@@ -1,4 +1,4 @@
-package uapi.injector.annotation;
+package uapi.service;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,9 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicate specified field is optional
+ * Indicate the annotated class is a service
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Optional {
+public @interface Service {
+
+    String[] value() default {};
 }

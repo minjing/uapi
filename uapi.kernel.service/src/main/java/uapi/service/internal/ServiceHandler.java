@@ -6,11 +6,11 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.StringHelper;
-import uapi.injector.SetterMeta;
-import uapi.injector.annotation.*;
-import uapi.injector.annotation.Optional;
 import uapi.service.IService;
 import uapi.service.IServiceFactory;
+import uapi.service.SetterMeta;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 
 import javax.lang.model.element.Element;
@@ -18,7 +18,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

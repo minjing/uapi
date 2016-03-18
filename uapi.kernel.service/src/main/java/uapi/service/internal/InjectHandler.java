@@ -1,4 +1,4 @@
-package uapi.injector.internal;
+package uapi.service.internal;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
@@ -9,12 +9,15 @@ import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
-import uapi.injector.IInjectable;
-import uapi.injector.SetterMeta;
-import uapi.injector.annotation.Inject;
+import uapi.service.IInjectable;
+import uapi.service.Injection;
+import uapi.service.SetterMeta;
+import uapi.service.annotation.Inject;
 
-import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
@@ -130,7 +133,7 @@ public class InjectHandler extends AnnotationHandler<Inject> {
 
         String methodName = "injectObject";
         String paramName = "injection";
-        String paramType = "uapi.injector.Injection";
+        String paramType = Injection.class.getName();
         builderContext.getBuilders().forEach(classBuilder -> {
             final List<SetterModel> setterModels = new ArrayList<>();
             classBuilder.findSetterBuilders().forEach(methodBuilder -> {

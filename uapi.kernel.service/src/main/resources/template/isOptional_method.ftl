@@ -1,6 +1,6 @@
 uapi.helper.ArgumentChecker.notEmpty(id, "id");
-<#list optionals as option>
-        if (${optionl}.equals(id)) {
+<#list optionals as optional>
+        if ("${optional}".equals(id)) {
             return true;
         }
 </#list>

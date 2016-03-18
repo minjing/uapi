@@ -10,6 +10,8 @@ public final class CollectionHelper {
 
     public static final Object[] emptyArray = new Object[0];
 
+    private static final String DEFAULT_SEPARATOR   = ",";
+
     @SuppressWarnings("unchecked")
     public static <T> T[] empty() {
         return (T[]) emptyArray;
@@ -32,14 +34,29 @@ public final class CollectionHelper {
         return false;
     }
 
+    public static String asString(Object[] array) {
+        return asString(array, DEFAULT_SEPARATOR);
+    }
+
+    public static String asString(Object[] array, String separator) {
+        if (array == null || array.length == 0) {
+            return StringHelper.EMPTY;
+        }
+        int sepLen = separator == null ? 0 : separator.length();
+        StringBuilder sb = new StringBuilder();
+        Stream.of(array).forEach(item -> sb.append(item).append(separator));
+        return sb.deleteCharAt(sb.length() - sepLen).toString();
+    }
+
     public static String asString(Collection collection, String separator) {
         if (collection.size() == 0) {
             return StringHelper.EMPTY;
         }
+        int sepLen = separator == null ? 0 : separator.length();
         StringBuilder sb = new StringBuilder();
         collection.forEach(item ->
             sb.append(item).append(separator));
-        return sb.deleteCharAt(sb.length() - 1).toString();
+        return sb.deleteCharAt(sb.length() - sepLen).toString();
     }
 
     public static boolean equals(List l1, List l2) {

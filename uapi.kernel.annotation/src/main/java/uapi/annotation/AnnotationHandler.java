@@ -59,6 +59,6 @@ public abstract class AnnotationHandler<T extends Annotation> {
     @Override
     public String toString() {
         return StringHelper.makeString("AnnotationHandler[supportedAnnotationType={}, afterHandledAnnotations={}]",
-                getSupportAnnotationType(), afterHandledAnnotations());
+                getSupportAnnotationType(), CollectionHelper.asString(afterHandledAnnotations()));
     }
 }

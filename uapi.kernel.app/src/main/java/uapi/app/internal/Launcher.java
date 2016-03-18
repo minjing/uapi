@@ -5,11 +5,11 @@ import uapi.KernelException;
 import uapi.app.IAppLifecycle;
 import uapi.app.ILauncher;
 import uapi.helper.TimeHelper;
-import uapi.injector.annotation.Inject;
-import uapi.injector.annotation.Optional;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IService;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 
 import java.util.ArrayList;
@@ -56,7 +56,8 @@ public class Launcher implements ILauncher {
     private final Semaphore _semaphore;
 
     public Launcher() {
-        this._semaphore = new Semaphore(1);
+        this._lifecycles = new ArrayList<>();
+        this._semaphore = new Semaphore(0);
     }
 
     @Override
@@ -80,9 +81,9 @@ public class Launcher implements ILauncher {
 
     private final class ShutdownHook implements Runnable {
 
-        private ShutdownHook() throws InterruptedException {
-            Launcher.this._semaphore.acquire();
-        }
+//        private ShutdownHook() throws InterruptedException {
+//            Launcher.this._semaphore.acquire();
+//        }
 
         @Override
         public void run() {
