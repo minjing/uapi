@@ -77,6 +77,7 @@ public class Launcher implements ILauncher {
         }
 
         Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStopped);
+        this._logger.info("The system is shutdown.");
     }
 
     private final class ShutdownHook implements Runnable {

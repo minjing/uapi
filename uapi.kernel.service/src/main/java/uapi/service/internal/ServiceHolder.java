@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Created by min on 16/2/29.
+ * The ServiceHolder hold specific service with its id and dependencies
  */
 final class ServiceHolder {
 
@@ -65,6 +65,10 @@ final class ServiceHolder {
         return this._dependencies.containsKey(serviceId);
     }
 
+    boolean isInited() {
+        return this._inited;
+    }
+
     boolean isResolved() {
         Optional<Map.Entry<String, ServiceHolder>> unresolvedSvc =
                 this._dependencies.entries().stream()
@@ -98,8 +102,8 @@ final class ServiceHolder {
         }
         if (this._svc instanceof IInitial) {
             ((IInitial) this._svc).init();
-            this._inited = true;
         }
+        this._inited = true;
     }
 
     @Override
