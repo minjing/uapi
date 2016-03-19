@@ -4,15 +4,13 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import rx.Observable;
 import uapi.KernelException;
-import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
-import uapi.injector.IInjectable;
-import uapi.injector.Injection;
 import uapi.service.IInitial;
+import uapi.service.IInjectable;
 import uapi.service.IServiceFactory;
+import uapi.service.Injection;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -57,6 +55,7 @@ final class ServiceHolder {
         if (! this._dependencies.containsKey(service._svcId)) {
             throw new KernelException("The service {} does not depend on service {}", this._svcId, service._svcId);
         }
+        // remove null entry first
         this._dependencies.remove(service._svcId, null);
         this._dependencies.put(service._svcId, service);
     }
@@ -92,7 +91,7 @@ final class ServiceHolder {
                                 injectedSvc = ((IServiceFactory) dependency._svc).createService(this._svc);
                             }
                             ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
-                        }, (throwable -> throwable.printStackTrace()));
+                        }, (Throwable::printStackTrace));
             } else {
                 throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
             }

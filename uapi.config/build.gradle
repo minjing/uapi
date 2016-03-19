@@ -1,5 +1,4 @@
 dependencies {
-    compile project(':uapi.kernel.injector')
     compile project(':uapi.kernel')
     compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.5.3'
 }

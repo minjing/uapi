@@ -1,13 +1,13 @@
-package uapi.injector.internal;
+package uapi.service.internal;
 
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.annotation.*;
-import uapi.injector.SetterMeta;
-import uapi.injector.annotation.Inject;
-import uapi.injector.annotation.Optional;
+import uapi.service.SetterMeta;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Optional;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;

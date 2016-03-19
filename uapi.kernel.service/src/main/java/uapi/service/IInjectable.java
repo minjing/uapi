@@ -1,4 +1,4 @@
-package uapi.injector;
+package uapi.service;
 
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
