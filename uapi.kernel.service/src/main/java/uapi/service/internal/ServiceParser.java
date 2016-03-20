@@ -27,29 +27,28 @@ import java.util.stream.Collectors;
 /**
  * A annotation handler used to handler Service annotation
  */
-@AutoService(AnnotationHandler.class)
-public final class ServiceHandler extends AnnotationHandler<Service> {
+public final class ServiceParser {
 
     private static final String TEMPLATE_GET_IDS            = "template/getIds_method.ftl";
     private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
 
-    @Override
-    public Class<Service> getSupportAnnotationType() {
-        return Service.class;
-    }
+//    @Override
+//    public Class<Service> getSupportAnnotationType() {
+//        return Service.class;
+//    }
+//
+//    @Override
+//    public Class[] afterHandledAnnotations() {
+//        return new Class[] { Inject.class, Optional.class };
+//    }
 
-    @Override
-    public Class[] afterHandledAnnotations() {
-        return new Class[] { Inject.class, Optional.class };
-    }
-
-    @Override
-    public void handle(
+//    @Override
+    public void parse(
             final IBuilderContext builderCtx
     ) throws KernelException {
         Set<? extends Element> classElements = builderCtx.getElementsAnnotatedWith(Service.class);
         if (classElements.size() == 0) {
-            return;
+            throw new KernelException("The service must be declared with Service annotation.");
         }
 
         classElements.forEach(classElement -> {
@@ -102,10 +101,6 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
             Map<String, Object> tempModelDependentIds = new HashMap<>();
             tempModelDependentIds.put("dependentIds", dependentIds);
 
-//            Template tempIsOptional = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
-//            Map<String, List<String>> tempModelIsOptional = new HashMap<>();
-//            tempModelIsOptional.put("optionals", new LinkedList<>());
-
             // Build class builder
             classBuilder
                     .addAnnotationBuilder(AnnotationMeta.builder()
@@ -133,26 +128,6 @@ public final class ServiceHandler extends AnnotationHandler<Service> {
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempDependentIds)
                                     .setModel(tempModelDependentIds)));
-//                    .addMethodBuilder(createIsOptionalMethod(builderCtx));
         });
     }
-
-//    static MethodMeta.Builder createIsOptionalMethod (
-//            final IBuilderContext builderCtx) {
-//        Template tempIsOptional = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
-//        Map<String, List<String>> tempModelIsOptional = new HashMap<>();
-//        tempModelIsOptional.put("optionals", new LinkedList<>());
-//
-//        return MethodMeta.builder()
-//                .setName(IService.METHOD_IS_OPTIONAL)
-//                .addModifier(Modifier.PUBLIC)
-//                .addThrowTypeName(InvalidArgumentException.class.getName())
-//                .setReturnTypeName(IService.METHOD_IS_OPTIONAL_RETURN_TYPE)
-//                .addParameterBuilder(ParameterMeta.builder()
-//                        .setName(IService.METHOD_IS_OPTIONAL_PARAM_ID)
-//                        .setName(IService.METHOD_IS_OPTIONAL_PARAM_ID_TYPE))
-//                .addCodeBuilder(CodeMeta.builder()
-//                        .setTemplate(tempIsOptional)
-//                        .setModel(tempModelIsOptional));
-//    }
 }

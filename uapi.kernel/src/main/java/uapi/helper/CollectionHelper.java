@@ -25,13 +25,13 @@ public final class CollectionHelper {
      * @param <T>
      * @return
      */
-    public static <T> boolean contains(Collection collection, T... elements) {
+    public static <T> T contains(Collection collection, T... elements) {
         for (T element : elements) {
             if (collection.contains(element)) {
-                return true;
+                return element;
             }
         }
-        return false;
+        return null;
     }
 
     public static String asString(Object[] array) {

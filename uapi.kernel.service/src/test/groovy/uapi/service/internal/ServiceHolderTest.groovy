@@ -12,6 +12,7 @@ class ServiceHolderTest extends Specification {
     def "Test add a service"() {
         given:
         ServiceHolder holder = new ServiceHolder(service, serviceId)
+
         expect:
         holder.id == serviceId
         holder.service == service

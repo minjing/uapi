@@ -3,6 +3,7 @@ package uapi.service.internal;
 import com.google.auto.service.AutoService;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.service.IInitial;
 import uapi.service.annotation.Init;
@@ -10,30 +11,33 @@ import uapi.service.annotation.Init;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
 /**
- * A handler used to handle Init annotation
+ * A handler used to handle IInitial related annotations
  */
-@AutoService(AnnotationHandler.class)
-public final class InitHandler extends AnnotationHandler<Init> {
+@AutoService(IAnnotationsHandler.class)
+public final class InitialHandler extends AnnotationsHandler {
 
     private static final String METHOD_INIT_NAME    = "init";
 
+    @SuppressWarnings("unchecked")
+    private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Init.class };
+
     @Override
-    public Class<Init> getSupportAnnotationType() {
-        return Init.class;
+    public Class<? extends Annotation>[] getOrderedAnnotations() {
+        return orderedAnnotations;
     }
 
     @Override
-    public void handle(
-            final IBuilderContext builderCtx
+    public void handleAnnotatedElements(
+            final IBuilderContext builderCtx,
+            final Class<? extends Annotation> annotationType,
+            final Set<? extends Element> methodElements
     ) throws KernelException {
-        Set<? extends Element> methodElements = builderCtx.getElementsAnnotatedWith(Init.class);
-        if (methodElements.size() == 0) {
-            return;
-        }
+        ArgumentChecker.equals(annotationType, Init.class, "annotationType");
 
         getLogger().info("Start processing Init annotation");
         methodElements.forEach(methodElement -> {
@@ -42,9 +46,9 @@ public final class InitHandler extends AnnotationHandler<Init> {
                         "The Init annotation only can be applied on method",
                         methodElement.getSimpleName().toString());
             }
-            checkModifiers(methodElement, Modifier.PRIVATE, Modifier.STATIC);
+            checkModifiers(methodElement, Init.class, Modifier.PRIVATE, Modifier.STATIC);
             Element classElemt = methodElement.getEnclosingElement();
-            checkModifiers(classElemt, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            checkModifiers(classElemt, Init.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
             MethodMeta.Builder methodBuilder = MethodMeta.builder(methodElement, builderCtx);
             if (methodBuilder.getParameterCount() > 0) {
                 throw new KernelException(
@@ -55,8 +59,8 @@ public final class InitHandler extends AnnotationHandler<Init> {
 
             String methodName = methodElement.getSimpleName().toString();
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            List<MethodMeta.Builder> exising = clsBuilder.findMethodBuilders(METHOD_INIT_NAME);
-            if (exising.size() > 0) {
+            List<MethodMeta.Builder> existing = clsBuilder.findMethodBuilders(METHOD_INIT_NAME);
+            if (existing.size() > 0) {
                 throw new KernelException(
                         "Multiple Init annotation was defined in the class {}",
                         classElemt.getSimpleName().toString());

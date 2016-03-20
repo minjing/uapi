@@ -25,7 +25,7 @@ import javax.lang.model.util.Types;
 import java.util.*;
 
 /**
- * Created by min on 16/2/16.
+ * The handler for Inject annotation
  */
 @AutoService(AnnotationHandler.class)
 public class InjectHandler extends AnnotationHandler<Inject> {

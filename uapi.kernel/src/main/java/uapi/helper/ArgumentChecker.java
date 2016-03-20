@@ -3,6 +3,7 @@ package uapi.helper;
 import com.google.common.base.Strings;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
+import uapi.KernelException;
 
 import java.util.Collection;
 
@@ -48,6 +49,27 @@ public class ArgumentChecker {
         notNull(argument, "argument");
         if (argument.length == 0) {
             throw new InvalidArgumentException(argumentName, InvalidArgumentType.EMPTY);
+        }
+    }
+
+    public static void equals(Object argument, Object expect, String argumentName) {
+        if (argument == null && expect == null) {
+            return;
+        }
+        if (argument != null && argument.equals(expect)) {
+            return;
+        }
+        throw new InvalidArgumentException("The arguments {} is not equals expected value {} - {}",
+                argumentName, argument, expect);
+    }
+
+    public static <T> void notContains(Collection<T> argument, String argumentName, String otherInfo, T... unexpects) {
+        notNull(argument, argumentName);
+        T unexpected = CollectionHelper.contains(argument, unexpects);
+        if (unexpected != null) {
+            throw new InvalidArgumentException(
+                    "The argument {} with {} contains an unexpected item: {}",
+                    argumentName, otherInfo, unexpected);
         }
     }
 

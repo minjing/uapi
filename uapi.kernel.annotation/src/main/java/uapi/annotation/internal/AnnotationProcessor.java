@@ -3,9 +3,7 @@ package uapi.annotation.internal;
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
-import uapi.annotation.AnnotationHandler;
-import uapi.annotation.ClassMeta;
-import uapi.annotation.LogSupport;
+import uapi.annotation.*;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -26,27 +24,28 @@ import java.util.stream.Stream;
 public class AnnotationProcessor extends AbstractProcessor {
 
     private static final String PATH_ANNOTATION_HANDLER =
-            "META-INF/services/" + AnnotationHandler.class.getCanonicalName();
+            "META-INF/services/" + IAnnotationsHandler.class.getCanonicalName();
     private static final String TEMP_FILE = "template/generated_source.ftl";
 
     protected LogSupport _logger;
     private ProcessingEnvironment _procEnv;
-    private Map<String, List<AnnotationHandler>> _handlers;
-    private List<String> _orderedAnnotations;
+    private List<IAnnotationsHandler> _handlers;
+    private Set<String> _orderedAnnotations;
 
     @Override
     public void init(ProcessingEnvironment processingEnv) {
         this._procEnv = processingEnv;
         this._logger = new LogSupport(processingEnv);
-        this._handlers = new HashMap<>();
-        initForHandler(new NotNullHandler());
+        this._handlers = new LinkedList<>();
+        this._orderedAnnotations = new HashSet<>();
+//        initForHandler(new NotNullHandler());
         loadExternalHandler();
     }
 
     private void loadExternalHandler() {
         InputStream is = null;
         Scanner scanner = null;
-        AnnotationOrder annoOrder = new AnnotationOrder(this._logger);
+//        AnnotationOrder annoOrder = new AnnotationOrder(this._logger);
 
         try {
             final Enumeration<URL> systemResources =
@@ -59,18 +58,18 @@ public class AnnotationProcessor extends AbstractProcessor {
                     this._logger.info("Initial external annotation handler - " + handlerClassName);
                     Class handlerClass = Class.forName(handlerClassName);
                     Object handler = handlerClass.newInstance();
-                    if (!(handler instanceof AnnotationHandler)) {
+                    if (!(handler instanceof AnnotationsHandler)) {
                         this._logger.error(
                                 "The handler [{}] is not an instance of AnnotationHandler",
                                 handler.getClass().getName());
                         return;
                     }
-                    initForHandler((AnnotationHandler) handler);
-                    annoOrder.doOrder((AnnotationHandler) handler);
+                    initForHandler((AnnotationsHandler) handler);
+//                    annoOrder.doOrder((AnnotationsHandler) handler);
                 }
             }
-            this._orderedAnnotations = annoOrder.getOrderedAnnotations();
-            this._logger.info(this._orderedAnnotations.toString());
+//            this._orderedAnnotations = annoOrder.getOrderedAnnotations();
+//            this._logger.info(this._orderedAnnotations.toString());
         } catch (Exception ex) {
             this._logger.error(ex);
             return;
@@ -88,15 +87,19 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private void initForHandler(AnnotationHandler handler) {
+    private void initForHandler(IAnnotationsHandler handler) {
         handler.setLogger(this._logger);
-        String handlerName = handler.getSupportAnnotationType().getCanonicalName();
-        List<AnnotationHandler> handlers = this._handlers.get(handlerName);
-        if (handlers == null) {
-            handlers = new ArrayList<>();
-            this._handlers.put(handlerName, handlers);
-        }
-        handlers.add(handler);
+//        String handlerName = handler.getSupportedAnnotations().getCanonicalName();
+//        List<AnnotationHandler> handlers = this._handlers.get(handlerName);
+//        if (handlers == null) {
+//            handlers = new ArrayList<>();
+//            this._handlers.put(handlerName, handlers);
+//        }
+//        handlers.add(handler);
+        this._handlers.add(handler);
+        Observable.from(handler.getSupportedAnnotations())
+                .map(Class::getName)
+                .subscribe(_orderedAnnotations::add);
     }
 
     @Override
@@ -106,8 +109,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-//        this._logger.info(this._handlers.keySet().toString());
-        return this._handlers.keySet();
+        return this._orderedAnnotations;
     }
 
     @Override
@@ -120,24 +122,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
         // we need apply handle in order
-        Observable.from(this._orderedAnnotations)
-//                .filter(annoName -> {
-//                    for (TypeElement annoElem : annotations) {
-//                        if (annoElem.getQualifiedName().toString().equals(annoName)) {
-//                            return true;
-//                        }
-//                    }
-//                    return false;
-//                })
-                .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+//        Observable.from(this._orderedAnnotations)
+//                .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
+//                .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
+//                .subscribe(handler -> handler.handle(buildCtx), _logger::error);
+
+        Observable.from(this._handlers)
                 .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
                 .subscribe(handler -> handler.handle(buildCtx), _logger::error);
-
-//        Observable.from(annotations.stream()
-//                .map(annotation -> annotation.getQualifiedName().toString())
-//                .collect(Collectors.toList()))
-//            .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
-//            .subscribe(handler -> handler.handle(buildCtx), _logger::error);
 
         // Generate source
         this._logger.info("Starting generate source");
