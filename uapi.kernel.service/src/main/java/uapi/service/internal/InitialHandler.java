@@ -39,7 +39,7 @@ public final class InitialHandler extends AnnotationsHandler {
     ) throws KernelException {
         ArgumentChecker.equals(annotationType, Init.class, "annotationType");
 
-        getLogger().info("Start processing Init annotation");
+        builderCtx.getLogger().info("Start processing Init annotation");
         methodElements.forEach(methodElement -> {
             if (methodElement.getKind() != ElementKind.METHOD) {
                 throw new KernelException(

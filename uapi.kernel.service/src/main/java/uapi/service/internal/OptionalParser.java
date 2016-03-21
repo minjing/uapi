@@ -1,12 +1,10 @@
 package uapi.service.internal;
 
-import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.service.SetterMeta;
-import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 
 import javax.lang.model.element.Element;
@@ -17,31 +15,20 @@ import java.util.*;
 /**
  * The handler is used to handle Optional annotation
  */
-@AutoService(AnnotationHandler.class)
-public class OptionalHandler extends AnnotationHandler<Optional> {
+public class OptionalParser {
 
     private static final String TEMPLATE_IS_OPTIONAL = "template/isOptional_method.ftl";
 
-    @Override
-    public Class<Optional> getSupportAnnotationType() {
-        return Optional.class;
-    }
-
-    @Override
-    public Class[] afterHandledAnnotations() {
-        return new Class[] { Inject.class };
-    }
-
-    @Override
-    public void handle(
-            final IBuilderContext builderCtx
+    public void parse(
+            final IBuilderContext builderCtx,
+            final Set<? extends Element> elements
     ) throws KernelException {
-        Set<? extends Element> elements = builderCtx.getElementsAnnotatedWith(Optional.class);
+//        Set<? extends Element> elements = builderCtx.getElementsAnnotatedWith(Optional.class);
 //        if (elements.size() == 0) {
 //            return;
 //        }
 
-        getLogger().info("Starting process Option annotation");
+        builderCtx.getLogger().info("Starting process Option annotation");
         // Initialize optional setters
         elements.forEach(fieldElement -> {
             if (fieldElement.getKind() != ElementKind.FIELD) {
@@ -49,9 +36,9 @@ public class OptionalHandler extends AnnotationHandler<Optional> {
                         "The Optional annotation only can be applied on field",
                         fieldElement.getSimpleName().toString());
             }
-            checkModifiers(fieldElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            builderCtx.checkModifiers(fieldElement, Optional.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
             Element classElemt = fieldElement.getEnclosingElement();
-            checkModifiers(classElemt, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            builderCtx.checkModifiers(classElemt, Optional.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
             String fieldName = fieldElement.getSimpleName().toString();
 
@@ -84,7 +71,7 @@ public class OptionalHandler extends AnnotationHandler<Optional> {
             final Map<String, List<String>> tempModel = new HashMap<>();
             tempModel.put("optionals", optionals);
 
-            getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
+            builderCtx.getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
             classBuilder.addMethodBuilder(MethodMeta.builder()
                     .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
                     .setName(methodName)

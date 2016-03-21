@@ -25,7 +25,7 @@ public final class CollectionHelper {
      * @param <T>
      * @return
      */
-    public static <T> T contains(Collection collection, T... elements) {
+    public static <T> T contains(Collection<T> collection, T... elements) {
         for (T element : elements) {
             if (collection.contains(element)) {
                 return element;

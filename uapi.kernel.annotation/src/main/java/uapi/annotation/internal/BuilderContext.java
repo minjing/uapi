@@ -5,14 +5,17 @@ import freemarker.template.Template;
 import uapi.KernelException;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.IBuilderContext;
+import uapi.annotation.LogSupport;
 import uapi.annotation.internal.CompileTimeTemplateLoader;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
  */
 public final class BuilderContext implements IBuilderContext {
 
+    private final LogSupport _logger;
     private final ProcessingEnvironment _procEnv;
     private final RoundEnvironment _roundEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
@@ -38,6 +42,7 @@ public final class BuilderContext implements IBuilderContext {
         ArgumentChecker.notNull(roundEnvironment, "roundEnvironment");
         this._procEnv = processingEnvironment;
         this._roundEnv = roundEnvironment;
+        this._logger = new LogSupport(processingEnvironment);
         // Initialize freemarker template configuration
         this._tempConf = new Configuration(Configuration.VERSION_2_3_22);
         this._tempConf.setDefaultEncoding("UTF-8");
@@ -54,6 +59,11 @@ public final class BuilderContext implements IBuilderContext {
     @Override
     public RoundEnvironment getRoundEnvironment() {
         return this._roundEnv;
+    }
+
+    @Override
+    public LogSupport getLogger() {
+        return this._logger;
     }
 
     @Override
@@ -125,4 +135,23 @@ public final class BuilderContext implements IBuilderContext {
 //    private String generateSubClassName(String superClassName) {
 //        return superClassName + "_Generated";
 //    }
+
+    @Override
+    public void checkModifiers(
+            final Element element,
+            final Class<? extends Annotation> annotation,
+            final Modifier... unexpectedModifiers
+    ) throws KernelException {
+        Set<Modifier> existingModifiers = element.getModifiers();
+        Modifier unsupportedModifier = CollectionHelper.contains(existingModifiers, unexpectedModifiers);
+        if (unsupportedModifier != null) {
+            throw new KernelException(
+                    "The {} element [{}.{}] with {} annotation must not be {}",
+                    element.getKind(),
+                    element.getEnclosingElement().getSimpleName().toString(),
+                    element.getSimpleName().toString(),
+                    annotation.getName(),
+                    unsupportedModifier);
+        }
+    }
 }

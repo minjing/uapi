@@ -1,6 +1,5 @@
 package uapi.service.internal;
 
-import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
 import freemarker.template.Template;
 import uapi.InvalidArgumentException;
@@ -10,6 +9,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
 import uapi.service.IInjectable;
+import uapi.service.IService;
 import uapi.service.Injection;
 import uapi.service.SetterMeta;
 import uapi.service.annotation.Inject;
@@ -23,39 +23,35 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The handler for Inject annotation
  */
-@AutoService(AnnotationHandler.class)
-public class InjectHandler extends AnnotationHandler<Inject> {
+public class InjectParser {
 
-    private static final String TEMPLATE_FILE       = "template/inject_method.ftl";
-    private static final String SETTER_PARAM_NAME   = "value";
+    private static final String TEMPLATE_FILE               = "template/inject_method.ftl";
+    private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
+    private static final String SETTER_PARAM_NAME           = "value";
 
-    @Override
-    public Class<Inject> getSupportAnnotationType() {
-        return Inject.class;
-    }
-
-    @Override
-    public void handle(
-            final IBuilderContext builderCtx
+    public void parse(
+            final IBuilderContext builderCtx,
+            final Set<? extends Element> elements
     ) throws KernelException {
-        Set<? extends Element> paramElements = builderCtx.getElementsAnnotatedWith(Inject.class);
-        if (paramElements.size() == 0) {
-            return;
-        }
+//        Set<? extends Element> paramElements = builderCtx.getElementsAnnotatedWith(Inject.class);
+//        if (paramElements.size() == 0) {
+//            return;
+//        }
 
-        paramElements.forEach(fieldElement -> {
+        elements.forEach(fieldElement -> {
             if (fieldElement.getKind() != ElementKind.FIELD) {
                 throw new KernelException(
                         "The Inject annotation only can be applied on field",
                         fieldElement.getSimpleName().toString());
             }
-            checkModifiers(fieldElement, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            builderCtx.checkModifiers(fieldElement, Inject.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
             Element classElemt = fieldElement.getEnclosingElement();
-            checkModifiers(classElemt, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            builderCtx.checkModifiers(classElemt, Inject.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
             String fieldName = fieldElement.getSimpleName().toString();
             String fieldTypeName = fieldElement.asType().toString();
@@ -87,22 +83,25 @@ public class InjectHandler extends AnnotationHandler<Inject> {
             }
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            clsBuilder.addMethodBuilder(SetterMeta.builder()
-                    .setFieldName(fieldName)
-                    .setInjectId(injectId)
-                    .setInjectType(fieldTypeName)
-                    .setName(setterName)
-                    .setReturnTypeName(Type.VOID)
-                    .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
-                    .addParameterBuilder(ParameterMeta.builder()
-                            .addModifier(Modifier.FINAL)
-                            .setName(paramName)
-                            .setType(fieldTypeName))
-                    .addCodeBuilder(CodeMeta.builder()
-                            .addRawCode(code)));
+            clsBuilder
+                    .addImplement(IInjectable.class.getCanonicalName())
+                    .addMethodBuilder(SetterMeta.builder()
+                            .setFieldName(fieldName)
+                            .setInjectId(injectId)
+                            .setInjectType(fieldTypeName)
+                            .setName(setterName)
+                            .setReturnTypeName(Type.VOID)
+                            .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
+                            .addParameterBuilder(ParameterMeta.builder()
+                                    .addModifier(Modifier.FINAL)
+                                    .setName(paramName)
+                                    .setType(fieldTypeName))
+                            .addCodeBuilder(CodeMeta.builder()
+                                    .addRawCode(code)));
         });
 
         implementIInjectable(builderCtx);
+        implementGetDependencyIds(builderCtx);
     }
 
     private boolean isCollection(
@@ -126,6 +125,43 @@ public class InjectHandler extends AnnotationHandler<Inject> {
         return typeArgs;
     }
 
+    private void implementGetDependencyIds(
+            final IBuilderContext builderCtx
+    ) throws KernelException {
+        builderCtx.getBuilders().forEach(classBuilder -> {
+            // Receive service dependency id list
+            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
+            List<String> dependentIds = setterBuilders.parallelStream()
+                    .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
+                    .collect(Collectors.toList());
+            // Check duplicated dependency
+            dependentIds.stream()
+                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
+                    .forEach((dependSvc, counter) -> {
+                        if (counter > 1) {
+                            throw new KernelException(StringHelper.makeString(
+                                    "The service {}.{} has duplicated dependency on same service {}",
+                                    classBuilder.getPackageName(),
+                                    classBuilder.getClassName(),
+                                    dependSvc));
+                        }
+                    });
+            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
+            Map<String, Object> tempModelDependentIds = new HashMap<>();
+            tempModelDependentIds.put("dependentIds", dependentIds);
+
+            classBuilder.addMethodBuilder(MethodMeta.builder()
+                    .addAnnotationBuilder(AnnotationMeta.builder()
+                            .setName(AnnotationMeta.OVERRIDE))
+                    .setName(IService.METHOD_GET_DEPENDENT_ID)
+                    .addModifier(Modifier.PUBLIC)
+                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
+                    .addCodeBuilder(CodeMeta.builder()
+                            .setTemplate(tempDependentIds)
+                            .setModel(tempModelDependentIds)));
+        });
+    }
+
     private void implementIInjectable(
             final IBuilderContext builderContext
     ) throws KernelException {
@@ -143,26 +179,27 @@ public class InjectHandler extends AnnotationHandler<Inject> {
                         setterBuilder.getInjectId(),
                         setterBuilder.getInjectType()));
             });
-            if (setterModels.size() >= 0) {
-                Map<String, Object> tempModel = new HashMap<>();
-                tempModel.put("setters", setterModels);
+//            if (setterModels.size() >= 0) {
+            Map<String, Object> tempModel = new HashMap<>();
+            tempModel.put("setters", setterModels);
 
-                classBuilder.addImplement(IInjectable.class.getCanonicalName())
-                        .addMethodBuilder(MethodMeta.builder()
-                                .addAnnotationBuilder(AnnotationMeta.builder()
-                                        .setName("Override"))
-                                .addModifier(Modifier.PUBLIC)
-                                .setName(methodName)
-                                .setReturnTypeName(Type.VOID)
-                                .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
-                                .addParameterBuilder(ParameterMeta.builder()
-                                        .addModifier(Modifier.FINAL)
-                                        .setName(paramName)
-                                        .setType(paramType))
-                                .addCodeBuilder(CodeMeta.builder()
-                                        .setModel(tempModel)
-                                        .setTemplate(temp)));
-            }
+            classBuilder
+                    .addImplement(IInjectable.class.getCanonicalName())
+                    .addMethodBuilder(MethodMeta.builder()
+                            .addAnnotationBuilder(AnnotationMeta.builder()
+                                    .setName("Override"))
+                            .addModifier(Modifier.PUBLIC)
+                            .setName(methodName)
+                            .setReturnTypeName(Type.VOID)
+                            .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
+                            .addParameterBuilder(ParameterMeta.builder()
+                                    .addModifier(Modifier.FINAL)
+                                    .setName(paramName)
+                                    .setType(paramType))
+                            .addCodeBuilder(CodeMeta.builder()
+                                    .setModel(tempModel)
+                                    .setTemplate(temp)));
+//            }
         });
     }
 

@@ -88,7 +88,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void initForHandler(IAnnotationsHandler handler) {
-        handler.setLogger(this._logger);
+//        handler.setLogger(this._logger);
 //        String handlerName = handler.getSupportedAnnotations().getCanonicalName();
 //        List<AnnotationHandler> handlers = this._handlers.get(handlerName);
 //        if (handlers == null) {

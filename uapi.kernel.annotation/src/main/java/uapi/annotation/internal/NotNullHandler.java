@@ -44,19 +44,19 @@ public final class NotNullHandler extends AnnotationsHandler {
                         paramElement.getSimpleName().toString());
             }
             Element methodElement = paramElement.getEnclosingElement();
-            ArgumentChecker.notContains(
-                    methodElement.getModifiers(),
-                    methodElement.getSimpleName().toString(),
-                    "NotNull annotation",
-                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+//            ArgumentChecker.notContains(
+//                    methodElement.getModifiers(),
+//                    methodElement.getSimpleName().toString(),
+//                    "NotNull annotation",
+//                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
             Element classElement = methodElement.getEnclosingElement();
-            ArgumentChecker.notContains(
-                    classElement.getModifiers(),
-                    classElement.getSimpleName().toString(),
-                    "NotNull annotation",
-                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-//            checkModifiers(methodElement, NotNull.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-//            checkModifiers(classElement, NotNull.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+//            ArgumentChecker.notContains(
+//                    classElement.getModifiers(),
+//                    classElement.getSimpleName().toString(),
+//                    "NotNull annotation",
+//                    Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            checkModifiers(methodElement, NotNull.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            checkModifiers(classElement, NotNull.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElement);
             MethodMeta.Builder methodBuilder = clsBuilder.findMethodBuilder(methodElement, builderCtx);

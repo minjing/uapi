@@ -1,10 +1,12 @@
 package uapi.service.internal;
 
-import com.sun.org.apache.xpath.internal.Arg;
+import com.google.auto.service.AutoService;
 import uapi.KernelException;
 import uapi.annotation.AnnotationsHandler;
+import uapi.annotation.IAnnotationsHandler;
 import uapi.annotation.IBuilderContext;
 import uapi.helper.ArgumentChecker;
+import uapi.service.Service;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 
@@ -15,11 +17,20 @@ import java.util.Set;
 /**
  * A handler is used for handling IInjectableService related annotations
  */
-public class InjectableServiceHandler extends AnnotationsHandler {
+@AutoService(IAnnotationsHandler.class)
+public class InjectableHandler extends AnnotationsHandler {
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations =
             new Class[] { Inject.class, Optional.class };
+
+    private final InjectParser _injectParser;
+    private final OptionalParser _optionalParser;
+
+    public InjectableHandler() {
+        this._injectParser = new InjectParser();
+        this._optionalParser = new OptionalParser();
+    }
 
     @Override
     protected Class<? extends Annotation>[] getOrderedAnnotations() {
@@ -35,9 +46,9 @@ public class InjectableServiceHandler extends AnnotationsHandler {
         ArgumentChecker.notNull(annotationType, "annotationType");
 
         if (annotationType.equals(Inject.class)) {
-
+            this._injectParser.parse(builderContext, elements);
         } else if (annotationType.equals(Optional.class)) {
-
+            this._optionalParser.parse(builderContext, elements);
         } else {
             throw new KernelException("Unsupported annotation - {}", annotationType.getClass().getName());
         }

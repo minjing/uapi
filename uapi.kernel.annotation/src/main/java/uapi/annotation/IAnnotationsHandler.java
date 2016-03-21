@@ -9,13 +9,13 @@ import java.lang.annotation.Annotation;
  */
 public interface IAnnotationsHandler {
 
-    /**
-     * Set a LoggerSupport
-     *
-     * @param   logger
-     *          A LoggerSupport instance
-     */
-    void setLogger(final LogSupport logger);
+//    /**
+//     * Set a LoggerSupport
+//     *
+//     * @param   logger
+//     *          A LoggerSupport instance
+//     */
+//    void setLogger(final LogSupport logger);
 
     /**
      * Return a annotation type array which can be handled by this handler

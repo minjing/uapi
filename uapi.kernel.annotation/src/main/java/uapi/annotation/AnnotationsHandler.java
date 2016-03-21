@@ -19,37 +19,38 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
 
     private LogSupport _logger;
 
-    @Override
-    public void setLogger(final LogSupport logger) {
-        ArgumentChecker.notNull(logger, "logger");
-        this._logger = logger;
-    }
+//    @Override
+//    public void setLogger(final LogSupport logger) {
+//        ArgumentChecker.notNull(logger, "logger");
+//        this._logger = logger;
+//    }
 
     @Override
     public Class<? extends Annotation>[] getSupportedAnnotations() {
         return getOrderedAnnotations();
     }
 
-    public LogSupport getLogger() {
-        return this._logger;
-    }
-
-//    protected void checkModifiers(
-//            final Element element,
-//            final Class<? extends Annotation> annotation,
-//            final Modifier... unexpectedModifiers
-//    ) throws KernelException {
-//        Set<Modifier> existingModifiers = element.getModifiers();
-//        if (CollectionHelper.contains(existingModifiers, unexpectedModifiers)) {
-//            throw new KernelException(
-//                    "The {} element [{}.{}] with {} annotation must not be {}",
-//                    element.getKind(),
-//                    element.getEnclosingElement().getSimpleName().toString(),
-//                    element.getSimpleName().toString(),
-//                    annotation.getName(),
-//                    CollectionHelper.asString(unexpectedModifiers));
-//        }
+//    public LogSupport getLogger() {
+//        return this._logger;
 //    }
+
+    protected void checkModifiers(
+            final Element element,
+            final Class<? extends Annotation> annotation,
+            final Modifier... unexpectedModifiers
+    ) throws KernelException {
+        Set<Modifier> existingModifiers = element.getModifiers();
+        Modifier unsupportedModifier = CollectionHelper.contains(existingModifiers, unexpectedModifiers);
+        if (unsupportedModifier != null) {
+            throw new KernelException(
+                    "The {} element [{}.{}] with {} annotation must not be {}",
+                    element.getKind(),
+                    element.getEnclosingElement().getSimpleName().toString(),
+                    element.getSimpleName().toString(),
+                    annotation.getName(),
+                    unsupportedModifier);
+        }
+    }
 
     @Override
     public void handle(
@@ -67,7 +68,7 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
             Observable.from(getOrderedAnnotations())
                     .map((annotation) -> new Pair<>(annotation, builderContext.getElementsAnnotatedWith(annotation)))
                     .subscribe(pair -> handleAnnotatedElements(builderContext, pair.getLeftValue(), pair.getRightValue()),
-                            (t) -> getLogger().error(t));
+                            (t) -> builderContext.getLogger().error(t));
         }
     }
 
