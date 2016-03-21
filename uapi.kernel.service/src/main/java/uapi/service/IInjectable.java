@@ -24,6 +24,13 @@ public interface IInjectable {
     ) throws InvalidArgumentException, KernelException;
 
     /**
+     * Return service ids which is this service depends on
+     *
+     * @return  Dependent service id array
+     */
+    String[] getDependentIds();
+
+    /**
      * Indicate specified service id is optional depends on or not
      *
      * @param   id

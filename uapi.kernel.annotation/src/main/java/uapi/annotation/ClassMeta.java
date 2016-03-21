@@ -147,7 +147,9 @@ public final class ClassMeta {
         ) throws KernelException {
             checkStatus();
             ArgumentChecker.notNull(implement, "implement");
-            this._implements.add(implement);
+            if (! this._implements.contains(implement)) {
+                this._implements.add(implement);
+            }
             return this;
         }
 

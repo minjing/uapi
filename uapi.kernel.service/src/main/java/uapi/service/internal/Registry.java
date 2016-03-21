@@ -9,6 +9,7 @@ import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Executor;
+import uapi.service.IInjectable;
 import uapi.service.IRegistry;
 import uapi.service.IService;
 
@@ -43,10 +44,10 @@ public class Registry implements IRegistry, IService {
         return new String[] { IRegistry.class.getCanonicalName() };
     }
 
-    @Override
-    public String[] getDependentIds() {
-        return new String[0];
-    }
+//    @Override
+//    public String[] getDependentIds() {
+//        return new String[0];
+//    }
 
     @Override
     public void register(
@@ -134,16 +135,16 @@ public class Registry implements IRegistry, IService {
             throw new InvalidArgumentException("The service id is required - {}", svc.getClass().getName());
         }
 
-        String[] dependencyIds = svc.getDependentIds();
+        final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
         if (dependencyIds == null || dependencyIds.length == 0) {
             Stream.of(svcIds).map(svcId -> {
-                ServiceHolder svcHolder = new ServiceHolder(svc, svcId, svc.getDependentIds());
+                ServiceHolder svcHolder = new ServiceHolder(svc, svcId, dependencyIds);
                 Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
                 return svcHolder;
             }).forEach(this::newResolvedService);
         } else {
             Stream.of(svcIds)
-                    .map(svcId -> new ServiceHolder(svc, svcId, svc.getDependentIds()))
+                    .map(svcId -> new ServiceHolder(svc, svcId, dependencyIds))
                     .forEach(svcHolder -> {
                         if (svcHolder.isResolved()) {
                             Executor.create().guardBy(this._resolvedLock).run(

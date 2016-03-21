@@ -20,11 +20,4 @@ public interface IService {
      * @return  The service identifications
      */
     String[] getIds();
-
-    /**
-     * Return service ids which is this service depends on
-     *
-     * @return  Dependent service id array
-     */
-    String[] getDependentIds();
 }
