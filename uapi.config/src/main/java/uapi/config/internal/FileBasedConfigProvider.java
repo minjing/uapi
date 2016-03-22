@@ -14,22 +14,20 @@ import uapi.config.Config;
 import uapi.config.IConfigFileParser;
 import uapi.internal.TraceableConfigProvider;
 import uapi.log.ILogger;
-import uapi.service.IService1;
-import uapi.service.InitAtLaunch;
-import uapi.service.Inject;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Service;
 
-@InitAtLaunch
+//@Service
 public class FileBasedConfigProvider
-    extends TraceableConfigProvider
-    implements IService1 {
+    extends TraceableConfigProvider {
 
     private static final String CFG_QUALIFIER   = "config";
 
-    @Inject
-    private ILogger _logger;
+//    @Inject
+    protected ILogger _logger;
 
-    @Inject
-    private final Map<String /* file extension */, IConfigFileParser> _parsers;
+//    @Inject
+    protected Map<String /* file extension */, IConfigFileParser> _parsers;
 
     public FileBasedConfigProvider() {
         this._parsers = new HashMap<>();
@@ -43,10 +41,6 @@ public class FileBasedConfigProvider
         Stream.of(fileExts).forEach((fileExt) -> {
             this._parsers.put(fileExt, parser);
         });
-    }
-
-    public void setLogger(ILogger logger) {
-        this._logger = logger;
     }
 
     @Config(CFG_QUALIFIER)
@@ -75,6 +69,6 @@ public class FileBasedConfigProvider
             throw new KernelException("No parser associate with extension name {} on config file {}.", extName, newFileName);
         }
         Map<String, Object> config = parser.parse(cfgFile);
-        config.forEach((key, value) -> { onChange(key, value); });
+//        config.forEach((key, value) -> onChange(key, value));
     }
 }

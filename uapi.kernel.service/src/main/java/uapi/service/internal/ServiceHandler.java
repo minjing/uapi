@@ -28,13 +28,13 @@ import java.util.stream.Collectors;
 /**
  * A annotation handler used to handler Service annotation
  */
+@AutoService(IAnnotationsHandler.class)
 public final class ServiceHandler extends AnnotationsHandler {
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Service.class };
 
     private static final String TEMPLATE_GET_IDS            = "template/getIds_method.ftl";
-//    private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
 
     @Override
     protected Class<? extends Annotation>[] getOrderedAnnotations() {
@@ -47,18 +47,6 @@ public final class ServiceHandler extends AnnotationsHandler {
             final Class<? extends Annotation> annotationType,
             final Set<? extends Element> elements
     ) throws KernelException {
-
-//    }
-
-//    @Override
-//    public void handle(
-//            final IBuilderContext builderCtx
-//    ) throws KernelException {
-//        Set<? extends Element> classElements = builderCtx.getElementsAnnotatedWith(Service.class);
-//        if (classElements.size() == 0) {
-//            throw new KernelException("The service must be declared with Service annotation.");
-//        }
-
         elements.forEach(classElement -> {
             if (classElement.getKind() != ElementKind.CLASS) {
                 throw new KernelException(
@@ -89,26 +77,6 @@ public final class ServiceHandler extends AnnotationsHandler {
             Map<String, Object> tempModelInit = new HashMap<>();
             tempModelInit.put("serviceIds", serviceIds);
 
-//            // Receive service dependency id list
-//            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-//            List<String> dependentIds = setterBuilders.parallelStream()
-//                    .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
-//                    .collect(Collectors.toList());
-//            // Check duplicated dependency
-//            dependentIds.stream()
-//                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
-//                    .forEach((dependSvc, counter) -> {
-//                        if (counter > 1) {
-//                            throw new KernelException(StringHelper.makeString(
-//                                    "The service {}.{} has duplicated dependency on same service {}",
-//                                    classBuilder.getPackageName(),
-//                                    classBuilder.getClassName(),
-//                                    dependSvc));
-//                        }});
-//            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
-//            Map<String, Object> tempModelDependentIds = new HashMap<>();
-//            tempModelDependentIds.put("dependentIds", dependentIds);
-
             // Build class builder
             classBuilder
                     .addAnnotationBuilder(AnnotationMeta.builder()
@@ -127,15 +95,6 @@ public final class ServiceHandler extends AnnotationsHandler {
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempGetIds)
                                     .setModel(tempModelInit)));
-//                    .addMethodBuilder(MethodMeta.builder()
-//                            .addAnnotationBuilder(AnnotationMeta.builder()
-//                                    .setName(AnnotationMeta.OVERRIDE))
-//                            .setName(IService.METHOD_GET_DEPENDENT_ID)
-//                            .addModifier(Modifier.PUBLIC)
-//                            .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
-//                            .addCodeBuilder(CodeMeta.builder()
-//                                    .setTemplate(tempDependentIds)
-//                                    .setModel(tempModelDependentIds)));
         });
     }
 }

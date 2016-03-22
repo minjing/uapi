@@ -37,8 +37,8 @@ public final class CliConfigProvider
                         return new Pair<String, String>(values[0], values[1]);
                     }})
                 .forEach((pair) -> { cliCfg.put(pair.getLeftValue(), pair.getRightValue()); });
-        cliCfg.forEach((name, value) -> {
-            onChange(name, value);
-        });
+//        cliCfg.forEach((name, value) -> {
+//            onChange(name, value);
+//        });
     }
 }

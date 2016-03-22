@@ -23,11 +23,6 @@ public class OptionalParser {
             final IBuilderContext builderCtx,
             final Set<? extends Element> elements
     ) throws KernelException {
-//        Set<? extends Element> elements = builderCtx.getElementsAnnotatedWith(Optional.class);
-//        if (elements.size() == 0) {
-//            return;
-//        }
-
         builderCtx.getLogger().info("Starting process Option annotation");
         // Initialize optional setters
         elements.forEach(fieldElement -> {

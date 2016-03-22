@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.config.Config;
-import uapi.config.IConfigTracer;
+//import uapi.config.IConfigTracer;
 import uapi.service.AnnotatedMethod;
 import uapi.service.IAnnotationMethodHandler;
 import uapi.service.IService1;
@@ -17,13 +17,13 @@ import uapi.service.Type;
 
 import com.google.common.base.Strings;
 
-@Registration({
-        @Type(Configurator.class),
-        @Type(IAnnotationMethodHandler.class),
-        @Type(IConfigTracer.class)
-})
+//@Registration({
+//        @Type(Configurator.class),
+//        @Type(IAnnotationMethodHandler.class),
+//        @Type(IConfigTracer.class)
+//})
 public final class Configurator
-    implements IService1, IAnnotationMethodHandler<Config>, IConfigTracer {
+    implements IService1, IAnnotationMethodHandler<Config> {
 
     private final Map<String /* qualifier */, Object> _cgfs;
     private final Map<String /* qualifier */, List<ConfigurableServiceMethod>> _svcDescs;
@@ -67,7 +67,6 @@ public final class Configurator
         }
     }
 
-    @Override
     public void onChange(String qulifier, Object config) {
         addConfig(qulifier, config);
     }

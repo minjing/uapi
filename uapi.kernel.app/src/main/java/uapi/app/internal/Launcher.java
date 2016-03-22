@@ -82,10 +82,6 @@ public class Launcher implements ILauncher {
 
     private final class ShutdownHook implements Runnable {
 
-//        private ShutdownHook() throws InterruptedException {
-//            Launcher.this._semaphore.acquire();
-//        }
-
         @Override
         public void run() {
             Launcher.this._logger.info("The system is going to shutdown...");

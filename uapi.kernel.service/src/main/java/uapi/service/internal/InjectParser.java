@@ -38,11 +38,6 @@ public class InjectParser {
             final IBuilderContext builderCtx,
             final Set<? extends Element> elements
     ) throws KernelException {
-//        Set<? extends Element> paramElements = builderCtx.getElementsAnnotatedWith(Inject.class);
-//        if (paramElements.size() == 0) {
-//            return;
-//        }
-
         elements.forEach(fieldElement -> {
             if (fieldElement.getKind() != ElementKind.FIELD) {
                 throw new KernelException(

@@ -2,7 +2,9 @@ package uapi.service.internal
 
 import spock.lang.Specification
 import uapi.service.IInitial
+import uapi.service.IInjectable
 import uapi.service.IService
+import uapi.service.IServiceFactory
 
 /**
  * Test case for ServiceHolder
@@ -62,5 +64,73 @@ class ServiceHolderTest extends Specification {
         where:
         serviceId   | resolved  | inited
         "3"         | true      | true
+    }
+
+    IInjectable injectableSvc = Mock(IInjectable)
+
+    def "Test service with dependency"() {
+        given:
+        ServiceHolder holder = new ServiceHolder(injectableSvc, serviceId, ["dep01", "dep02"] as String[])
+
+        when:
+        holder.isDependsOn("dep01")
+
+        then:
+        holder.id == serviceId
+
+        where:
+        serviceId   | resolved  | inited    | dependId
+        "1"         | false     | false     | "dep01"
+    }
+
+    ServiceHolder dependSvc = Mock(ServiceHolder)
+
+    def "Test set service dependency"() {
+        given:
+        ServiceHolder holder = new ServiceHolder(injectableSvc, serviceId, ["dep01"] as String[])
+
+        when:
+        holder.setDependency(dependSvc)
+        holder.initService()
+
+        then:
+        dependSvc.getId() >> "dep01"
+        dependSvc.resolved >> true
+        dependSvc.getService() >> new Object()
+        holder.id == serviceId
+        holder.resolved == resolved
+        holder.inited == inited
+        1 * injectableSvc.injectObject(_)
+
+        where:
+        serviceId   | resolved  | inited
+        "1"         | true      | true
+    }
+
+    IServiceFactory svcFactory = Mock(IServiceFactory)
+
+    def "Test depends on a service factory"() {
+        given:
+        ServiceHolder holder = new ServiceHolder(injectableSvc, serviceId, ["dep01"] as String[])
+
+        when:
+        holder.setDependency(dependSvc)
+        holder.initService()
+
+        then:
+        with(dependSvc) {
+            dependSvc.getId() >> "dep01"
+            dependSvc.resolved >> true
+            dependSvc.getService() >> svcFactory
+        }
+        svcFactory.createService(injectableSvc) >> new Object()
+        holder.id == serviceId
+        holder.resolved == resolved
+        holder.inited == inited
+        1 * injectableSvc.injectObject(_)
+
+        where:
+        serviceId   | resolved  | inited
+        "1"         | true      | true
     }
 }

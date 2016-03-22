@@ -9,12 +9,11 @@ import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Executor;
-import uapi.service.IInjectable;
-import uapi.service.IRegistry;
-import uapi.service.IService;
+import uapi.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -25,29 +24,26 @@ import java.util.stream.Stream;
  */
 @ThreadSafe
 @AutoService(IService.class)
-public class Registry implements IRegistry, IService {
+public class Registry implements IRegistry, IService, IInjectable {
 
     private final Lock _resolvedLock;
     private final Lock _unresolvedLock;
     private final Multimap<String, ServiceHolder> _resolvedSvcs;
     private final Multimap<String, ServiceHolder> _unresolvedSvcs;
+    private final List<IWatcher> _watchers;
 
     public Registry() {
         this._resolvedLock = new ReentrantLock();
         this._unresolvedLock = new ReentrantLock();
         this._resolvedSvcs = LinkedListMultimap.create();
         this._unresolvedSvcs = LinkedListMultimap.create();
+        this._watchers = new CopyOnWriteArrayList<>();
     }
 
     @Override
     public String[] getIds() {
         return new String[] { IRegistry.class.getCanonicalName() };
     }
-
-//    @Override
-//    public String[] getDependentIds() {
-//        return new String[0];
-//    }
 
     @Override
     public void register(
@@ -118,14 +114,34 @@ public class Registry implements IRegistry, IService {
         return resolvedSvcs;
     }
 
+    int getCount() {
+        return getResolvedCount() + getUnresolvedCount();
+    }
+
+    int getResolvedCount() {
+        return Executor.create().guardBy(this._resolvedLock).runForResult(() -> this._resolvedSvcs.size());
+    }
+
+    int getUnresolvedCount() {
+        return Executor.create().guardBy(this._unresolvedLock).runForResult(() -> this._unresolvedSvcs.size());
+    }
+
     private void registerService(
             final Object svc,
             final String[] svcIds) {
-        Stream.of(svcIds).map(svcId -> {
-            ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
-            Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
-            return svcHolder;
-        }).forEach(this::newResolvedService);
+        Observable.from(svcIds)
+                .map(svcId -> {
+                    ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
+                    Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
+                    return svcHolder;
+                })
+                .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
+                .subscribe(this::newResolvedService);
+//        Stream.of(svcIds).map(svcId -> {
+//            ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
+//            Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
+//            return svcHolder;
+//        }).forEach(this::newResolvedService);
     }
 
     private void registerService(
@@ -137,14 +153,18 @@ public class Registry implements IRegistry, IService {
 
         final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
         if (dependencyIds == null || dependencyIds.length == 0) {
-            Stream.of(svcIds).map(svcId -> {
-                ServiceHolder svcHolder = new ServiceHolder(svc, svcId, dependencyIds);
-                Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
-                return svcHolder;
-            }).forEach(this::newResolvedService);
+            Observable.from(svcIds)
+                    .map(svcId -> {
+                        ServiceHolder svcHolder = new ServiceHolder(svc, svcId, dependencyIds);
+                        Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
+                        return svcHolder;
+                    })
+                    .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
+                    .forEach(this::newResolvedService);
         } else {
-            Stream.of(svcIds)
+            Observable.from(svcIds)
                     .map(svcId -> new ServiceHolder(svc, svcId, dependencyIds))
+                    .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
                     .forEach(svcHolder -> {
                         if (svcHolder.isResolved()) {
                             Executor.create().guardBy(this._resolvedLock).run(
@@ -154,7 +174,7 @@ public class Registry implements IRegistry, IService {
                             Executor.create().guardBy(this._unresolvedLock).run(
                                     () -> this._unresolvedSvcs.put(svcHolder.getId(), svcHolder));
                         }
-            });
+                    });
         }
     }
 
@@ -162,6 +182,7 @@ public class Registry implements IRegistry, IService {
         final String resolvedSvcId = resolvedService.getId();
 
         resolvedService.initService();
+        Observable.from(this._watchers).subscribe(watcher -> watcher.onResolved(resolvedService));
 
         List<ServiceHolder> dependSvcs = Executor.create().guardBy(this._unresolvedLock).runForResult(
                 () -> this._unresolvedSvcs.values().stream()
@@ -176,5 +197,30 @@ public class Registry implements IRegistry, IService {
                             () -> this._resolvedSvcs.put(serviceHolder.getId(), serviceHolder));
                 })
                 .forEach(this::newResolvedService);
+    }
+
+    @Override
+    public void injectObject(
+            final Injection injection
+    ) throws InvalidArgumentException, KernelException {
+        ArgumentChecker.notNull(injection, "injection");
+        if (IWatcher.class.getName().equals(injection.getId()) && injection.getObject() instanceof IWatcher) {
+            this._watchers.add((IWatcher) injection.getObject());
+            return;
+        }
+        throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
+    }
+
+    @Override
+    public String[] getDependentIds() {
+        return new String[] { IWatcher.class.getName() };
+    }
+
+    @Override
+    public boolean isOptional(String id) throws InvalidArgumentException {
+        if (IWatcher.class.getName().equals(id)) {
+            return true;
+        }
+        throw new InvalidArgumentException("The Registry does not depends on service {}", id);
     }
 }

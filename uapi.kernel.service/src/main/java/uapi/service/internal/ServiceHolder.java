@@ -6,10 +6,7 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
-import uapi.service.IInitial;
-import uapi.service.IInjectable;
-import uapi.service.IServiceFactory;
-import uapi.service.Injection;
+import uapi.service.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -18,18 +15,18 @@ import java.util.stream.Stream;
 /**
  * The ServiceHolder hold specific service with its id and dependencies
  */
-final class ServiceHolder {
+class ServiceHolder implements IServiceReference {
 
     private final Object _svc;
     private final String _svcId;
     private final Multimap<String, ServiceHolder> _dependencies;
     private boolean _inited = false;
 
-    ServiceHolder(final Object service, String serviceId) {
+    ServiceHolder(final Object service, final String serviceId) {
         this(service, serviceId, new String[0]);
     }
 
-    ServiceHolder(final Object service, String serviceId, String[] dependencies) {
+    ServiceHolder(final Object service, final String serviceId, final String[] dependencies) {
         ArgumentChecker.notNull(service, "service");
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         ArgumentChecker.notNull(dependencies, "dependencies");
@@ -39,11 +36,13 @@ final class ServiceHolder {
         Stream.of(dependencies).forEach(dependency -> this._dependencies.put(dependency, null));
     }
 
-    String getId() {
+    @Override
+    public String getId() {
         return this._svcId;
     }
 
-    Object getService() {
+    @Override
+    public Object getService() {
         return this._svc;
     }
 
@@ -52,12 +51,12 @@ final class ServiceHolder {
         if (! service.isResolved()) {
             throw new KernelException("The service {} is not resolved", service._svcId);
         }
-        if (! this._dependencies.containsKey(service._svcId)) {
+        if (! this._dependencies.containsKey(service.getId())) {
             throw new KernelException("The service {} does not depend on service {}", this._svcId, service._svcId);
         }
         // remove null entry first
-        this._dependencies.remove(service._svcId, null);
-        this._dependencies.put(service._svcId, service);
+        this._dependencies.remove(service.getId(), null);
+        this._dependencies.put(service.getId(), service);
     }
 
     boolean isDependsOn(final String serviceId) {
@@ -90,9 +89,9 @@ final class ServiceHolder {
                 Observable.from(this._dependencies.values())
                         .filter(dependency -> dependency != null)
                         .subscribe(dependency -> {
-                            Object injectedSvc = dependency._svc;
-                            if (dependency._svc instanceof IServiceFactory) {
-                                injectedSvc = ((IServiceFactory) dependency._svc).createService(this._svc);
+                            Object injectedSvc = dependency.getService();
+                            if (injectedSvc instanceof IServiceFactory) {
+                                injectedSvc = ((IServiceFactory) injectedSvc).createService(this._svc);
                             }
                             ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
                         }, (Throwable::printStackTrace));
