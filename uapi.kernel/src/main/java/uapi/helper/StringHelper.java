@@ -1,13 +1,25 @@
 package uapi.helper;
 
 import com.google.common.base.Strings;
+import uapi.InvalidArgumentException;
+import uapi.KernelException;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public final class StringHelper {
+
+    private static final char HEX_DIGITS[] = {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',  'e', 'f'};
 
     public static final String EMPTY    = "";
 
     private static final char VAR_START = '{';
     private static final char VAR_END   = '}';
+
+    private static final int MASK_F     = 0xf;
+    private static final int FOUR       = 4;
+    private static final int SIXTEEN    = 16;
 
     private StringHelper() { }
 
@@ -61,5 +73,40 @@ public final class StringHelper {
             }
         }
         return buffer.toString();
+    }
+
+    /**
+     * Make MD5 string based string array items
+     *
+     * @param   strs
+     *          String array that used for make MD5 string
+     * @return  MD5 string
+     */
+    public static String makeMD5(final String... strs) {
+        if (strs == null || strs.length == 0) {
+            throw new IllegalArgumentException();
+        }
+
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch(NoSuchAlgorithmException ex) {
+            throw new KernelException(ex);
+        }
+        for (String str : strs) {
+            if (str == null) {
+                throw new InvalidArgumentException("Not allow null string in the array {}", strs);
+            }
+            md.update(str.getBytes());
+        }
+        byte source[] = md.digest();
+        char target[] = new char[SIXTEEN * 2];
+        int k = 0;
+        for (int i = 0; i < SIXTEEN; i++) {
+            byte sbyte = source[i];
+            target[k++] = HEX_DIGITS[sbyte >>> FOUR & MASK_F];
+            target[k++] = HEX_DIGITS[sbyte & MASK_F];
+        }
+        return new String(target);
     }
 }

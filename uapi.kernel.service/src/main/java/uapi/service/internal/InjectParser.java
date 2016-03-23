@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 /**
  * The handler for Inject annotation
  */
-public class InjectParser {
+class InjectParser {
 
     private static final String TEMPLATE_FILE               = "template/inject_method.ftl";
     private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";

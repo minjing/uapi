@@ -16,7 +16,7 @@ import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.KernelException;
 import uapi.helper.ClassHelper;
-import uapi.helper.Executor;
+import uapi.helper.Guarder;
 import uapi.service.IAnnotationMethodHandler;
 import uapi.service.IService1;
 import uapi.service.Inject;
@@ -83,13 +83,13 @@ public class Service1Repository implements IService1 {
         }
         StatefulService svc = new StatefulService(this, service, sid);
         if (svc.isInitialized()) {
-            Executor.create().guardBy(this._initedSvcsLock).run(() -> {
+            Guarder.by(this._initedSvcsLock).run(() -> {
                 this._initedSvcs.put(svc.getName(), svc);
             });
         } else if (! svc.isLazyInit()) {
             this._forceInitSvcs.put(svc.getName(), svc);
         } else {
-            Executor.create().guardBy(this._uninitedSvcsLock).run(() -> {
+            Guarder.by(this._uninitedSvcsLock).run(() -> {
                 this._uninitedSvcs.put(svc.getName(), svc);
             });
         }
@@ -135,7 +135,7 @@ public class Service1Repository implements IService1 {
         }
         final List<Object> svcInsts = new ArrayList<>();
         // Find service from initialized map
-        Collection<StatefulService> svcs = Executor.create().guardBy(this._initedSvcsLock).runForResult(() -> {
+        Collection<StatefulService> svcs = Guarder.by(this._initedSvcsLock).runForResult(() -> {
             return this._initedSvcs.get(serviceId);
         });
         if (svcs != null) {
@@ -144,13 +144,13 @@ public class Service1Repository implements IService1 {
                 .forEach((svcInst) -> { svcInsts.add(svcInst); });
         }
         // Find service from un-initialized map
-        svcs = Executor.create().guardBy(this._uninitedSvcsLock).runForResult(() -> {
+        svcs = Guarder.by(this._uninitedSvcsLock).runForResult(() -> {
             return this._uninitedSvcs.removeAll(serviceId);
         });
         if (svcs != null) {
             svcs.parallelStream().forEach((svc) -> {
                 svcInsts.add(svc.getInstance(serveFor));
-                Executor.create().guardBy(this._initedSvcsLock).run(() -> {
+                Guarder.by(this._initedSvcsLock).run(() -> {
                     this._initedSvcs.put(svc.getName(), svc);
                 });
             });

@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * The handler is used to handle Optional annotation
  */
-public class OptionalParser {
+class OptionalParser {
 
     private static final String TEMPLATE_IS_OPTIONAL = "template/isOptional_method.ftl";
 
