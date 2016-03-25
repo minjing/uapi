@@ -38,14 +38,12 @@ public class AnnotationProcessor extends AbstractProcessor {
         this._logger = new LogSupport(processingEnv);
         this._handlers = new LinkedList<>();
         this._orderedAnnotations = new HashSet<>();
-//        initForHandler(new NotNullHandler());
         loadExternalHandler();
     }
 
     private void loadExternalHandler() {
         InputStream is = null;
         Scanner scanner = null;
-//        AnnotationOrder annoOrder = new AnnotationOrder(this._logger);
 
         try {
             final Enumeration<URL> systemResources =
@@ -65,11 +63,8 @@ public class AnnotationProcessor extends AbstractProcessor {
                         return;
                     }
                     initForHandler((AnnotationsHandler) handler);
-//                    annoOrder.doOrder((AnnotationsHandler) handler);
                 }
             }
-//            this._orderedAnnotations = annoOrder.getOrderedAnnotations();
-//            this._logger.info(this._orderedAnnotations.toString());
         } catch (Exception ex) {
             this._logger.error(ex);
             return;
@@ -88,14 +83,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     private void initForHandler(IAnnotationsHandler handler) {
-//        handler.setLogger(this._logger);
-//        String handlerName = handler.getSupportedAnnotations().getCanonicalName();
-//        List<AnnotationHandler> handlers = this._handlers.get(handlerName);
-//        if (handlers == null) {
-//            handlers = new ArrayList<>();
-//            this._handlers.put(handlerName, handlers);
-//        }
-//        handlers.add(handler);
         this._handlers.add(handler);
         Observable.from(handler.getSupportedAnnotations())
                 .map(Class::getName)
@@ -121,12 +108,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
         this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
-        // we need apply handle in order
-//        Observable.from(this._orderedAnnotations)
-//                .flatMap(annoName -> Observable.from(_handlers.get(annoName)))
-//                .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
-//                .subscribe(handler -> handler.handle(buildCtx), _logger::error);
-
         Observable.from(this._handlers)
                 .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
                 .subscribe(handler -> handler.handle(buildCtx), _logger::error);

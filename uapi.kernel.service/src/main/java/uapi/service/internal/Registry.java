@@ -11,7 +11,10 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.Guarder;
 import uapi.service.*;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
@@ -30,7 +33,8 @@ public class Registry implements IRegistry, IService, IInjectable {
     private final Lock _unresolvedLock;
     private final Multimap<String, ServiceHolder> _resolvedSvcs;
     private final Multimap<String, ServiceHolder> _unresolvedSvcs;
-    private final List<IWatcher> _watchers;
+    private final List<WeakReference<IWatcher>> _watchers;
+    private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
 
     public Registry() {
         this._resolvedLock = new ReentrantLock();
@@ -38,6 +42,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         this._resolvedSvcs = LinkedListMultimap.create();
         this._unresolvedSvcs = LinkedListMultimap.create();
         this._watchers = new CopyOnWriteArrayList<>();
+        this._satisfyHooks = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -120,12 +125,10 @@ public class Registry implements IRegistry, IService, IInjectable {
 
     int getResolvedCount() {
         return Guarder.by(this._resolvedLock).runForResult(this._resolvedSvcs::size);
-//        return Executor.create().guardBy(this._resolvedLock).runForResult(() -> this._resolvedSvcs.size());
     }
 
     int getUnresolvedCount() {
         return Guarder.by(this._unresolvedLock).runForResult(this._unresolvedSvcs::size);
-//        return Executor.create().guardBy(this._unresolvedLock).runForResult(() -> this._unresolvedSvcs.size());
     }
 
     private void registerService(
@@ -135,16 +138,10 @@ public class Registry implements IRegistry, IService, IInjectable {
                 .map(svcId -> {
                     ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
                     Guarder.by(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
-//                    Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
                     return svcHolder;
                 })
-                .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
+                .doOnNext(this::notifyRegistered)
                 .subscribe(this::newResolvedService);
-//        Stream.of(svcIds).map(svcId -> {
-//            ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
-//            Executor.create().guardBy(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
-//            return svcHolder;
-//        }).forEach(this::newResolvedService);
     }
 
     private void registerService(
@@ -162,12 +159,12 @@ public class Registry implements IRegistry, IService, IInjectable {
                         Guarder.by(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
                         return svcHolder;
                     })
-                    .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
+                    .doOnNext(this::notifyRegistered)
                     .forEach(this::newResolvedService);
         } else {
             Observable.from(svcIds)
                     .map(svcId -> new ServiceHolder(svc, svcId, dependencyIds))
-                    .doOnNext(svcHolder -> Observable.from(this._watchers).subscribe(watcher -> watcher.onRegister(svcHolder)))
+                    .doOnNext(this::notifyRegistered)
                     .forEach(svcHolder -> {
                         if (svcHolder.isResolved()) {
                             Guarder.by(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcHolder.getId(), svcHolder));
@@ -183,7 +180,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         final String resolvedSvcId = resolvedService.getId();
 
         resolvedService.initService();
-        Observable.from(this._watchers).subscribe(watcher -> watcher.onResolved(resolvedService));
+        notifyResolved(resolvedService);
 
         List<ServiceHolder> dependSvcs = Guarder.by(this._unresolvedLock).runForResult(
                 () -> this._unresolvedSvcs.values().stream()
@@ -204,8 +201,22 @@ public class Registry implements IRegistry, IService, IInjectable {
     ) throws InvalidArgumentException, KernelException {
         ArgumentChecker.notNull(injection, "injection");
         if (IWatcher.class.getName().equals(injection.getId()) && injection.getObject() instanceof IWatcher) {
-            this._watchers.add((IWatcher) injection.getObject());
+            releaseWatchers();
+            IWatcher watcher = (IWatcher) injection.getObject();
+            this._watchers.add(new WeakReference<>(watcher));
+            Observable.from(this._unresolvedSvcs.values())
+                    .map(svcHolder -> (IServiceReference) svcHolder)
+                    .subscribe(watcher::onRegister);
+            Observable.from(this._resolvedSvcs.values())
+                    .map(svcHolder -> (IServiceReference) svcHolder)
+                    .doOnNext(watcher::onRegister)
+                    .subscribe(watcher::onResolved);
             return;
+        }
+        if (ISatisfyHook.class.getName().equals(injection.getId()) && injection.getObject() instanceof ISatisfyHook) {
+            releaseHooks();
+            ISatisfyHook hook = (ISatisfyHook) injection.getObject();
+            this._satisfyHooks.add(new WeakReference<>(hook));
         }
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
     }
@@ -220,6 +231,45 @@ public class Registry implements IRegistry, IService, IInjectable {
         if (IWatcher.class.getName().equals(id)) {
             return true;
         }
+        if (ISatisfyHook.class.getName().equals(id)) {
+            return true;
+        }
         throw new InvalidArgumentException("The Registry does not depends on service {}", id);
+    }
+
+    private void notifyRegistered(
+            final IServiceReference svcRef
+    ) {
+        releaseWatchers();
+        Observable.from(this._watchers)
+                .filter(watcherRef -> watcherRef.get() != null)
+                .map(Reference::get)
+                .subscribe(watcher -> watcher.onRegister(svcRef));
+    }
+
+    private void notifyResolved(
+            final IServiceReference svcRef
+    ) {
+        releaseWatchers();
+        Observable.from(this._watchers)
+                .filter(watcherRef -> watcherRef.get() != null)
+                .map(Reference::get)
+                .subscribe(watcher -> watcher.onResolved(svcRef));
+    }
+
+    private void releaseWatchers() {
+        for (Iterator<WeakReference<IWatcher>> itor = this._watchers.iterator(); itor.hasNext(); ) {
+            if (itor.next().get() == null) {
+                itor.remove();
+            }
+        }
+    }
+
+    private void releaseHooks() {
+        for (Iterator<WeakReference<ISatisfyHook>> itor = this._satisfyHooks.iterator(); itor.hasNext(); ) {
+            if (itor.next().get() == null) {
+                itor.remove();
+            }
+        }
     }
 }

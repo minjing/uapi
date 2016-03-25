@@ -5,7 +5,9 @@ package uapi.config;
  */
 public interface IConfigurable {
 
-    String[] getConfigKeys();
+    String[] getPaths();
 
-    void config(Object configObject);
+    boolean configSatisfied();
+
+    void config(String path, Object configObject);
 }

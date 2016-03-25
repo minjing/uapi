@@ -8,24 +8,29 @@ import uapi.service.IServiceReference;
 import uapi.service.IWatcher;
 import uapi.service.annotation.Service;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Created by xquan on 3/22/2016.
+ * A Configurator manage all configuration and configurable service list and
+ * set configuration into realted configurable service.
  */
-@Service
+@Service({ "uapi.service.IWatcher" })
 class Configurator implements IWatcher {
 
-    private final Multimap<String, IConfigurable> _configs;
+    private final Multimap<String, WeakReference<IConfigurable>> _configurables;
+    private final Map<String, Map<?, ?>> _configuration;
 
     Configurator() {
-        this._configs = LinkedListMultimap.create();
+        this._configurables = LinkedListMultimap.create();
+        this._configuration = new HashMap<>();
     }
 
     @Override
     public void onRegister(
             final IServiceReference serviceRef
-    ) {
-        // Do nothing
-    }
+    ) { /* Do nothing */ }
 
     @Override
     public void onResolved(
@@ -35,7 +40,7 @@ class Configurator implements IWatcher {
         String id = serviceRef.getId();
         Object svc = serviceRef.getService();
         if (svc instanceof IConfigurable) {
-
+            this._configurables.put(id, new WeakReference<>((IConfigurable) svc));
         }
     }
 }

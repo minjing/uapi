@@ -19,20 +19,10 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
 
     private LogSupport _logger;
 
-//    @Override
-//    public void setLogger(final LogSupport logger) {
-//        ArgumentChecker.notNull(logger, "logger");
-//        this._logger = logger;
-//    }
-
     @Override
     public Class<? extends Annotation>[] getSupportedAnnotations() {
         return getOrderedAnnotations();
     }
-
-//    public LogSupport getLogger() {
-//        return this._logger;
-//    }
 
     protected void checkModifiers(
             final Element element,
