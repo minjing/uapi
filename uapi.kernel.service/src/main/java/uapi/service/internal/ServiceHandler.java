@@ -1,10 +1,12 @@
 package uapi.service.internal;
 
+import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 import uapi.service.IService;
 import uapi.service.IServiceFactory;
@@ -13,16 +15,10 @@ import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,9 +53,10 @@ public final class ServiceHandler extends AnnotationsHandler {
 
             // Receive service id array
             ClassMeta.Builder classBuilder = builderCtx.findClassBuilder(classElement);
+            AnnotationMirror svcAnnoMirror = MoreElements.getAnnotationMirror(classElement, Service.class).get();
             Service service = classElement.getAnnotation(Service.class);
-            String[] serviceIds = service.value();
-            if (serviceIds == null || serviceIds.length == 0) {
+            String[] serviceIds = mergeId(getTypes(svcAnnoMirror), service.ids());
+            if (serviceIds.length == 0) {
                 final StringBuilder svcId = new StringBuilder();
                 // Check service factory type argument first
                 Observable.from(((TypeElement) classElement).getInterfaces())
@@ -96,5 +93,33 @@ public final class ServiceHandler extends AnnotationsHandler {
                                     .setTemplate(tempGetIds)
                                     .setModel(tempModelInit)));
         });
+    }
+
+    private String[] mergeId(List<String> serviceTypes, String[] serviceIds) {
+        List<String> ids = new ArrayList<>();
+        Observable.from(serviceTypes).subscribe(ids::add);
+        Observable.from(serviceIds).subscribe(ids::add);
+        return ids.toArray(new String[ids.size()]);
+    }
+
+    /**
+     * Get service type from AnnotationMirror
+     * Since the class type can't be received directly at annotation processing time
+     * so we have to get from AnnotationMirror
+     *
+     * @param   serviceAnnotation
+     *          The AnnotationMirror which is related with Service annotation
+     * @return  The type name array
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> getTypes(AnnotationMirror serviceAnnotation) {
+        List<String> types = new ArrayList<>();
+        Observable.from(serviceAnnotation.getElementValues().values())
+                .flatMap(annoValue -> Observable.from((List<AnnotationValue>) annoValue.getValue()))
+                .map(annoValue -> (DeclaredType) annoValue.getValue())
+                .map(declaredType -> (TypeElement) declaredType.asElement())
+                .map(typeElem -> typeElem.getQualifiedName().toString())
+                .subscribe(types::add);
+        return types;
     }
 }

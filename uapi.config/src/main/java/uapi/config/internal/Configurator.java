@@ -1,46 +1,65 @@
 package uapi.config.internal;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
+import rx.Observable;
+import uapi.config.Configuration;
+import uapi.config.IConfigProvider;
+import uapi.config.IConfigTracer;
 import uapi.config.IConfigurable;
 import uapi.helper.ArgumentChecker;
-import uapi.service.IServiceReference;
-import uapi.service.IWatcher;
+import uapi.service.ISatisfyHook;
+import uapi.service.annotation.Init;
 import uapi.service.annotation.Service;
 
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A Configurator manage all configuration and configurable service list and
- * set configuration into realted configurable service.
+ * set configuration into related configurable service.
  */
-@Service({ "uapi.service.IWatcher" })
-class Configurator implements IWatcher {
+@Service({ ISatisfyHook.class })
+class Configurator implements ISatisfyHook {
 
-    private final Multimap<String, WeakReference<IConfigurable>> _configurables;
-    private final Map<String, Map<?, ?>> _configuration;
+    private final List<IConfigProvider> _configProviders;
+    private final ConfigTracer _configTracer;
+
+//    private final Multimap<String /* config path */, WeakReference<IConfigurable>> _configurables;
+    private final Configuration _rootConfig;
 
     Configurator() {
-        this._configurables = LinkedListMultimap.create();
-        this._configuration = new HashMap<>();
+        this._configProviders = new LinkedList<>();
+        this._configTracer = new ConfigTracer();
+//        this._configurables = LinkedListMultimap.create();
+        this._rootConfig = Configuration.createRoot();
+    }
+
+    @Init
+    public void init() {
+        Observable.from(this._configProviders).subscribe(provider -> provider.setTracer(this._configTracer));
     }
 
     @Override
-    public void onRegister(
-            final IServiceReference serviceRef
-    ) { /* Do nothing */ }
+    public boolean isSatisfied(Object service) {
+        ArgumentChecker.notNull(service, "service");
+        if (! (service instanceof IConfigurable)) {
+            return true;
+        }
+        IConfigurable configurableSvc = (IConfigurable) service;
+        String[] paths = configurableSvc.getPaths();
+        boolean isConfigured = true;
+        for (String path : paths) {
+            if (! this._rootConfig.bindConfigurable(path, configurableSvc)) {
+                isConfigured = false;
+            }
+        }
+        return isConfigured;
+    }
 
-    @Override
-    public void onResolved(
-            final IServiceReference serviceRef
-    ) {
-        ArgumentChecker.notNull(serviceRef, "serviceRef");
-        String id = serviceRef.getId();
-        Object svc = serviceRef.getService();
-        if (svc instanceof IConfigurable) {
-            this._configurables.put(id, new WeakReference<>((IConfigurable) svc));
+    private final class ConfigTracer implements IConfigTracer {
+
+        @Override
+        public void onChange(String path, Object config) {
+            Configurator.this._rootConfig.setValue(path, config);
         }
     }
 }

@@ -17,8 +17,6 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {

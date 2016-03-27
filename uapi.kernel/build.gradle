@@ -1,6 +1,7 @@
 dependencies {
     compile "com.google.auto.service:auto-service:${auto_service_version}"
     compile "org.freemarker:freemarker:${freemarker_version}"
+    compile "io.reactivex:rxjava:${rxjava_version}"
 
     testCompile project(':uapi.test')
 }

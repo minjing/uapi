@@ -63,6 +63,22 @@ public class ArgumentChecker {
                 argumentName, argument, expect);
     }
 
+    public static void notEquals(Object argument, Object unexpected, String argumentName) {
+        if (argument != null && ! argument.equals(unexpected)) {
+            return;
+        }
+        throw new InvalidArgumentException("The arguments {} is equals unexpected value {} - {}",
+                argumentName, argument, unexpected);
+    }
+
+    public static void contains(String argument, String unexpected, String argumentName) {
+        if (argument != null && ! argument.contains(unexpected)) {
+            return;
+        }
+        throw new InvalidArgumentException("The argument {} contains unexpected value {} - {}",
+                argumentName, argument, unexpected);
+    }
+
     public static <T> void notContains(Collection<T> argument, String argumentName, String otherInfo, T... unexpects) {
         notNull(argument, argumentName);
         T unexpected = CollectionHelper.contains(argument, unexpects);

@@ -12,5 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Service {
 
-    String[] value() default {};
+    Class<?>[] value() default {};
+
+    String[] ids() default {};
 }

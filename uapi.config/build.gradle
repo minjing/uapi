@@ -1,8 +1,14 @@
 dependencies {
+    compile "io.reactivex:rxjava:${rxjava_version}"
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
     compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.5.3'
+
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+
+    testRuntime "cglib:cglib-nodep:3.1"
+    testRuntime "org.objenesis:objenesis:2.1"
 }
 
 jar {

@@ -26,12 +26,29 @@ public final class CollectionHelper {
      * @return
      */
     public static <T> T contains(Collection<T> collection, T... elements) {
+        ArgumentChecker.notNull(collection, "collection");
         for (T element : elements) {
             if (collection.contains(element)) {
                 return element;
             }
         }
         return null;
+    }
+
+    public static <T> T contains(T[] array, T... elements) {
+        ArgumentChecker.notNull(array, "array");
+        for (T element : elements) {
+            for (T item : array) {
+                if (item.equals(element)) {
+                    return element;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T> boolean isContains(T[] array, T... elements) {
+        return contains(array, elements) != null;
     }
 
     public static String asString(Object[] array) {
