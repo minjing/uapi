@@ -1,3 +1,0 @@
-uapi.config.internal.FileBasedConfigProvider
-uapi.config.internal.PropertiesFileParser
-uapi.config.internal.JsonFileParser

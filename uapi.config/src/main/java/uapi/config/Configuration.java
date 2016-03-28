@@ -5,7 +5,6 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,14 +111,16 @@ public final class Configuration {
 
     public boolean bindConfigurable(final IConfigurable configurable) {
         this._configuable = new WeakReference<>(configurable);
+        String path = getFullPath();
         if (this._value != null) {
-            configurable.config(getFullPath(), this._value);
+            configurable.config(path, this._value);
             return true;
         } else if (this._children.size() > 0) {
-            configurable.config(getFullPath(), this._children);
+            configurable.config(path, this._children);
             return true;
+        } else {
+            return configurable.isOptionalConfig(path);
         }
-        return false;
     }
 
     public boolean bindConfigurable(final String path, final IConfigurable configurable) {

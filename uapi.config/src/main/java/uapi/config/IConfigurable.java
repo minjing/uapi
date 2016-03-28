@@ -5,9 +5,15 @@ package uapi.config;
  */
 public interface IConfigurable {
 
+    String METHOD_GET_PATHS             = "getPaths";
+    String METHOD_IS_OPTIONAL_CONFIG    = "isOptionalConfig";
+    String METHOD_CONFIG                = "config";
+    String PARAM_PATH                   = "path";
+    String PARAM_CONFIG_OBJECT          = "configObject";
+
     String[] getPaths();
 
-    boolean configSatisfied();
+    boolean isOptionalConfig(String path);
 
     void config(String path, Object configObject);
 }

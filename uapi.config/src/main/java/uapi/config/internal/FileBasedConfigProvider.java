@@ -2,6 +2,7 @@ package uapi.config.internal;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -12,38 +13,22 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.KernelException;
 import uapi.config.Config;
 import uapi.config.IConfigFileParser;
-import uapi.internal.TraceableConfigProvider;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
-//@Service
-public class FileBasedConfigProvider
-    extends TraceableConfigProvider {
+@Service
+public class FileBasedConfigProvider {
 
     private static final String CFG_QUALIFIER   = "config";
 
-//    @Inject
-    protected ILogger _logger;
+    @Inject
+    ILogger _logger;
 
-//    @Inject
-    protected Map<String /* file extension */, IConfigFileParser> _parsers;
+    @Inject
+    List<IConfigFileParser> _parsers;
 
-    public FileBasedConfigProvider() {
-        this._parsers = new HashMap<>();
-    }
-
-    public void addParser(IConfigFileParser parser) {
-        if (parser == null) {
-            throw new InvalidArgumentException("parser", InvalidArgumentType.EMPTY);
-        }
-        String[] fileExts = parser.supportedFileExtensions();
-        Stream.of(fileExts).forEach((fileExt) -> {
-            this._parsers.put(fileExt, parser);
-        });
-    }
-
-    @Config(CFG_QUALIFIER)
+//    @Config(CFG_QUALIFIER)
     public void config(String oldFileName, String newFileName) {
         this._logger.info("Config update {} -> {}", oldFileName, newFileName);
         if (Strings.isNullOrEmpty(newFileName)) {
@@ -64,11 +49,11 @@ public class FileBasedConfigProvider
             throw new KernelException("The config file {} must has a extension name.", newFileName);
         }
         String extName = newFileName.substring(posDot + 1);
-        IConfigFileParser parser = this._parsers.get(extName);
-        if (parser == null) {
-            throw new KernelException("No parser associate with extension name {} on config file {}.", extName, newFileName);
-        }
-        Map<String, Object> config = parser.parse(cfgFile);
+//        IConfigFileParser parser = this._parsers.get(extName);
+//        if (parser == null) {
+//            throw new KernelException("No parser associate with extension name {} on config file {}.", extName, newFileName);
+//        }
+//        Map<String, Object> config = parser.parse(cfgFile);
 //        config.forEach((key, value) -> onChange(key, value));
     }
 }

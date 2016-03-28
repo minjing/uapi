@@ -46,20 +46,21 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
     public void handle(
             final IBuilderContext builderContext
     ) throws KernelException {
-        boolean needsHandle = false;
-        for (Class<? extends Annotation> annotationType : getSupportedAnnotations()) {
-            Set elements = builderContext.getElementsAnnotatedWith(annotationType);
-            if (elements != null && elements.size() > 0) {
-                needsHandle = true;
-                break;
-            }
-        }
-        if (needsHandle) {
+//        boolean needsHandle = false;
+//        for (Class<? extends Annotation> annotationType : getSupportedAnnotations()) {
+//            Set elements = builderContext.getElementsAnnotatedWith(annotationType);
+//            builderContext.getLogger().info("=========" + annotationType + " >>> " + elements);
+//            if (elements != null && elements.size() > 0) {
+//                needsHandle = true;
+//                break;
+//            }
+//        }
+//        if (needsHandle) {
             Observable.from(getOrderedAnnotations())
                     .map((annotation) -> new Pair<>(annotation, builderContext.getElementsAnnotatedWith(annotation)))
                     .subscribe(pair -> handleAnnotatedElements(builderContext, pair.getLeftValue(), pair.getRightValue()),
                             (t) -> builderContext.getLogger().error(t));
-        }
+//        }
     }
 
     protected abstract Class<? extends Annotation>[] getOrderedAnnotations();

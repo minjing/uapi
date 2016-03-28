@@ -42,16 +42,19 @@ public class Launcher implements ILauncher {
         IRegistry svcRegistry = svcRegistries.get(0);
         svcRegistry.register(svcs.toArray(new IService[svcs.size()]));
 
+        CliConfigProvider cliCfgProvider = svcRegistry.findService(CliConfigProvider.class);
+        cliCfgProvider.parse(args);
+
         Launcher launcher = svcRegistry.findService(Launcher.class);
         launcher.launch(startTime);
     }
 
     @Inject
-    protected ILogger _logger;
+    ILogger _logger;
 
     @Inject
     @Optional
-    protected List<IAppLifecycle> _lifecycles;
+    List<IAppLifecycle> _lifecycles;
 
     private final Semaphore _semaphore;
 

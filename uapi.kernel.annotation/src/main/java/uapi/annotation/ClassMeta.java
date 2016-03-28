@@ -9,9 +9,7 @@ import uapi.helper.StringHelper;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ClassMeta {
@@ -252,18 +250,6 @@ public final class ClassMeta {
             } else {
                 return foundBuilder;
             }
-//            ArgumentChecker.notNull(methodBuilder, "methodBuilder");
-//            List<MethodMeta.Builder> matchedMethods = this._methodBuilders.parallelStream()
-//                    .filter(existing -> existing.equals(methodBuilder))
-//                    .collect(Collectors.toList());
-//            if (matchedMethods.size() == 0) {
-//                addMethodBuilder(methodBuilder);
-//                return methodBuilder;
-//            }
-//            if (matchedMethods.size() == 1) {
-//                return matchedMethods.get(0);
-//            }
-//            throw new KernelException("Found not only one method builder - {}" + matchedMethods);
         }
 
         @Override

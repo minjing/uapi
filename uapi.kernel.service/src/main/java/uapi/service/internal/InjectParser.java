@@ -145,6 +145,10 @@ class InjectParser {
             Map<String, Object> tempModelDependentIds = new HashMap<>();
             tempModelDependentIds.put("dependentIds", dependentIds);
 
+            if (classBuilder.findSetterBuilders().size() == 0) {
+                // No setters means this class does not implement IInjectable interface
+                return;
+            }
             classBuilder.addMethodBuilder(MethodMeta.builder()
                     .addAnnotationBuilder(AnnotationMeta.builder()
                             .setName(AnnotationMeta.OVERRIDE))
@@ -178,6 +182,10 @@ class InjectParser {
             Map<String, Object> tempModel = new HashMap<>();
             tempModel.put("setters", setterModels);
 
+            if (classBuilder.findSetterBuilders().size() == 0) {
+                // No setters means this class does not implement IInjectable interface
+                return;
+            }
             classBuilder
                     .addImplement(IInjectable.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()
