@@ -15,4 +15,11 @@ import java.lang.annotation.Target;
 public @interface Inject {
 
     String value() default StringHelper.EMPTY;
+
+    /**
+     * Indicate where is the injected service from
+     *
+     * @return  Injected service from
+     */
+    Scope scope() default Scope.Auto;
 }

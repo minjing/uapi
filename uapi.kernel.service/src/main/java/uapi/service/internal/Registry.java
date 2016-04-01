@@ -145,15 +145,6 @@ public class Registry implements IRegistry, IService, IInjectable {
             final Object svc,
             final String[] svcIds,
             final String[] dependencyIds) {
-//        Observable.from(svcIds)
-//                .map(svcId -> {
-//                    ServiceHolder svcHolder = new ServiceHolder(svc, svcId);
-//                    Guarder.by(this._resolvedLock).run(() -> this._resolvedSvcs.put(svcId, svcHolder));
-//                    return svcHolder;
-//                })
-//                .doOnNext(this::notifyRegistered)
-//                .subscribe(this::newResolvedService);
-
         Observable.from(svcIds)
                 .map(svcId -> new ServiceHolder(svc, svcId, dependencyIds, this._satisfyDecider))
                 .subscribe(svcHolder -> {
