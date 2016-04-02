@@ -8,6 +8,8 @@ import uapi.service.ISatisfyHook;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Service;
 
+import java.util.Map;
+
 /**
  * A Configurator manage all configuration and configurable service list and
  * set configuration into related configurable service.
@@ -46,5 +48,10 @@ class Configurator implements ISatisfyHook, IConfigTracer {
     @Override
     public void onChange(String path, Object config) {
         Configurator.this._rootConfig.setValue(path, config);
+    }
+
+    @Override
+    public void onChange(Map<String, Object> configMap) {
+        Configurator.this._rootConfig.setValue(configMap);
     }
 }

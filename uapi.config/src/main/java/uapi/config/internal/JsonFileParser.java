@@ -16,17 +16,14 @@ import uapi.service.IService1;
 import uapi.service.Registration;
 import uapi.service.Type;
 
-@Registration({
-    @Type(IConfigFileParser.class)
-})
 public class JsonFileParser
-    implements IService1, IConfigFileParser {
+    implements IConfigFileParser {
 
     private static final String JSON_FILE_EXT   = "json";
 
     @Override
-    public String[] supportedFileExtensions() {
-        return new String[] { JSON_FILE_EXT };
+    public boolean isSupport(String fileExtension) {
+        return JSON_FILE_EXT.equalsIgnoreCase(fileExtension);
     }
 
     @Override

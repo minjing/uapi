@@ -9,7 +9,7 @@ import java.util.List;
  *  * Hold service in local map
  *  * Resolve dependency between services
  */
-public interface IRegistry {
+public interface IRegistry extends IInitial {
 
     /**
      * Register a service

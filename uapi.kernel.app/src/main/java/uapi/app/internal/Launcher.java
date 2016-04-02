@@ -4,6 +4,7 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.app.IAppLifecycle;
 import uapi.app.ILauncher;
+import uapi.config.ICliConfigProvider;
 import uapi.helper.TimeHelper;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
@@ -41,8 +42,9 @@ public class Launcher implements ILauncher {
         }
         IRegistry svcRegistry = svcRegistries.get(0);
         svcRegistry.register(svcs.toArray(new IService[svcs.size()]));
+        svcRegistry = svcRegistry.findService(IRegistry.class);
 
-        CliConfigProvider cliCfgProvider = svcRegistry.findService(CliConfigProvider.class);
+        ICliConfigProvider cliCfgProvider = svcRegistry.findService(ICliConfigProvider.class);
         cliCfgProvider.parse(args);
 
         Launcher launcher = svcRegistry.findService(Launcher.class);

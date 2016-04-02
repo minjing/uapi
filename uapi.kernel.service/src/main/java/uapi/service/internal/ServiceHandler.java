@@ -6,13 +6,9 @@ import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
-import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 import uapi.service.IService;
 import uapi.service.IServiceFactory;
-import uapi.service.SetterMeta;
-import uapi.service.annotation.Inject;
-import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 
 import javax.lang.model.element.*;

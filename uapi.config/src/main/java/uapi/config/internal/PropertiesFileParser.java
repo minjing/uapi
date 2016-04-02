@@ -4,23 +4,27 @@ import java.io.File;
 import java.util.Map;
 
 import uapi.config.IConfigFileParser;
-import uapi.service.IService1;
-import uapi.service.Registration;
-import uapi.service.Type;
+import uapi.log.ILogger;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Service;
 
-@Registration({
-    @Type(IConfigFileParser.class)
-})
-public final class PropertiesFileParser
-    implements IService1, IConfigFileParser {
+@Service({ IConfigFileParser.class })
+public class PropertiesFileParser
+        implements IConfigFileParser {
+
+    private static final String SUPPORTED_FILE_EXT  = "properties";
+
+    @Inject
+    ILogger _logger;
 
     @Override
-    public String[] supportedFileExtensions() {
-        return new String[] { "properties" };
+    public boolean isSupport(String fileExtension) {
+        return SUPPORTED_FILE_EXT.equalsIgnoreCase(fileExtension);
     }
 
     @Override
     public Map<String, Object> parse(File configFile) {
+        this._logger.info("Start parse file {}", configFile);
         return null;
     }
 

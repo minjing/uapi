@@ -60,9 +60,6 @@ class ServiceHolder implements IServiceReference {
 
     void setDependency(ServiceHolder service) {
         ArgumentChecker.notNull(service, "service");
-//        if (! service.isSatisfied()) {
-//            throw new KernelException("The service {} is not resolved", service._svcId);
-//        }
         if (! this._dependencies.containsKey(service.getId())) {
             throw new KernelException("The service {} does not depend on service {}", this._svcId, service._svcId);
         }
@@ -81,6 +78,7 @@ class ServiceHolder implements IServiceReference {
     }
 
     boolean isSatisfied() {
+        // Filter out dependencies which are not optional but was not set by now
         Optional<Map.Entry<String, ServiceHolder>> unresolvedSvc =
                 this._dependencies.entries().stream()
                         .filter(entry -> entry.getValue() == null)
@@ -89,37 +87,117 @@ class ServiceHolder implements IServiceReference {
         if (unresolvedSvc.isPresent()) {
             return false;
         }
+        // Find out dependencies which are not satisfied
+        Optional<Map.Entry<String, ServiceHolder>> unsatisfiedSvc =
+                this._dependencies.entries().stream()
+                        .filter(entry -> entry.getValue() != null)
+                        .filter(entry -> ! entry.getValue().isSatisfied())
+                        .findFirst();
+        if (unsatisfiedSvc.isPresent()) {
+            return false;
+        }
         return this._satisfyHook.isSatisfied(this._svc);
     }
 
-    void initService() {
-        if (this._inited) {
-            return;
+    private boolean isResolved() {
+        // Filter out dependencies which are not optional but was not set by now
+        Optional<Map.Entry<String, ServiceHolder>> unresolvedSvc =
+                this._dependencies.entries().stream()
+                        .filter(entry -> entry.getValue() == null)
+                        .filter(entry -> ! ((IInjectable) this._svc).isOptional(entry.getKey()))
+                        .findFirst();
+        if (unresolvedSvc.isPresent()) {
+            return false;
         }
-        if (! isSatisfied()) {
-            throw new KernelException("Unsatisfied service can't be initialized");
+        return true;
+    }
+
+    private boolean isDependenciesSatisfied() {
+        // Find out dependencies which are not satisfied
+        Optional<Map.Entry<String, ServiceHolder>> unsatisfiedSvc =
+                this._dependencies.entries().stream()
+                        .filter(entry -> entry.getValue() != null)
+                        .filter(entry -> ! entry.getValue().isSatisfied())
+                        .findFirst();
+        if (unsatisfiedSvc.isPresent()) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean tryInjectDependencies() {
+        if (! isResolved()) {
+            return false;
+        }
+        if (! isDependenciesSatisfied()) {
+            return false;
         }
         if (this._dependencies.size() > 0) {
             if (this._svc instanceof IInjectable) {
                 Observable.from(this._dependencies.values())
                         .filter(dependency -> dependency != null)
-                        .doOnNext(ServiceHolder::initService)
+                        .doOnNext(ServiceHolder::tryInitService)
                         .subscribe(dependency -> {
                             Object injectedSvc = dependency.getService();
                             if (injectedSvc instanceof IServiceFactory) {
+                                // Create service from service factory
                                 injectedSvc = ((IServiceFactory) injectedSvc).createService(this._svc);
                             }
                             ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
-                        });
+                        }, throwable -> { throw new KernelException(throwable); });
             } else {
                 throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
             }
+        }
+        return true;
+    }
+
+    boolean tryInitService() {
+        if (this._inited) {
+            return true;
+        }
+        if (! tryInjectDependencies()) {
+            return false;
+        }
+        if (! this._satisfyHook.isSatisfied(this._svc)) {
+            return false;
         }
         if (this._svc instanceof IInitial) {
             ((IInitial) this._svc).init();
         }
         this._inited = true;
+        return true;
     }
+
+//    private void initService() {
+//        if (this._inited) {
+//            return;
+//        }
+//        if (! isSatisfied()) {
+//            throw new KernelException("Unsatisfied service can't be initialized");
+//        }
+//        if (this._dependencies.size() > 0) {
+//            if (this._svc instanceof IInjectable) {
+//                Observable.from(this._dependencies.values())
+//                        .filter(dependency -> dependency != null)
+//                        .doOnNext(ServiceHolder::initService)
+//                        .subscribe(dependency -> {
+//                            Object injectedSvc = dependency.getService();
+//                            if (injectedSvc instanceof IServiceFactory) {
+//                                // Create service from service factory
+//                                injectedSvc = ((IServiceFactory) injectedSvc).createService(this._svc);
+//                            }
+//                            ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
+//                        }, throwable -> { throw new KernelException(throwable); });
+//            } else {
+//                throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
+//            }
+//        }
+//        if (this._svc instanceof IInitial) {
+//            ((IInitial) this._svc).init();
+//        }
+//        this._inited = true;
+//    }
 
     @Override
     public String toString() {

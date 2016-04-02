@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface IConfigFileParser {
 
-    String[] supportedFileExtensions();
+    boolean isSupport(String fileExtension);
 
     Map<String, Object> parse(File configFile);
 }

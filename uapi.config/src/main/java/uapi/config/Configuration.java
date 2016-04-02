@@ -1,5 +1,6 @@
 package uapi.config;
 
+import rx.Observable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
@@ -14,8 +15,9 @@ import java.util.Map;
  */
 public final class Configuration {
 
-    public static final String ROOT_KEY         = "/";
-    private static final String PATH_SEPARATOR  = "\\.";
+    public static final String ROOT_KEY                 = "/";
+    private static final String PATH_SEPARATOR_PATTERN  = "\\.";
+    private static final String PATH_SEPARATOR          = ".";
 
     public static Configuration createRoot() {
         return new Configuration();
@@ -78,7 +80,7 @@ public final class Configuration {
 
     public Object getValue(final String path) {
         ArgumentChecker.notEmpty(path, "path");
-        String[] steps = path.split(PATH_SEPARATOR);
+        String[] steps = path.split(PATH_SEPARATOR_PATTERN);
         Configuration config = this;
         for (String step : steps) {
             if (config == null) {
@@ -89,7 +91,11 @@ public final class Configuration {
         return config.getValue();
     }
 
+    @SuppressWarnings("unchecked")
     public void setValue(final Object value) {
+        if (value instanceof Map) {
+            setValue((Map<String, Object>) value);
+        }
         this._value = value;
         if (this._configuable != null) {
             IConfigurable cfg = this._configuable.get();
@@ -99,6 +105,15 @@ public final class Configuration {
                 this._configuable = null;
             }
         }
+    }
+
+    public void setValue(final Map<String, Object> configMap) {
+        ArgumentChecker.notNull(configMap, "configMap");
+
+        Observable.from(configMap.entrySet()).subscribe(entry -> {
+            Configuration config = getOrCreateChild(entry.getKey());
+            config.setValue(entry.getValue());
+        });
     }
 
     public void setValue(final String path, final Object value) {
@@ -178,12 +193,14 @@ public final class Configuration {
 
     private Configuration getOrCreateChild(final String path) {
         ArgumentChecker.notEmpty(path, "path");
-        String[] steps = path.split(PATH_SEPARATOR);
+        String[] steps = path.split(PATH_SEPARATOR_PATTERN);
         Configuration config = this;
         for (String step : steps) {
             Configuration child = config.getChild(step);
             if (child == null) {
                 config = config.setChild(step);
+            } else {
+                config = child;
             }
         }
         return config;
