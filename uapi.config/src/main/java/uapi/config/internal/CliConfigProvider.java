@@ -18,6 +18,7 @@ public class CliConfigProvider implements ICliConfigProvider {
 
     private static final String DEFAULT_OPTION_PREFIX           = "-";
     private static final String DEFAULT_OPTION_VALUE_SEPARATOR  = "=";
+    private static final String QUALIFY                         = "cli.";
 
     @Inject
     ILogger _logger;
@@ -57,6 +58,8 @@ public class CliConfigProvider implements ICliConfigProvider {
             } else {
                 return new Pair<>(values[0], values[1]);
             }
-        }).subscribe(pair -> this._configTracer.onChange(pair.getLeftValue(), pair.getRightValue()), throwable -> this._logger.error(throwable, "Unknown error"));
+        }).subscribe(
+                pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
+                throwable -> this._logger.error(throwable, "Unknown error"));
     }
 }

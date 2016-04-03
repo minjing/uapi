@@ -181,7 +181,7 @@ public final class Configuration {
         Configuration cfg = this;
         while (! isRoot) {
             buffer.insert(0, cfg._key).insert(0, PATH_SEPARATOR);
-            cfg = this._parent;
+            cfg = cfg._parent;
             isRoot = cfg.isRoot();
         }
         if (buffer.length() > 0) {
