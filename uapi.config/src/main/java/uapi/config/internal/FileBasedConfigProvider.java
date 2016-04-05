@@ -19,7 +19,7 @@ import uapi.service.annotation.Service;
 @Service
 public class FileBasedConfigProvider implements IConfigurable {
 
-    private static final String CFG_FILE_PATH  = "cli.config";
+    static final String CFG_FILE_PATH  = "cli.config";
 
     @Inject
     ILogger _logger;

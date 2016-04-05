@@ -8,7 +8,8 @@ import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
-@Service({ IConfigFileParser.class })
+//@Service({ IConfigFileParser.class })
+@Deprecated
 public class PropertiesFileParser
         implements IConfigFileParser {
 

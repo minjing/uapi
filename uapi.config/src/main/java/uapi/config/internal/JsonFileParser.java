@@ -1,25 +1,27 @@
 package uapi.config.internal;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.Map;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 
-import uapi.InvalidArgumentException;
-import uapi.InvalidArgumentException.InvalidArgumentType;
-import uapi.KernelException;
 import uapi.config.IConfigFileParser;
-import uapi.service.IService1;
-import uapi.service.Registration;
-import uapi.service.Type;
+import uapi.helper.Functionals;
+import uapi.log.ILogger;
+import uapi.service.Inject;
+import uapi.service.annotation.Service;
 
+/**
+ * The parser used to parse JSON format file
+ */
+@Service({ IConfigFileParser.class })
 public class JsonFileParser
     implements IConfigFileParser {
 
     private static final String JSON_FILE_EXT   = "json";
+
+    @Inject
+    ILogger _logger;
 
     @Override
     public boolean isSupport(String fileExtension) {
@@ -27,23 +29,31 @@ public class JsonFileParser
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> parse(File configFile) {
-        if (configFile == null) {
-            throw new InvalidArgumentException("configFile", InvalidArgumentType.EMPTY);
-        }
-        FileInputStream fin = null;
         try {
-            fin = new FileInputStream(configFile);
-        } catch (FileNotFoundException e) {
-            throw new KernelException(e, "The config file {} does not exist.", configFile.getName());
+            return extract(configFile, input -> {
+                JSON.std.with(JSON.Feature.READ_ONLY);
+                return JSON.std.mapFrom(input);
+            });
+        } catch (IOException ex) {
+            this._logger.error(ex, "Parse file {} failed", configFile.getName());
         }
-        Map<String, Object> config = null;
-        JSON.std.with(JSON.Feature.READ_ONLY);
+        return null;
+    }
+
+    private Map extract(
+            final File file,
+            final Functionals.Extractor<FileInputStream, Map, IOException> extractor
+    ) throws IOException {
+        FileInputStream input = null;
         try {
-            config = JSON.std.mapFrom(fin);
-        } catch (IOException e) {
-            throw new KernelException(e, "Parse config file {} failed.", configFile.getName());
+            input = new FileInputStream(file);
+            return extractor.accept(input);
+        } finally {
+            if (input != null) {
+                input.close();
+            }
         }
-        return config;
     }
 }

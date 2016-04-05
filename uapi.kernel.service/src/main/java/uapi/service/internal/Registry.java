@@ -48,8 +48,14 @@ public class Registry implements IRegistry, IService, IInjectable {
         this._satisfyDecider = new SatisfyDecider();
     }
 
+    private volatile boolean _inited = false;
+
     @Override
     public void init() {
+        if (this._inited) {
+            return;
+        }
+        this._inited = true;
         Observable.from(this._unsatisfiedSvcs.values())
                 .filter(svcHolder -> svcHolder.getService() != this)
                 .subscribe(ServiceHolder::tryInitService);

@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Created by min on 16/3/27.
  */
-public final class Configuration {
+public class Configuration {
 
     public static final String ROOT_KEY                 = "/";
     private static final String PATH_SEPARATOR_PATTERN  = "\\.";
