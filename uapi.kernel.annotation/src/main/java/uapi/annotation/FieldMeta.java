@@ -50,7 +50,7 @@ public final class FieldMeta {
     /**
      * The builder for <code>FieldMeta</code>
      */
-    static final class Builder extends uapi.helper.Builder<FieldMeta> {
+    public static final class Builder extends uapi.helper.Builder<FieldMeta> {
 
         private String _name;
         private String _typeName;
@@ -103,7 +103,6 @@ public final class FieldMeta {
         protected void validation() throws InvalidArgumentException {
             ArgumentChecker.required(this._name, "fieldName");
             ArgumentChecker.required(this._typeName, "fieldTypeName");
-            //ArgumentChecker.required(this._injectServiceId, "injectServiceId");
         }
 
         @Override
@@ -124,6 +123,27 @@ public final class FieldMeta {
                     this._name,
                     this._typeName,
                     this._injectServiceId);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Builder builder = (Builder) o;
+
+            if (_isList != builder._isList) return false;
+            if (!_name.equals(builder._name)) return false;
+            return _typeName.equals(builder._typeName);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = _name.hashCode();
+            result = 31 * result + _typeName.hashCode();
+            result = 31 * result + (_isList ? 1 : 0);
+            return result;
         }
     }
 }

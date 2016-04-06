@@ -2,6 +2,7 @@ package uapi.sample;
 
 import uapi.config.annotation.Config;
 import uapi.log.ILogger;
+import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -20,6 +21,9 @@ public class ConfigurableService {
 
     @Inject
     ILogger _logger;
+
+    @Inject
+    IRegistry _svcReg;
 
     @Init
     public void init() {

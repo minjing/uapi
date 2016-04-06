@@ -10,6 +10,7 @@ import uapi.helper.StringHelper;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,6 +40,22 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
                     element.getSimpleName().toString(),
                     annotation.getName(),
                     unsupportedModifier);
+        }
+    }
+
+    protected void checkAnnotations(
+            final Element element,
+            final Class<? extends Annotation>... annotationTypes
+    ) throws KernelException {
+        ArgumentChecker.notNull(element, "element");
+        List<Class<? extends Annotation>> unAnnotateds = Observable.from(annotationTypes)
+                .filter(annotationType -> element.getAnnotation(annotationType) == null)
+                .toList().toBlocking().single();
+        if (unAnnotateds == null || unAnnotateds.size() > 0) {
+            throw new KernelException("The {} element [{}.{}] does not annotated with {}.",
+                    element.getKind(),
+                    element.getEnclosingElement().getSimpleName().toString(),
+                    annotationTypes);
         }
     }
 

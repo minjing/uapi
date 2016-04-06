@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by min on 16/3/27.
+ * The Configuration hold at least one config value and store as a tree structure
  */
 public class Configuration {
 
@@ -74,6 +74,13 @@ public class Configuration {
         }
         if (this._children.size() > 0) {
             return this._children;
+        }
+        return null;
+    }
+
+    public Class<?> getValueType() {
+        if (this._value != null) {
+            return this._value.getClass();
         }
         return null;
     }

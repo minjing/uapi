@@ -2,11 +2,12 @@ package uapi.annotation.internal;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import rx.Observable;
 import uapi.KernelException;
+import uapi.annotation.AnnotationHandler;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.IBuilderContext;
 import uapi.annotation.LogSupport;
-import uapi.annotation.internal.CompileTimeTemplateLoader;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
@@ -15,6 +16,7 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -132,10 +134,6 @@ public final class BuilderContext implements IBuilderContext {
         return clsBuilder;
     }
 
-//    private String generateSubClassName(String superClassName) {
-//        return superClassName + "_Generated";
-//    }
-
     @Override
     public void checkModifiers(
             final Element element,
@@ -153,5 +151,24 @@ public final class BuilderContext implements IBuilderContext {
                     annotation.getName(),
                     unsupportedModifier);
         }
+    }
+
+    @Override
+    public Element findFieldWith(
+            final Element classElement,
+            final Class<?> fieldType,
+            final Class annotationType) {
+        ArgumentChecker.notNull(classElement, "classElement");
+        ArgumentChecker.notNull(fieldType, "fieldType");
+        ArgumentChecker.notNull(annotationType, "annotationType");
+        List<Element> elems = (List<Element>) Observable.from(classElement.getEnclosedElements())
+                .filter(element -> element.getKind() == ElementKind.FIELD)
+                .filter(fieldElement -> fieldElement.asType().toString().equals(fieldType.getCanonicalName()))
+                .filter(fieldElement -> fieldElement.getAnnotation(annotationType) != null)
+                .toList().toBlocking().single();
+        if (elems == null || elems.size() == 0) {
+            return null;
+        }
+        return elems.get(0);
     }
 }

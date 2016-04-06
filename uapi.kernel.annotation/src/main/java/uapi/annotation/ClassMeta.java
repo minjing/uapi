@@ -9,6 +9,7 @@ import uapi.helper.StringHelper;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -157,6 +158,34 @@ public final class ClassMeta {
             checkStatus();
             ArgumentChecker.notNull(annotationMetaBuilder, "annotationMetaBuilder");
             this._annoBuilders.add(annotationMetaBuilder);
+            return this;
+        }
+
+        public FieldMeta.Builder findFieldBuilder(
+                final FieldMeta.Builder fieldMetaBuilder
+        ) throws KernelException {
+            ArgumentChecker.notNull(fieldMetaBuilder, "fieldMetaBuilder");
+            List<FieldMeta.Builder> matchedBuilders = this._fieldBuilders.parallelStream()
+                    .filter(existing -> existing.equals(fieldMetaBuilder))
+                    .collect(Collectors.toList());
+            if (matchedBuilders.size() > 1) {
+                throw new KernelException(
+                        "Found more than one method builder for {}", fieldMetaBuilder);
+            }
+            if (matchedBuilders.size() == 1) {
+                return matchedBuilders.get(0);
+            }
+            return null;
+        }
+
+        public Builder addFieldBuilderIfAbsent(
+                final FieldMeta.Builder fieldMetaBuilder
+        ) throws KernelException {
+            checkStatus();
+            FieldMeta.Builder fieldBuilder = findFieldBuilder(fieldMetaBuilder);
+            if (fieldBuilder == null) {
+                addFieldBuilder(fieldMetaBuilder);
+            }
             return this;
         }
 

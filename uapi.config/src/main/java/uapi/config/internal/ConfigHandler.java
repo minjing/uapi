@@ -7,6 +7,9 @@ import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.config.IConfigurable;
 import uapi.config.annotation.Config;
+import uapi.service.IRegistry;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Service;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -21,6 +24,7 @@ import java.util.*;
 public class ConfigHandler extends AnnotationsHandler {
 
     private static final String CONFIG_INFOS                = "ConfigInfos";
+    private static final String FIELD_SVC_REG               = "FieldServiceRegistry";
 
     private static final String TEMPLATE_GET_PATHS          = "template/getPaths_method.ftl";
     private static final String TEMPLATE_IS_OPTIONAL_CONFIG = "template/isOptionalConfig_method.ftl";
@@ -50,8 +54,19 @@ public class ConfigHandler extends AnnotationsHandler {
 
             Element classElement = fieldElement.getEnclosingElement();
             checkModifiers(classElement, Config.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+            checkAnnotations(classElement, Service.class);
+
+            // Get field which is reference IRegistry instance
+            Element svcRegElem = builderContext.findFieldWith(classElement, IRegistry.class, Inject.class);
+            if (svcRegElem == null) {
+                throw new KernelException(
+                        "The {} must defined an field with type {} and annotated with {}",
+                        classElement, IRegistry.class.getName(), Inject.class.getName());
+            }
+            String svcRegFieldName = svcRegElem.getSimpleName().toString();
 
             ClassMeta.Builder classBuilder = builderContext.findClassBuilder(classElement);
+            classBuilder.putTransience(FIELD_SVC_REG, svcRegFieldName);
             List<ConfigInfo> cfgInfos = classBuilder.getTransience(CONFIG_INFOS);
             if (cfgInfos == null) {
                 cfgInfos = new ArrayList<>();
@@ -72,11 +87,13 @@ public class ConfigHandler extends AnnotationsHandler {
 
         Observable.from(builderContext.getBuilders()).subscribe(classBuilder -> {
             List<ConfigInfo> configInfos = classBuilder.getTransience(CONFIG_INFOS);
+            String fieldSvcReg = classBuilder.getTransience(FIELD_SVC_REG);
             if (configInfos == null) {
                 return;
             }
             Map<String, Object> tempModel = new HashMap<>();
             tempModel.put("configInfos", configInfos);
+            tempModel.put("fieldSvcReg", fieldSvcReg);
             classBuilder
                     .addImplement(IConfigurable.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()
@@ -99,19 +116,19 @@ public class ConfigHandler extends AnnotationsHandler {
                                     .setModel(tempModel)
                                     .setTemplate(tempIsOptionalConfig)))
                     .addMethodBuilder(MethodMeta.builder()
-                            .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
-                            .addModifier(Modifier.PUBLIC)
-                            .setName(IConfigurable.METHOD_CONFIG)
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .setName(IConfigurable.PARAM_PATH)
-                                    .setType(Type.STRING))
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .setName(IConfigurable.PARAM_CONFIG_OBJECT)
-                                    .setType(Type.OBJECT))
-                            .setReturnTypeName(Type.VOID)
-                            .addCodeBuilder(CodeMeta.builder()
-                                    .setModel(tempModel)
-                                    .setTemplate(tempConfig))
+                                    .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                    .addModifier(Modifier.PUBLIC)
+                                    .setName(IConfigurable.METHOD_CONFIG)
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName(IConfigurable.PARAM_PATH)
+                                            .setType(Type.STRING))
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName(IConfigurable.PARAM_CONFIG_OBJECT)
+                                            .setType(Type.OBJECT))
+                                    .setReturnTypeName(Type.VOID)
+                                    .addCodeBuilder(CodeMeta.builder()
+                                            .setModel(tempModel)
+                                            .setTemplate(tempConfig))
                     );
         });
     }

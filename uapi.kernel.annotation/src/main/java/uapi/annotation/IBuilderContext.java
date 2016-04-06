@@ -46,4 +46,9 @@ public interface IBuilderContext {
             final Class<? extends Annotation> annotation,
             final Modifier... unexpectedModifiers
     ) throws KernelException;
+
+    Element findFieldWith(
+            final Element classElement,
+            final Class<?> fieldType,
+            final Class annotationType);
 }
