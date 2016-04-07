@@ -7,18 +7,18 @@ import uapi.helper.CollectionHelper;
 import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Default implementation for handle related annotations
  */
 public abstract class AnnotationsHandler implements IAnnotationsHandler {
-
-    private LogSupport _logger;
 
     @Override
     public Class<? extends Annotation>[] getSupportedAnnotations() {
@@ -59,25 +59,66 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
         }
     }
 
+    protected String getTypeInAnnotation(
+            final AnnotationMirror annotation,
+            final String fieldName,
+            final LogSupport logger
+    ) {
+        ArgumentChecker.notNull(annotation, "annotation");
+        ArgumentChecker.notEmpty(fieldName, "fieldName");
+        List<String> types = Observable.from(annotation.getElementValues().entrySet())
+                .filter(entry -> fieldName.equals(entry.getKey().getSimpleName().toString()))
+                .map(Map.Entry::getValue)
+                .map(annoValue -> (DeclaredType) annoValue.getValue())
+                .map(declaredType -> (TypeElement) declaredType.asElement())
+                .map(typeElem -> typeElem.getQualifiedName().toString())
+                .toList().toBlocking().single();
+        if (types == null || types.size() == 0) {
+            return null;
+        } else if (types.size() == 1) {
+            return types.get(0);
+        } else {
+            throw new KernelException("Found more than one value are defined in annotation {} - {}",
+                    annotation.getAnnotationType().toString(), types);
+        }
+    }
+
+    /**
+     * The utility method for getting class object which is defined in Annotation
+     *
+     * @param   annotation
+     *          The annotation
+     * @param   fieldName
+     *          The field which hold class object
+     * @return  The class object list
+     */
+    @SuppressWarnings("unchecked")
+    protected List<String> getTypesInAnnotation(
+            final AnnotationMirror annotation,
+            final String fieldName,
+            final LogSupport logger) {
+        ArgumentChecker.notNull(annotation, "annotation");
+        ArgumentChecker.notEmpty(fieldName, "fieldName");
+        List<String> types = new ArrayList<>();
+        Observable.from(annotation.getElementValues().entrySet())
+                .filter(entry -> fieldName.equals(entry.getKey().getSimpleName().toString()))
+                .map(Map.Entry::getValue)
+                .flatMap(annoValue -> Observable.from((List<AnnotationValue>) annoValue.getValue()))
+                .map(annoValue -> (DeclaredType) annoValue.getValue())
+                .map(declaredType -> (TypeElement) declaredType.asElement())
+                .map(typeElem -> typeElem.getQualifiedName().toString())
+                .subscribe(types::add, logger::error);
+        return types;
+    }
+
     @Override
     public void handle(
             final IBuilderContext builderContext
     ) throws KernelException {
-//        boolean needsHandle = false;
-//        for (Class<? extends Annotation> annotationType : getSupportedAnnotations()) {
-//            Set elements = builderContext.getElementsAnnotatedWith(annotationType);
-//            builderContext.getLogger().info("=========" + annotationType + " >>> " + elements);
-//            if (elements != null && elements.size() > 0) {
-//                needsHandle = true;
-//                break;
-//            }
-//        }
-//        if (needsHandle) {
             Observable.from(getOrderedAnnotations())
                     .map((annotation) -> new Pair<>(annotation, builderContext.getElementsAnnotatedWith(annotation)))
                     .subscribe(pair -> handleAnnotatedElements(builderContext, pair.getLeftValue(), pair.getRightValue()),
                             (t) -> builderContext.getLogger().error(t));
-//        }
     }
 
     protected abstract Class<? extends Annotation>[] getOrderedAnnotations();

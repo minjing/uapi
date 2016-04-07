@@ -25,12 +25,28 @@ public class ConfigValueParsers {
                 .filter(parser -> parser.isSupport(inType, outType))
                 .toList().toBlocking().single();
         if (matcheds == null || matcheds.size() == 0) {
-            throw new KernelException("No parser for in type {} and out type {}", inType, outType);
+            throw new KernelException("No parser for in type {} and out type {}",
+                    inType, outType);
         }
         if (matcheds.size() > 1) {
             throw new KernelException("Found more than one parser for in type {} and out type: {}",
                     inType, outType, matcheds);
         }
         return matcheds.get(0);
+    }
+
+    public IConfigValueParser findParser(String name) {
+        ArgumentChecker.notEmpty(name, "name");
+        List<IConfigValueParser> matches = Observable.from(this._parsers)
+                .filter(parser -> parser.getName().equals(name))
+                .toList().toBlocking().single();
+        if (matches == null || matches.size() == 0) {
+            throw new KernelException("No parser with name {}", name);
+        }
+        if (matches.size() > 1) {
+            throw new KernelException("Found more than one parser with name {} : {}",
+                    name, matches);
+        }
+        return matches.get(0);
     }
 }

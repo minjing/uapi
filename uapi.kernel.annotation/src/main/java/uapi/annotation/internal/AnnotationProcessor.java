@@ -104,18 +104,18 @@ public class AnnotationProcessor extends AbstractProcessor {
         if (roundEnv.processingOver() || annotations.size() == 0) {
             return false;
         }
-        this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
+        //this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
         Observable.from(this._handlers)
                 .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
                 .subscribe(handler -> handler.handle(buildCtx), _logger::error);
 
         // Generate source
-        this._logger.info("Starting generate source");
+        //this._logger.info("Starting generate source");
         generateSource(buildCtx);
         buildCtx.clearBuilders();
 
-        this._logger.info("End processing");
+        //this._logger.info("End processing");
         return true;
     }
 
@@ -133,14 +133,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         for (ClassMeta.Builder classBuilder : classBuilders) {
             Writer srcWriter = null;
             try {
-                this._logger.info("Generate source for -> {}", classBuilder);
+                //this._logger.info("Generate source for -> {}", classBuilder);
                 ClassMeta classMeta = classBuilder.build();
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
                         classMeta.getGeneratedClassName()
                 );
                 srcWriter = fileObj.openWriter();
                 temp.process(classMeta, srcWriter);
-                this._logger.info("Generate source for " + classMeta.getClassName());
+                //this._logger.info("Generate source for " + classMeta.getClassName());
             } catch (Exception ex) {
                 this._logger.error(ex);
                 return;

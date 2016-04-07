@@ -1,16 +1,20 @@
 package uapi.config.internal;
 
+import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.config.IConfigValueParser;
 import uapi.config.IConfigurable;
 import uapi.config.annotation.Config;
+import uapi.helper.ArgumentChecker;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -74,6 +78,12 @@ public class ConfigHandler extends AnnotationsHandler {
             }
             ConfigInfo cfgInfo = new ConfigInfo();
             Config cfg = fieldElement.getAnnotation(Config.class);
+            AnnotationMirror cfgMirror = MoreElements.getAnnotationMirror(fieldElement, Config.class).get();
+            String parserType = getTypeInAnnotation(cfgMirror, "parser", builderContext.getLogger());
+            // The parser is set to IConfigValueParser.class means no customized parser was defined
+            if (! IConfigValueParser.class.getCanonicalName().equals(parserType)) {
+                cfgInfo.parserName = parserType;
+            }
             cfgInfo.path = cfg.path();
             cfgInfo.optional = cfg.optional();
             cfgInfo.fieldName = fieldElement.getSimpleName().toString();
@@ -139,6 +149,7 @@ public class ConfigHandler extends AnnotationsHandler {
         private String fieldName;
         private String fieldType;
         private boolean optional;
+        private String parserName;
 
         public String getPath() {
             return this.path;
@@ -154,6 +165,14 @@ public class ConfigHandler extends AnnotationsHandler {
 
         public boolean getOptional() {
             return this.optional;
+        }
+
+        public String getParserName() {
+            return this.parserName;
+        }
+
+        public boolean hasParser() {
+            return ! ArgumentChecker.isEmpty(this.parserName);
         }
     }
 }

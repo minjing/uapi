@@ -1,5 +1,7 @@
 package uapi.config.annotation;
 
+import uapi.config.IConfigValueParser;
+
 import java.lang.annotation.*;
 
 /**
@@ -21,7 +23,7 @@ public @interface Config {
      *
      * @return  Parser service id
      */
-    String parser() default "";
+    Class<? extends IConfigValueParser> parser() default IConfigValueParser.class;
 
     /**
      * Indicate the configuration is optional or not

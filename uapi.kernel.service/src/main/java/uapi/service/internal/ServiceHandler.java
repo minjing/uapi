@@ -51,7 +51,7 @@ public final class ServiceHandler extends AnnotationsHandler {
             ClassMeta.Builder classBuilder = builderCtx.findClassBuilder(classElement);
             AnnotationMirror svcAnnoMirror = MoreElements.getAnnotationMirror(classElement, Service.class).get();
             Service service = classElement.getAnnotation(Service.class);
-            String[] serviceIds = mergeId(getTypes(svcAnnoMirror), service.ids());
+            String[] serviceIds = mergeId(getTypesInAnnotation(svcAnnoMirror, "value", builderCtx.getLogger()), service.ids());
             if (serviceIds.length == 0) {
                 final StringBuilder svcId = new StringBuilder();
                 // Check service factory type argument first

@@ -1,2 +1,5 @@
 name: Hello
 age: 22
+address:
+  - office: aaa
+  - home: bbb

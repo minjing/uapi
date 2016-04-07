@@ -37,9 +37,15 @@ public class ArgumentChecker {
             final String argument,
             final String argumentName
     ) throws InvalidArgumentException {
-        if (Strings.isNullOrEmpty(argument)) {
+        if (isEmpty(argument)) {
             throw new InvalidArgumentException(argumentName, InvalidArgumentType.EMPTY);
         }
+    }
+
+    public static boolean isEmpty(
+            final String argument
+    ) {
+        return Strings.isNullOrEmpty(argument);
     }
 
     public static <T> void notEmpty(
