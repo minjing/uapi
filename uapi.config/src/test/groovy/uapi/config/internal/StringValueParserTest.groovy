@@ -9,7 +9,7 @@ class StringValueParserTest extends Specification {
 
     def 'Test supported types'() {
         given:
-        StringValueParser parser = StringValueParser()
+        StringValueParser parser = new StringValueParser()
 
         expect:
         parser.isSupport(inType, outType)

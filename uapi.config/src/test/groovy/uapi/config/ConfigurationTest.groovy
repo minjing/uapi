@@ -9,7 +9,7 @@ class ConfigurationTest extends Specification {
 
     def "Test get value by path"() {
         given:
-        Configuration config = new Configuration("root")
+        Configuration config = new Configuration()
 
         when:
         config.setChild("a", "value a")
@@ -20,7 +20,7 @@ class ConfigurationTest extends Specification {
 
     def "Test get value by deeper path"() {
         given:
-        Configuration root = new Configuration("root")
+        Configuration root = new Configuration()
 
         when:
         def child = root.setChild("a")
@@ -34,7 +34,7 @@ class ConfigurationTest extends Specification {
 
     def "Test Get value by multiple values"() {
         given:
-        Configuration root = new Configuration("root")
+        Configuration root = new Configuration()
 
         when:
         def child = root.setChild("a1")
@@ -48,7 +48,7 @@ class ConfigurationTest extends Specification {
 
     def "Test Get children"() {
         given:
-        Configuration root = new Configuration("root")
+        Configuration root = new Configuration()
 
         when:
         def child = root.setChild("a1")
