@@ -6,19 +6,28 @@ import uapi.config.ICliConfigProvider;
 import uapi.config.IConfigTracer;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
+import uapi.helper.StringHelper;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * The command line parser, it should support below pattern:
+ * "-x" : x option with a boolean value which always set to true
+ * "-x=???" : x option with value
+ * "-xtrf" : x, t, r, f option which boolean value which always set to true
+ */
 @Service({ ICliConfigProvider.class })
 public class CliConfigProvider implements ICliConfigProvider {
 
-    private static final String DEFAULT_OPTION_PREFIX           = "-";
-    private static final String DEFAULT_OPTION_VALUE_SEPARATOR  = "=";
-    private static final String QUALIFY                         = "cli.";
+    public static final String DEFAULT_OPTION_PREFIX           = "-";
+    public static final String DEFAULT_OPTION_VALUE_SEPARATOR  = "=";
+    public static final String QUALIFY                         = "cli.";
 
     @Inject
     ILogger _logger;
@@ -45,21 +54,22 @@ public class CliConfigProvider implements ICliConfigProvider {
         Map<String, String> cliCfg = new HashMap<>();
         Observable.from(args)
                 .filter(option -> ! Strings.isNullOrEmpty(option))
-                .map(option -> {
-                    if (option.startsWith(this._optionPrefix)) {
-                        return option.substring(1);
+                .filter(option -> option.startsWith(this._optionPrefix))
+                .map(option -> option.substring(this._optionPrefix.length()))
+                .map(option -> Pair.splitTo(option, this._optionValueSeparator))
+                .flatMap(pair -> {
+                    if (Strings.isNullOrEmpty(pair.getRightValue())) {
+                        List<Pair<String, String>> pairs = new ArrayList<>();
+                        for (char c : pair.getLeftValue().toCharArray()) {
+                            pairs.add(new Pair<>(String.valueOf(c), Boolean.TRUE.toString()));
+                        }
+                        return Observable.from(pairs);
                     } else {
-                        return option;
+                        return Observable.just(pair);
                     }
-                }).map(option -> {
-            String[] values = option.split(this._optionValueSeparator);
-            if (values.length == 1) {
-                return new Pair<>(values[0], Boolean.TRUE.toString());
-            } else {
-                return new Pair<>(values[0], values[1]);
-            }
-        }).subscribe(
-                pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
-                throwable -> this._logger.error(throwable, "Unknown error"));
+                })
+                .subscribe(
+                        pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
+                        throwable -> this._logger.error(throwable, "Unknown error"));
     }
 }
