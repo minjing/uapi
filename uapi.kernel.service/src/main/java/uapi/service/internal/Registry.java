@@ -175,7 +175,7 @@ public class Registry implements IRegistry, IService, IInjectable {
 
     @Override
     public String[] getDependentIds() {
-        return new String[] { ISatisfyHook.class.getName(), IWatcher.class.getName() };
+        return new String[] { ISatisfyHook.class.getName() };
     }
 
     @Override

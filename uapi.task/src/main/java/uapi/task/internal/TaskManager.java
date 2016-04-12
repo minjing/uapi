@@ -8,29 +8,19 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import uapi.IStateWatcher;
 import uapi.IStateful;
-import uapi.config.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
-import uapi.service.IService1;
-import uapi.service.Inject;
-import uapi.service.Registration;
-import uapi.service.Type;
 import uapi.task.INotifier;
 import uapi.task.ISerialTask;
 import uapi.task.ITask;
 import uapi.task.ITaskManager;
 import uapi.task.ITaskProducer;
 
-@Registration({
-    @Type(TaskManager.class)
-})
 public final class TaskManager
-    implements ITaskManager, IService1 {
+    implements ITaskManager {
 
-    @Inject
     private ILogger _logger;
 
-    @Inject
     private TaskTransfer _taskTransfer;
 
     private final List<ITaskProducer> _taskProducers;
@@ -51,11 +41,7 @@ public final class TaskManager
         this._taskTransfer = transfer;
     }
 
-    @Config("uapi.task.worker_count")
-    @Config("uapi.task.queue_size")
-    public void config(String key, String config) {
-        
-    }
+    public void config(String key, String config) {}
 
     @Override
     public void addTask(ITask task) {

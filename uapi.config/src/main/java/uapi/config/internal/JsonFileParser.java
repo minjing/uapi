@@ -8,7 +8,7 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import uapi.config.IConfigFileParser;
 import uapi.helper.Functionals;
 import uapi.log.ILogger;
-import uapi.service.Inject;
+import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
 /**

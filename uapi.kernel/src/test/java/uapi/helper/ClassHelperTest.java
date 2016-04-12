@@ -9,9 +9,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import uapi.config.Config;
-import uapi.helper.ClassHelper;
-
 public class ClassHelperTest {
 
     @Test
@@ -24,7 +21,7 @@ public class ClassHelperTest {
     public void testGetInterfaceParameterizedClasses() {
         Class<?>[] paramTypes = ClassHelper.getInterfaceParameterizedClasses(FakeService.class, IFakeInterface.class);
         assertEquals(1, paramTypes.length);
-        assertEquals(Config.class, paramTypes[0]);
+        assertEquals(TestAnno.class, paramTypes[0]);
     }
 
     @Test
@@ -68,7 +65,7 @@ public class ClassHelperTest {
 
     private interface IFakeInterface<T extends Annotation> { }
 
-    private final class FakeService implements IFakeInterface<Config> { }
+    private final class FakeService implements IFakeInterface<TestAnno> { }
 
     @SuppressWarnings("unused")
     private final class CollectionService {
@@ -82,4 +79,6 @@ public class ClassHelperTest {
     }
     
     private final class FakeClass<T> {}
+
+    private @interface TestAnno {}
 }
