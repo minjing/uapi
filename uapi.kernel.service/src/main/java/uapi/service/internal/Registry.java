@@ -28,20 +28,14 @@ import java.util.stream.Stream;
 @AutoService(IService.class)
 public class Registry implements IRegistry, IService, IInjectable {
 
-    private final Lock _resolvedLock;
     private final Lock _unsatisfiedLock;
     private final SatisfyDecider _satisfyDecider;
-    private final Multimap<String, ServiceHolder> _resolvedSvcs;
     private final Multimap<String, ServiceHolder> _unsatisfiedSvcs;
-    private final List<WeakReference<IWatcher>> _watchers;
     private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
 
     public Registry() {
-        this._resolvedLock = new ReentrantLock();
         this._unsatisfiedLock = new ReentrantLock();
-        this._resolvedSvcs = LinkedListMultimap.create();
         this._unsatisfiedSvcs = LinkedListMultimap.create();
-        this._watchers = new CopyOnWriteArrayList<>();
         this._satisfyHooks = new CopyOnWriteArrayList<>();
         this._satisfyDecider = new SatisfyDecider();
     }
@@ -134,14 +128,6 @@ public class Registry implements IRegistry, IService, IInjectable {
         return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
     }
 
-//    int getResolvedCount() {
-//        return Guarder.by(this._resolvedLock).runForResult(this._resolvedSvcs::size);
-//    }
-
-//    int getUnresolvedCount() {
-//        return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
-//    }
-
     private void registerService(
             final Object svc,
             final String[] svcIds,
@@ -194,9 +180,6 @@ public class Registry implements IRegistry, IService, IInjectable {
 
     @Override
     public boolean isOptional(String id) throws InvalidArgumentException {
-        if (IWatcher.class.getName().equals(id)) {
-            return true;
-        }
         if (ISatisfyHook.class.getName().equals(id)) {
             return true;
         }

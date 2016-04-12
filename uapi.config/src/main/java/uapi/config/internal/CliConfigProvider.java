@@ -51,7 +51,6 @@ public class CliConfigProvider implements ICliConfigProvider {
         if (args == null || args.length == 0) {
             return;
         }
-        Map<String, String> cliCfg = new HashMap<>();
         Observable.from(args)
                 .filter(option -> ! Strings.isNullOrEmpty(option))
                 .filter(option -> option.startsWith(this._optionPrefix))

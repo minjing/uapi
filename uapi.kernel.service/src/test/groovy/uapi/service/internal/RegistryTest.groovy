@@ -2,9 +2,11 @@ package uapi.service.internal
 
 import spock.lang.Specification
 import uapi.service.IRegistry
+import uapi.service.ISatisfyHook
 import uapi.service.IService
 import uapi.service.IWatcher
 import uapi.service.Injection
+import uapi.service.annotation.Inject
 
 /**
  * Test case for Registry
@@ -30,8 +32,8 @@ class RegistryTest extends Specification {
         registry.findService(serviceId) == service
 
         where:
-        serviceId   | service
-        "1"         | Mock(Object)
+        serviceId | service
+        "1"       | Mock(Object)
     }
 
     def "Register a IService instance with id"() {
@@ -65,22 +67,43 @@ class RegistryTest extends Specification {
         registry.findService("3") == svc2
         registry.findService("4") == svc2
         registry.getCount() == 4
-//        registry.getResolvedCount() == 4
-//        registry.getUnresolvedCount() == 0
     }
 
-//    def "Register service with watcher"() {
-//        def watcher = Mock(IWatcher)
-//        def svc = Mock(IService) {
-//            getIds() >> "1"
-//        }
-//
-//        when:
-//        registry.injectObject(new Injection(IWatcher.class.name, watcher))
-//        registry.register(svc)
-//
-//        then:
-//        1 * watcher.onRegister(_)
-//        1 * watcher.onResolved(_)
-//    }
+    def "Test Optional"() {
+        expect:
+        registry.isOptional(svcId) == optional
+
+        where:
+        svcId                       | optional
+        ISatisfyHook.canonicalName  | true
+    }
+
+    def "Test Satisfy Invocation"() {
+        def svc1 = Mock(IService) {
+            getIds() >> ["1", "2"]
+        }
+        def svc2 = Mock(IService) {
+            getIds() >> ["3", "4"]
+        }
+
+        given:
+        ISatisfyHook hook = Mock(ISatisfyHook) {
+            isSatisfied(_) >> true
+        }
+        Injection injection = Mock(Injection) {
+            getId() >> ISatisfyHook.canonicalName
+            getObject() >> hook
+        }
+        registry.injectObject(injection)
+
+        when:
+        registry.register(svc1, svc2)
+
+        then:
+        registry.findService("1") == svc1
+        registry.findService("2") == svc1
+        registry.findService("3") == svc2
+        registry.findService("4") == svc2
+        registry.getCount() == 4
+    }
 }

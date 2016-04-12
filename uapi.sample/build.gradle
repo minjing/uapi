@@ -3,7 +3,7 @@ dependencies {
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
     compile project(':uapi.config')
-    compile project(':uapi.kernel.app')
+    compile project(':uapi.app')
 }
 
 jar {
