@@ -12,7 +12,6 @@ import uapi.helper.CollectionHelper;
 import uapi.helper.Guarder;
 import uapi.service.*;
 
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -133,16 +131,16 @@ public class Registry implements IRegistry, IService, IInjectable {
     }
 
     int getCount() {
-        return getResolvedCount() + getUnresolvedCount();
-    }
-
-    int getResolvedCount() {
-        return Guarder.by(this._resolvedLock).runForResult(this._resolvedSvcs::size);
-    }
-
-    int getUnresolvedCount() {
         return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
     }
+
+//    int getResolvedCount() {
+//        return Guarder.by(this._resolvedLock).runForResult(this._resolvedSvcs::size);
+//    }
+
+//    int getUnresolvedCount() {
+//        return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
+//    }
 
     private void registerService(
             final Object svc,

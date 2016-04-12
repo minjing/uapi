@@ -1,17 +1,10 @@
 apply plugin: "groovy"
 
 dependencies {
-    compile "io.reactivex:rxjava:${rxjava_version}"
     compile "com.google.auto.service:auto-service:${auto_service_version}"
-    compile "org.codehaus.groovy:groovy-all:2.4.1"
 
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
-
-    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
-
-    testRuntime "cglib:cglib-nodep:3.1"
-    testRuntime "org.objenesis:objenesis:2.1"
 }
 
 jar {
