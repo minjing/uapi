@@ -65,6 +65,11 @@ public class Launcher implements ILauncher {
         this._semaphore = new Semaphore(0);
     }
 
+    public void stop() {
+        this._logger.info("The system is going to shutdown by system...");
+        this._semaphore.release();
+    }
+
     @Override
     public void launch(long startTime) {
         Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
@@ -89,7 +94,7 @@ public class Launcher implements ILauncher {
 
         @Override
         public void run() {
-            Launcher.this._logger.info("The system is going to shutdown...");
+            Launcher.this._logger.info("The system is going to shutdown by user ...");
             Launcher.this._semaphore.release();
         }
     }
