@@ -46,7 +46,6 @@ class ArgumentCheckerTest extends Specification {
 
         where:
         arg     | argName   | exception
-        null    | "test"    | InvalidArgumentException
         ""      | "test"    | InvalidArgumentException
         " "     | "test"    | InvalidArgumentException
         "\t"    | "test"    | InvalidArgumentException

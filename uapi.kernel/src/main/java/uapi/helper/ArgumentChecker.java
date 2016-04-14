@@ -90,7 +90,7 @@ public class ArgumentChecker {
     public static boolean isEmpty(
             final String argument
     ) {
-        return Strings.isNullOrEmpty(argument);
+        return Strings.isNullOrEmpty(argument) || argument.trim().length() == 0;
     }
 
     /**
