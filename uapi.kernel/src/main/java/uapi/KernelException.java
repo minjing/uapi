@@ -3,6 +3,9 @@ package uapi;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 
+/**
+ * Basic exception, all exception should extend it
+ */
 public class KernelException extends RuntimeException {
 
     private static final long serialVersionUID = -3398540245462767129L;

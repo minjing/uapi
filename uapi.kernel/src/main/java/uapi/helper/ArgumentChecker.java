@@ -16,6 +16,23 @@ public class ArgumentChecker {
 
     private ArgumentChecker() { }
 
+    /**
+     * Check the integer argument value should between min value and max value
+     * The min value and max value should be included.
+     * An {@code InvalidArgumentException} will be thrown when the argument value
+     * is not between min value and max value
+     *
+     * @param   arg
+     *          The integer argument which will be checked
+     * @param   argName
+     *          The checked argument name
+     * @param   minValue
+     *          The min value
+     * @param   maxValue
+     *          The max value
+     * @throws  InvalidArgumentException
+     *          The checked argument value is not between min value and max value
+     */
     public static void checkInt(int arg, String argName, int minValue, int maxValue) {
         if (arg < minValue || arg > maxValue) {
             throw new InvalidArgumentException(argName,
@@ -24,6 +41,16 @@ public class ArgumentChecker {
         }
     }
 
+    /**
+     * Ensure the argument is not null, if it is null the exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          The argument is null
+     */
     public static void notNull(
             final Object argument,
             final String argumentName
@@ -33,6 +60,16 @@ public class ArgumentChecker {
         }
     }
 
+    /**
+     * Ensure the argument is not empty, if it is empty then the exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          The argument is null or empty string or only contains blank string
+     */
     public static void notEmpty(
             final String argument,
             final String argumentName
@@ -42,12 +79,33 @@ public class ArgumentChecker {
         }
     }
 
+    /**
+     * Test the argument is empty or not.
+     * Empty string means null, empty string or only contains blank string
+     *
+     * @param   argument
+     *          The argument which will be tested
+     * @return  true if the argument is empty otherwise return false
+     */
     public static boolean isEmpty(
             final String argument
     ) {
         return Strings.isNullOrEmpty(argument);
     }
 
+    /**
+     * Ensure the array argument is not empty.
+     * A empty array means null or the array length is 0
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   argumentName
+     *          The argument name
+     * @param   <T>
+     *          The argument type
+     * @throws  InvalidArgumentException
+     *          If the array argument is empty
+     */
     public static <T> void notEmpty(
             final T[] argument,
             final String argumentName
