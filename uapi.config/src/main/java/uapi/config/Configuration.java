@@ -41,7 +41,7 @@ public class Configuration {
     ) throws InvalidArgumentException {
         ArgumentChecker.notNull(parent, "parent");
         ArgumentChecker.notEmpty(key, "key");
-        ArgumentChecker.contains(key, ROOT_KEY, "key");
+        ArgumentChecker.notContains(key, ROOT_KEY, "key");
         this._parent = parent;
         this._key = key;
         this._value = value;

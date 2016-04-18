@@ -62,7 +62,7 @@ public interface IRegistry extends IInitial {
     <T> T findService(final String serviceId);
 
     /**
-     * Find service by specified service type
+     * Find service by specific service type
      *
      * @param   serviceType
      *          The specified service type
@@ -72,7 +72,25 @@ public interface IRegistry extends IInitial {
      */
     <T> T findService(final Class<T> serviceType);
 
+    /**
+     * Find multiple service by specific service id
+     *
+     * @param   serviceId
+     *          The service id which used for service finding
+     * @param   <T>
+     *          The service type
+     * @return  The service list
+     */
     <T> List<T> findServices(final String serviceId);
 
+    /**
+     * Find multiple services by specific service type
+     *
+     * @param   serviceType
+     *          The service type which used for service finding
+     * @param   <T>
+     *          The service type
+     * @return  The service list
+     */
     <T> List<T> findServices(final Class<T> serviceType);
 }

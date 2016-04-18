@@ -116,18 +116,50 @@ public class ArgumentChecker {
         }
     }
 
-    public static void equals(Object argument, Object expect, String argumentName) {
-        if (argument == null && expect == null) {
+    /**
+     * Test the argument equals expected object, if it does not equals then the exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   expected
+     *          The expected object
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          If the argument does not equals expected object
+     */
+    public static void equals(
+            final Object argument,
+            final Object expected,
+            final String argumentName
+    ) throws InvalidArgumentException {
+        if (argument == null && expected == null) {
             return;
         }
-        if (argument != null && argument.equals(expect)) {
+        if (argument != null && argument.equals(expected)) {
             return;
         }
         throw new InvalidArgumentException("The arguments {} is not equals expected value {} - {}",
-                argumentName, argument, expect);
+                argumentName, argument, expected);
     }
 
-    public static void notEquals(Object argument, Object unexpected, String argumentName) {
+    /**
+     * Test the argument equals unexpected object, if it equals then the exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   unexpected
+     *          The unexpected object
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          If the argument equals expected object
+     */
+    public static void notEquals(
+            final Object argument,
+            final Object unexpected,
+            final String argumentName
+    ) throws InvalidArgumentException {
         if (argument != null && ! argument.equals(unexpected)) {
             return;
         }
@@ -135,7 +167,23 @@ public class ArgumentChecker {
                 argumentName, argument, unexpected);
     }
 
-    public static void contains(String argument, String unexpected, String argumentName) {
+    /**
+     * Test the argument contains unexpected string, if it contains then an exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   unexpected
+     *          The unexpected string
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          If the argument contains the unexpected string
+     */
+    public static void notContains(
+            final String argument,
+            final String unexpected,
+            final String argumentName
+    ) throws InvalidArgumentException {
         if (argument != null && ! argument.contains(unexpected)) {
             return;
         }
@@ -143,13 +191,31 @@ public class ArgumentChecker {
                 argumentName, argument, unexpected);
     }
 
-    public static <T> void notContains(Collection<T> argument, String argumentName, String otherInfo, T... unexpects) {
+    /**
+     * The the collection contains specified unexpected objects, if it contains then an exception will be thrown
+     *
+     * @param   argument
+     *          The argument which will be checked
+     * @param   argumentName
+     *          The argument name
+     * @param   unexpects
+     *          The unexpected object arrary
+     * @param   <T>
+     *          The element type of argument collection
+     * @throws  InvalidArgumentException
+     *          If the argument contains the unexpected object
+     */
+    public static <T> void notContains(
+            final Collection<T> argument,
+            final String argumentName,
+            final T... unexpects
+    ) throws InvalidArgumentException {
         notNull(argument, argumentName);
         T unexpected = CollectionHelper.contains(argument, unexpects);
         if (unexpected != null) {
             throw new InvalidArgumentException(
-                    "The argument {} with {} contains an unexpected item: {}",
-                    argumentName, otherInfo, unexpected);
+                    "The argument {} contains an unexpected item: {}",
+                    argumentName, unexpected);
         }
     }
 
@@ -161,6 +227,8 @@ public class ArgumentChecker {
      *          The argument object which will be checked
      * @param   argumentName
      *          The argument name will be used in exception message if check failed
+     * @throws  InvalidArgumentException
+     *          The argument is null or it is empty string
      */
     public static void required(
             final Object argument,
@@ -173,6 +241,16 @@ public class ArgumentChecker {
         }
     }
 
+    /**
+     * Test the collection is null or it is empty, if so an exception will be thrown
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   argumentName
+     *          The argument name
+     * @throws  InvalidArgumentException
+     *          The checked collection is null or it is empty
+     */
     public static void notZero(
             final Collection collection,
             final String argumentName

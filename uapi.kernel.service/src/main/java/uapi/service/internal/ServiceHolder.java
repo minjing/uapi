@@ -169,36 +169,6 @@ class ServiceHolder implements IServiceReference {
         return true;
     }
 
-//    private void initService() {
-//        if (this._inited) {
-//            return;
-//        }
-//        if (! isSatisfied()) {
-//            throw new KernelException("Unsatisfied service can't be initialized");
-//        }
-//        if (this._dependencies.size() > 0) {
-//            if (this._svc instanceof IInjectable) {
-//                Observable.from(this._dependencies.values())
-//                        .filter(dependency -> dependency != null)
-//                        .doOnNext(ServiceHolder::initService)
-//                        .subscribe(dependency -> {
-//                            Object injectedSvc = dependency.getService();
-//                            if (injectedSvc instanceof IServiceFactory) {
-//                                // Create service from service factory
-//                                injectedSvc = ((IServiceFactory) injectedSvc).createService(this._svc);
-//                            }
-//                            ((IInjectable) this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
-//                        }, throwable -> { throw new KernelException(throwable); });
-//            } else {
-//                throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
-//            }
-//        }
-//        if (this._svc instanceof IInitial) {
-//            ((IInitial) this._svc).init();
-//        }
-//        this._inited = true;
-//    }
-
     @Override
     public String toString() {
         return StringHelper.makeString("Service[id={}, type={}, dependencies={}]",
