@@ -62,7 +62,6 @@ public class Registry implements IRegistry, IService, IInjectable {
     public void register(
             final IService service
     ) throws InvalidArgumentException {
-        ArgumentChecker.notNull(service, "service");
         registerService(service);
     }
 
@@ -75,12 +74,21 @@ public class Registry implements IRegistry, IService, IInjectable {
 
     @Override
     public void register(
-            final Object object,
+            final Object service,
             final String... serviceIds
     ) throws InvalidArgumentException {
-        ArgumentChecker.notNull(object, "object");
-        ArgumentChecker.notEmpty(serviceIds, "serviceIds");
-        registerService(object, serviceIds, new String[0]);
+        register(FROM_LOCAL, service, serviceIds);
+    }
+
+    @Override
+    public void register(
+            final String serviceFrom,
+            final Object service,
+            final String... serviceIds
+    ) throws InvalidArgumentException {
+        ArgumentChecker.notEmpty(serviceFrom, "serviceFrom");
+        ArgumentChecker.notNull(service, "service");
+        registerService(serviceFrom, service, serviceIds, new String[0]);
     }
 
     @Override
@@ -124,16 +132,35 @@ public class Registry implements IRegistry, IService, IInjectable {
         return resolvedSvcs;
     }
 
+    public <T> T findService(final String serviceId, final String serviceFrom) {
+        // TODO
+        return null;
+    }
+
     int getCount() {
         return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
     }
 
     private void registerService(
+            final IService svc) {
+        final String[] svcIds = svc.getIds();
+        final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
+        registerService(FROM_LOCAL, svc, svcIds, dependencyIds);
+    }
+
+    private void registerService(
+            final String svcFrom,
             final Object svc,
             final String[] svcIds,
             final String[] dependencyIds) {
+        ArgumentChecker.notEmpty(svcFrom, "svcFrom");
+        ArgumentChecker.notNull(svc, "svc");
+        if (svcIds == null || svcIds.length == 0) {
+            throw new InvalidArgumentException("The service id is required - {}", svc.getClass().getName());
+        }
+
         Observable.from(svcIds)
-                .map(svcId -> new ServiceHolder(svc, svcId, dependencyIds, this._satisfyDecider))
+                .map(svcId -> new ServiceHolder(svcFrom, svc, svcId, dependencyIds, this._satisfyDecider))
                 .subscribe(svcHolder -> {
                     Guarder.by(this._unsatisfiedLock).run(() -> {
                         // Check whether the new register service depends on existing service
@@ -147,16 +174,6 @@ public class Registry implements IRegistry, IService, IInjectable {
                         this._unsatisfiedSvcs.put(svcHolder.getId(), svcHolder);
                     });
                 });
-    }
-
-    private void registerService(
-            final IService svc) {
-        final String[] svcIds = svc.getIds();
-        if (svcIds == null || svcIds.length == 0) {
-            throw new InvalidArgumentException("The service id is required - {}", svc.getClass().getName());
-        }
-        final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
-        registerService(svc, svcIds, dependencyIds);
     }
 
     @Override

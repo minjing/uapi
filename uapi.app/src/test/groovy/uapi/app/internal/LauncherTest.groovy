@@ -3,7 +3,6 @@ package uapi.app.internal
 import spock.lang.Specification
 import uapi.app.IAppLifecycle
 import uapi.log.ILogger
-import uapi.service.ILifecycle
 
 /**
  * Test case for Launch

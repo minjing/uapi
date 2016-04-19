@@ -8,10 +8,7 @@ import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
 import uapi.helper.StringHelper;
-import uapi.service.IInjectable;
-import uapi.service.IService;
-import uapi.service.Injection;
-import uapi.service.SetterMeta;
+import uapi.service.*;
 import uapi.service.annotation.Inject;
 
 import javax.lang.model.element.Element;
@@ -68,6 +65,13 @@ class InjectParser {
             if (Strings.isNullOrEmpty(injectId)) {
                 injectId = fieldTypeName;
             }
+            String injectFrom = inject.from();
+            if (Strings.isNullOrEmpty(injectFrom)) {
+                throw new KernelException(
+                        "The inject service from [{}.{}] must be specified",
+                        classElemt.getSimpleName().toString(),
+                        fieldElement.getSimpleName().toString());
+            }
 
             String paramName = SETTER_PARAM_NAME;
             String code;
@@ -83,6 +87,7 @@ class InjectParser {
                     .addMethodBuilder(SetterMeta.builder()
                             .setFieldName(fieldName)
                             .setInjectId(injectId)
+                            .setInjectFrom(injectFrom)
                             .setInjectType(fieldTypeName)
                             .setName(setterName)
                             .setReturnTypeName(Type.VOID)
@@ -127,7 +132,8 @@ class InjectParser {
             // Receive service dependency id list
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
             List<String> dependentIds = setterBuilders.parallelStream()
-                    .map(setterBuilder -> ((SetterMeta.Builder) setterBuilder).getInjectId())
+                    .map(builder -> (SetterMeta.Builder) builder)
+                    .map(setterBuilder -> setterBuilder.getInjectId() + IRegistry.LOCATION + setterBuilder.getInjectFrom())
                     .collect(Collectors.toList());
             // Check duplicated dependency
             dependentIds.stream()

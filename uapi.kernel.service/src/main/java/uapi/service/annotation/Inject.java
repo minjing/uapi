@@ -1,6 +1,7 @@
 package uapi.service.annotation;
 
 import uapi.helper.StringHelper;
+import uapi.service.IRegistry;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -21,5 +22,5 @@ public @interface Inject {
      *
      * @return  Injected service from
      */
-    Scope scope() default Scope.Auto;
+    String from() default IRegistry.FROM_ANY;
 }

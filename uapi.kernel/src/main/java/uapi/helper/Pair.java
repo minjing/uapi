@@ -6,6 +6,7 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 public class Pair<LT, RT> {
 
     private final LT _lValue;
+
     private final RT _rValue;
 
     public static Pair<String, String> splitTo(String combined, String separator) {
@@ -40,5 +41,24 @@ public class Pair<LT, RT> {
 
     public RT getRightValue() {
         return this._rValue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Pair<?, ?> pair = (Pair<?, ?>) o;
+
+        if (!_lValue.equals(pair._lValue)) return false;
+        return _rValue.equals(pair._rValue);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = _lValue.hashCode();
+        result = 31 * result + _rValue.hashCode();
+        return result;
     }
 }

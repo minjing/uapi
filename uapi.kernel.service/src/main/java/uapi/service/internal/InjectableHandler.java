@@ -6,7 +6,6 @@ import uapi.annotation.AnnotationsHandler;
 import uapi.annotation.IAnnotationsHandler;
 import uapi.annotation.IBuilderContext;
 import uapi.helper.ArgumentChecker;
-import uapi.service.Service;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 

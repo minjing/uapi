@@ -30,6 +30,7 @@ public class SetterMeta extends MethodMeta {
 
         private String _fieldName;
         private String _injectId;
+        private String _injectFrom;
         private String _injectType;
         private boolean _isOptional = false;
 
@@ -73,6 +74,19 @@ public class SetterMeta extends MethodMeta {
 
         public String getInjectId() {
             return this._injectId;
+        }
+
+        public Builder setInjectFrom(
+                final String from
+        ) throws InvalidArgumentException {
+            checkStatus();
+            ArgumentChecker.notEmpty(from, "from");
+            this._injectFrom = from;
+            return this;
+        }
+
+        public String getInjectFrom() {
+            return this._injectFrom;
         }
 
         public Builder setInjectType(

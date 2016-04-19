@@ -11,8 +11,12 @@ import java.util.List;
  */
 public interface IRegistry extends IInitial {
 
+    String LOCATION     = "@";
+    String FROM_ANY     = "Any";
+    String FROM_LOCAL   = "Local";
+
     /**
-     * Register a service
+     * Register a local service
      *
      * @param   service
      *          The service which will be registered
@@ -24,7 +28,7 @@ public interface IRegistry extends IInitial {
     ) throws InvalidArgumentException;
 
     /**
-     * Register more service
+     * Register multiple local services
      *
      * @param   services
      *          The services which will be registered
@@ -36,7 +40,7 @@ public interface IRegistry extends IInitial {
     ) throws InvalidArgumentException;
 
     /**
-     * Register a generic object as a service
+     * Register a generic object as a local service
      *
      * @param   service
      *          The service object
@@ -48,6 +52,24 @@ public interface IRegistry extends IInitial {
     void register(
             final Object service,
             String... serviceIds
+    ) throws InvalidArgumentException;
+
+    /**
+     * Register a outside service
+     *
+     * @param   serviceFrom
+     *          Where is the service from
+     * @param   service
+     *          The service instance
+     * @param   serviceIds
+     *          The service ids
+     * @throws  InvalidArgumentException
+     *          If the serviceFrom, service is null
+     */
+    void register(
+            final String serviceFrom,
+            final Object service,
+            final String... serviceIds
     ) throws InvalidArgumentException;
 
     /**
@@ -93,4 +115,16 @@ public interface IRegistry extends IInitial {
      * @return  The service list
      */
     <T> List<T> findServices(final Class<T> serviceType);
+
+    /**
+     * Find service from specified location
+     * @param   serviceId
+     *          The service id which used for service finding
+     * @param   serviceFrom
+     *          Where is the service from
+     * @param   <T>
+     *          The service type
+     * @return  The service instance or null if not such service available
+     */
+    <T> T findService(final String serviceId, final String serviceFrom);
 }
