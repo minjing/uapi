@@ -106,4 +106,33 @@ class RegistryTest extends Specification {
         registry.findService("4") == svc2
         registry.getCount() == 4
     }
+
+    def 'Test find service by id and from'() {
+        def svc1 = Mock(IService) {
+            getIds() >> ["1", "2"]
+        }
+        def svc2 = Mock(IService) {
+            getIds() >> ["3", "4"]
+        }
+
+        given:
+        ISatisfyHook hook = Mock(ISatisfyHook) {
+            isSatisfied(_) >> true
+        }
+        Injection injection = Mock(Injection) {
+            getId() >> ISatisfyHook.canonicalName
+            getObject() >> hook
+        }
+        registry.injectObject(injection)
+
+        when:
+        registry.register(svc1, svc2)
+
+        then:
+        registry.findService("1", IRegistry.FROM_LOCAL) == svc1
+        registry.findService("2", IRegistry.FROM_LOCAL) == svc1
+        registry.findService("3", IRegistry.FROM_LOCAL) == svc2
+        registry.findService("4", IRegistry.FROM_LOCAL) == svc2
+        registry.getCount() == 4
+    }
 }

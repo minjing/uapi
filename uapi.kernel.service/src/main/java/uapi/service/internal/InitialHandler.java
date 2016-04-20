@@ -22,6 +22,7 @@ import java.util.Set;
 public final class InitialHandler extends AnnotationsHandler {
 
     private static final String METHOD_INIT_NAME    = "init";
+    private static final String METHOD_LAZY_NAME    = "lazy";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Init.class };
@@ -65,8 +66,9 @@ public final class InitialHandler extends AnnotationsHandler {
                         "Multiple Init annotation was defined in the class {}",
                         classElemt.getSimpleName().toString());
             }
-            String code = StringHelper.makeString(
-                    "super.{}();", methodName);
+            String initCode = StringHelper.makeString("super.{}();", methodName);
+            Init init = methodElement.getAnnotation(Init.class);
+            String lazyCode = StringHelper.makeString("return {};", init.lazy());
             clsBuilder
                     .addImplement(IInitial.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()
@@ -75,8 +77,16 @@ public final class InitialHandler extends AnnotationsHandler {
                             .addAnnotationBuilder(AnnotationMeta.builder()
                                     .setName("Override"))
                             .addCodeBuilder(CodeMeta.builder()
-                                    .addRawCode(code))
-                            .setReturnTypeName("void"));
+                                    .addRawCode(initCode))
+                            .setReturnTypeName("void"))
+                    .addMethodBuilder(MethodMeta.builder()
+                            .addModifier(Modifier.PUBLIC)
+                            .setName(METHOD_LAZY_NAME)
+                            .addAnnotationBuilder(AnnotationMeta.builder()
+                                    .setName("Override"))
+                            .addCodeBuilder(CodeMeta.builder()
+                                    .addRawCode(lazyCode))
+                            .setReturnTypeName(Type.BOOLEAN));
         });
     }
 }

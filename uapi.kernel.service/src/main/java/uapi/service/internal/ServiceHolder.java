@@ -5,16 +5,14 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import rx.Observable;
+import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 import uapi.service.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -24,10 +22,14 @@ class ServiceHolder implements IServiceReference {
 
     private final Object _svc;
     private final String _svcId;
+    private final String _from;
     private final QualifiedServiceId _qualifiedSvcId;
     private final Multimap<QualifiedServiceId, ServiceHolder> _dependencies;
-    private boolean _inited = false;
+    private volatile boolean _inited = false;
+    private volatile boolean _lazyInit = true;
     private final ISatisfyHook _satisfyHook;
+    private final List<StateMonitor> _stateMonitors;
+    private final StateMonitor _stateMonitor;
 
     ServiceHolder(
             final String from,
@@ -52,18 +54,29 @@ class ServiceHolder implements IServiceReference {
         ArgumentChecker.notNull(satisfyHook, "satisfyHook");
         this._svc = service;
         this._svcId = serviceId;
+        this._from = from;
         this._qualifiedSvcId = new QualifiedServiceId(serviceId, from);
         this._satisfyHook = satisfyHook;
         this._dependencies = LinkedListMultimap.create();
+        this._stateMonitors = new LinkedList<>();
+        if (service instanceof IInitial) {
+            this._lazyInit = ((IInitial) service).lazy();
+        }
         Observable.from(dependencies)
                 .map(dependency -> QualifiedServiceId.splitTo(dependency, IRegistry.LOCATION))
                 .subscribe(pair -> this._dependencies.put(pair, null));
 //        Stream.of(dependencies).forEach(dependency -> this._dependencies.put(dependency, null));
+        // Create StateMonitor here since it need read dependencies information.
+        this._stateMonitor = new StateMonitor();
     }
 
     @Override
     public String getId() {
         return this._svcId;
+    }
+
+    public String getFrom() {
+        return this._from;
     }
 
     @Override
@@ -75,6 +88,20 @@ class ServiceHolder implements IServiceReference {
         return this._qualifiedSvcId;
     }
 
+    void addStateMonitor(StateMonitor monitor) {
+        this._stateMonitors.add(monitor);
+        // If some service register this service stats which mean
+        // that service is not lazy, so this service have to init
+        // its self if possible
+        if (this._lazyInit) {
+            this._lazyInit = false;
+            Observable.from(this._dependencies.entries())
+                    .filter(entry -> entry.getValue() != null)
+                    .map(Map.Entry::getValue)
+                    .subscribe(dependency -> dependency.addStateMonitor(this._stateMonitor));
+        }
+    }
+
     void setDependency(ServiceHolder service) {
         ArgumentChecker.notNull(service, "service");
         if (! this._dependencies.containsKey(service.getId())) {
@@ -84,6 +111,10 @@ class ServiceHolder implements IServiceReference {
         QualifiedServiceId qsvcId = service.getQualifiedServiceId();
         this._dependencies.remove(qsvcId, null);
         this._dependencies.put(qsvcId, service);
+        if (! this._lazyInit) {
+            service.addStateMonitor(this._stateMonitor);
+
+        }
     }
 
     boolean isDependsOn(final String serviceId) {
@@ -206,5 +237,84 @@ class ServiceHolder implements IServiceReference {
     public String toString() {
         return StringHelper.makeString("Service[id={}, type={}, dependencies={}]",
                 this._svcId, this._svc.getClass().getName(), this._dependencies);
+    }
+
+    private enum State {
+        Unresolved, Resolved, Injected, Satisfied, Initialized
+    }
+
+    private final class StateMonitor {
+
+        private volatile State _state = State.Unresolved;
+
+        private final Map<QualifiedServiceId, Boolean> _dependencyStatus = new HashMap<>();
+
+        private StateMonitor() {
+            Observable.from(ServiceHolder.this._dependencies.keySet())
+                    .subscribe(qsId -> this._dependencyStatus.put(qsId, false));
+            goon();
+        }
+
+        private void onSatisfied(final QualifiedServiceId qsId) {
+            if (this._dependencyStatus.put(qsId, true) == null) {
+                throw new InvalidArgumentException("The service {} does not depends on {}",
+                        ServiceHolder.this._qualifiedSvcId, qsId);
+            }
+            boolean allSatified = Observable.from(this._dependencyStatus.values())
+                    .filter(satisfied -> ! satisfied)
+                    .toBlocking().firstOrDefault(true);
+            if (allSatified) {
+                goon();
+            }
+        }
+
+        private void goon() {
+            switch (this._state) {
+                case Unresolved:
+                    tryResolve();
+                    break;
+                case Resolved:
+                    tryInject();
+                    break;
+                case Injected:
+                    trySatisfy();
+                    break;
+                case Satisfied:
+                    tryInit();
+                    break;
+                case Initialized:
+                    // do nothing
+                    break;
+                default:
+                    throw new KernelException("Unsupported state {}", this._state);
+            }
+        }
+
+        private void tryResolve() {
+            ArgumentChecker.equals(this._state, State.Unresolved, "ServiceHolder.state");
+
+            this._state = State.Resolved;
+            tryInject();
+        }
+
+        private void tryInject() {
+            ArgumentChecker.equals(this._state, State.Resolved, "ServiceHolder.state");
+
+            this._state = State.Injected;
+            trySatisfy();
+        }
+
+        private void trySatisfy() {
+            ArgumentChecker.equals(this._state, State.Injected, "ServiceHolder.state");
+
+            this._state = State.Satisfied;
+            tryInit();
+        }
+
+        private void tryInit() {
+            ArgumentChecker.equals(this._state, State.Satisfied, "ServiceHolder.state");
+
+            this._state = State.Initialized;
+        }
     }
 }

@@ -132,9 +132,24 @@ public class Registry implements IRegistry, IService, IInjectable {
         return resolvedSvcs;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public <T> T findService(final String serviceId, final String serviceFrom) {
-        // TODO
-        return null;
+        List<T> found = Guarder.by(this._unsatisfiedLock).runForResult(() ->
+                (List<T>) Observable.from(this._unsatisfiedSvcs.values())
+                .filter(svcHolder -> svcHolder.getId().equals(serviceId))
+                .filter(svcHolder -> svcHolder.getFrom().equals(serviceFrom))
+                .filter(ServiceHolder::tryInitService)
+                .map(ServiceHolder::getService)
+                .toList().toBlocking().single()
+        );
+        if (found == null || found.size() == 0) {
+            return null;
+        }
+        if (found.size() == 1) {
+            return found.get(0);
+        }
+        throw new KernelException("Find multiple service by service id {}@{}", serviceId, serviceFrom);
     }
 
     int getCount() {

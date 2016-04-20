@@ -6,4 +6,8 @@ package uapi.service;
 public interface IInitial {
 
     void init();
+
+    default boolean lazy() {
+        return true;
+    }
 }
