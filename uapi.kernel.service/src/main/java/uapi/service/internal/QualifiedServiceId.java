@@ -3,9 +3,10 @@ package uapi.service.internal;
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
+import uapi.helper.StringHelper;
 
 /**
- * Created by xquan on 4/19/2016.
+ * The QualifiedServiceId indicate service id and where is the service from
  */
 public class QualifiedServiceId extends Pair<String, String> {
 
@@ -32,5 +33,10 @@ public class QualifiedServiceId extends Pair<String, String> {
 
     public String getFrom() {
         return getRightValue();
+    }
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("{}@{}", getId(), getFrom());
     }
 }

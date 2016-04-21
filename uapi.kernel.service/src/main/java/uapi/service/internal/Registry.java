@@ -10,6 +10,7 @@ import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.Guarder;
+import uapi.helper.StringHelper;
 import uapi.service.*;
 
 import java.lang.ref.WeakReference;
@@ -152,6 +153,12 @@ public class Registry implements IRegistry, IService, IInjectable {
         throw new KernelException("Find multiple service by service id {}@{}", serviceId, serviceFrom);
     }
 
+    public void start() {
+        Observable.from(this._unsatisfiedSvcs.values())
+                .doOnNext(ServiceHolder::start)
+                .subscribe(ServiceHolder::tryInitService);
+    }
+
     int getCount() {
         return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
     }
@@ -207,7 +214,9 @@ public class Registry implements IRegistry, IService, IInjectable {
 
     @Override
     public String[] getDependentIds() {
-        return new String[] { ISatisfyHook.class.getName() };
+        return new String[] {
+                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), IRegistry.LOCATION, IRegistry.FROM_LOCAL)
+        };
     }
 
     @Override

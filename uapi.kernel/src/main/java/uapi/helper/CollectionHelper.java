@@ -47,8 +47,44 @@ public final class CollectionHelper {
         return null;
     }
 
+    public static <T> T strictContains(Collection<T> collection, T... elements) {
+        ArgumentChecker.notNull(collection, "collection");
+        for (T element : elements) {
+            for (T item : collection) {
+                if (element == item) {
+                    return element;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T> T strictContains(T[] array, T... elements) {
+        ArgumentChecker.notNull(array, "array");
+        for (T element : elements) {
+            for (T item : array) {
+                if (element == item) {
+                    return element;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T> boolean isContains(Collection<T> collection, T... elements) {
+        return contains(collection, elements) != null;
+    }
+
     public static <T> boolean isContains(T[] array, T... elements) {
         return contains(array, elements) != null;
+    }
+
+    public static <T> boolean isStrictContains(Collection<T> collection, T... elements) {
+        return strictContains(collection, elements) != null;
+    }
+
+    public static <T> boolean isStrictContains(T[] array, T... elements) {
+        return strictContains(array, elements) != null;
     }
 
     public static String asString(Object[] array) {

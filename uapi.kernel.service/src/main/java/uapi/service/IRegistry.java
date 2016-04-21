@@ -127,4 +127,6 @@ public interface IRegistry extends IInitial {
      * @return  The service instance or null if not such service available
      */
     <T> T findService(final String serviceId, final String serviceFrom);
+
+    void start();
 }

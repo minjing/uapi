@@ -7,7 +7,7 @@ public interface IInitial {
 
     void init();
 
-    default boolean lazy() {
-        return true;
-    }
+//    default boolean lazy() {
+//        return true;
+//    }
 }

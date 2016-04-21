@@ -47,6 +47,8 @@ public class Launcher implements ILauncher {
         ICliConfigProvider cliCfgProvider = svcRegistry.findService(ICliConfigProvider.class);
         cliCfgProvider.parse(args);
 
+        svcRegistry.start();
+
         Launcher launcher = svcRegistry.findService(Launcher.class);
         launcher.launch(startTime);
     }
