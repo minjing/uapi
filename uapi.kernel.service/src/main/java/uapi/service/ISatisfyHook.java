@@ -5,5 +5,5 @@ package uapi.service;
  */
 public interface ISatisfyHook {
 
-    boolean isSatisfied(Object service);
+    boolean isSatisfied(IServiceReference serviceReference);
 }

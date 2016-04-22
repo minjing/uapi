@@ -5,6 +5,7 @@ import uapi.config.IConfigTracer;
 import uapi.config.IConfigurable;
 import uapi.helper.ArgumentChecker;
 import uapi.service.ISatisfyHook;
+import uapi.service.IServiceReference;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Service;
 
@@ -29,16 +30,16 @@ class Configurator implements ISatisfyHook, IConfigTracer {
     }
 
     @Override
-    public boolean isSatisfied(Object service) {
-        ArgumentChecker.notNull(service, "service");
-        if (! (service instanceof IConfigurable)) {
+    public boolean isSatisfied(IServiceReference serviceRef) {
+        ArgumentChecker.notNull(serviceRef, "serviceRef");
+        if (! (serviceRef.getService() instanceof IConfigurable)) {
             return true;
         }
-        IConfigurable configurableSvc = (IConfigurable) service;
+        IConfigurable configurableSvc = (IConfigurable) serviceRef.getService();
         String[] paths = configurableSvc.getPaths();
         boolean isConfigured = true;
         for (String path : paths) {
-            if (! this._rootConfig.bindConfigurable(path, configurableSvc)) {
+            if (! this._rootConfig.bindConfigurable(path, serviceRef)) {
                 isConfigured = false;
             }
         }

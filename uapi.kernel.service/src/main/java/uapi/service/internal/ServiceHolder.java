@@ -70,6 +70,11 @@ class ServiceHolder implements IServiceReference {
         return this._svcId;
     }
 
+    @Override
+    public QualifiedServiceId getQualifiedId() {
+        return this._qualifiedSvcId;
+    }
+
     public String getFrom() {
         return this._from;
     }
@@ -77,6 +82,11 @@ class ServiceHolder implements IServiceReference {
     @Override
     public Object getService() {
         return this._svc;
+    }
+
+    @Override
+    public void notifySatisfied() {
+        this._stateManagement.goon();
     }
 
     QualifiedServiceId getQualifiedServiceId() {
@@ -290,7 +300,7 @@ class ServiceHolder implements IServiceReference {
         private boolean trySatisfy() {
             ArgumentChecker.equals(this._state, State.Injected, "ServiceHolder.state");
 
-            if (! ServiceHolder.this._satisfyHook.isSatisfied(ServiceHolder.this._svc)) {
+            if (! ServiceHolder.this._satisfyHook.isSatisfied(ServiceHolder.this)) {
                 return false;
             }
 

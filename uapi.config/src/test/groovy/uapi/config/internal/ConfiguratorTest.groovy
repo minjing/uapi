@@ -3,6 +3,7 @@ package uapi.config.internal
 import spock.lang.Specification
 import uapi.config.Configuration
 import uapi.config.IConfigurable
+import uapi.service.IServiceReference
 
 /**
  * Test case for Configurator
@@ -10,11 +11,11 @@ import uapi.config.IConfigurable
 class ConfiguratorTest extends Specification {
 
     def 'Test is satisfied at first time'() {
-        def svc = Mock(IConfigurable) {
+        def cfguable = Mock(IConfigurable) {
             getPaths() >> ['test']
         }
-        def cfg = Mock(Configuration) {
-            bindConfigurable('test', svc) >> true
+        def svc = Mock(IServiceReference) {
+            getService() >> cfguable
         }
 
         given:
@@ -25,8 +26,11 @@ class ConfiguratorTest extends Specification {
     }
 
     def 'Test is satisfied at second time'() {
-        def svc = Mock(IConfigurable) {
+        def configurable = Mock(IConfigurable) {
             getPaths() >> ['test']
+        }
+        def svc = Mock(IServiceReference) {
+            getService() >> configurable
         }
 
         given:

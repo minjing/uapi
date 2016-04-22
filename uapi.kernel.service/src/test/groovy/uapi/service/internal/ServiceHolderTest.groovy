@@ -44,7 +44,7 @@ class ServiceHolderTest extends Specification {
         holder.id == serviceId
         holder.service == service
 //        holder.isSatisfied() == resolved
-        holder.inited == inited
+//        holder.inited == inited
 
         where:
         serviceId   | from                  | service           | resolved  | inited
@@ -57,7 +57,7 @@ class ServiceHolderTest extends Specification {
         IInitial initialSvc = Mock(IInitial)
         ISatisfyHook mockHook = Mock(ISatisfyHook)
         ServiceHolder holder = new ServiceHolder(from, initialSvc, serviceId, mockHook)
-        mockHook.isSatisfied(initialSvc) >> true
+        mockHook.isSatisfied(holder) >> true
 
         when:
         holder.id == serviceId

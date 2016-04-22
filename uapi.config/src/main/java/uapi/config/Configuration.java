@@ -5,9 +5,12 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
+import uapi.service.IServiceReference;
+import uapi.service.internal.QualifiedServiceId;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -26,7 +29,7 @@ public class Configuration {
     private final Configuration _parent;
     private final String _key;
     private Object _value;
-    private WeakReference<IConfigurable> _configuable;
+    private final Map<QualifiedServiceId, WeakReference<IServiceReference>> _configuableSvcs;
     private final Map<String, Configuration> _children;
 
     public Configuration(final Configuration parent, final String key) {
@@ -37,7 +40,7 @@ public class Configuration {
             final Configuration parent,
             final String key,
             final Object value,
-            final IConfigurable configurable
+            final IServiceReference serviceReference
     ) throws InvalidArgumentException {
         ArgumentChecker.notNull(parent, "parent");
         ArgumentChecker.notEmpty(key, "key");
@@ -45,8 +48,9 @@ public class Configuration {
         this._parent = parent;
         this._key = key;
         this._value = value;
-        if (configurable != null) {
-            this._configuable = new WeakReference<>(configurable);
+        this._configuableSvcs = new HashMap<>();
+        if (serviceReference != null) {
+            this._configuableSvcs.put(serviceReference.getQualifiedId(), new WeakReference<>(serviceReference));
         }
         this._children = new HashMap<>();
     }
@@ -57,6 +61,8 @@ public class Configuration {
     private Configuration() {
         this._parent = null;
         this._key = ROOT_KEY;
+        // For root node, not configurable service can be bind on it.
+        this._configuableSvcs = null;
         this._children = new HashMap<>();
     }
 
@@ -104,14 +110,12 @@ public class Configuration {
             setValue((Map<String, Object>) value);
         }
         this._value = value;
-        if (this._configuable != null) {
-            IConfigurable cfg = this._configuable.get();
-            if (cfg != null) {
-                cfg.config(getFullPath(), value);
-            } else {
-                this._configuable = null;
-            }
-        }
+        Observable.from(this._configuableSvcs.values())
+                .filter(ref -> ref.get() != null)
+                .map(WeakReference::get)
+                .doOnNext(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
+                .subscribe(IServiceReference::notifySatisfied);
+        cleanNullReference();
     }
 
     public void setValue(final Map<String, Object> configMap) {
@@ -131,26 +135,35 @@ public class Configuration {
         config.setValue(value);
     }
 
-    public boolean bindConfigurable(final IConfigurable configurable) {
-        this._configuable = new WeakReference<>(configurable);
+    public boolean bindConfigurable(final IServiceReference serviceRef) {
+        ArgumentChecker.notNull(serviceRef, "serviceRef");
+
         String path = getFullPath();
+        if (this._configuableSvcs.containsKey(serviceRef.getQualifiedId())) {
+            if (this._value != null) {
+                return true;
+            }
+            return ((IConfigurable) serviceRef.getService()).isOptionalConfig(path);
+        }
+        IConfigurable cfg = ((IConfigurable) serviceRef.getService());
+        this._configuableSvcs.put(serviceRef.getQualifiedId(), new WeakReference<>(serviceRef));
         if (this._value != null) {
-            configurable.config(path, this._value);
+            cfg.config(path, this._value);
             return true;
         } else if (this._children.size() > 0) {
-            configurable.config(path, this._children);
+            cfg.config(path, this._children);
             return true;
         } else {
-            return configurable.isOptionalConfig(path);
+            return cfg.isOptionalConfig(path);
         }
     }
 
-    public boolean bindConfigurable(final String path, final IConfigurable configurable) {
+    public boolean bindConfigurable(final String path, final IServiceReference serviceRef) {
         ArgumentChecker.notEmpty(path, "path");
-        ArgumentChecker.notNull(configurable, "configurable");
+        ArgumentChecker.notNull(serviceRef, "serviceRef");
 
         Configuration config = getOrCreateChild(path);
-        return config.bindConfigurable(configurable);
+        return config.bindConfigurable(serviceRef);
     }
 
     public Configuration getChild(String key) {
@@ -211,5 +224,14 @@ public class Configuration {
             }
         }
         return config;
+    }
+
+    private void cleanNullReference() {
+        Iterator<Map.Entry<QualifiedServiceId, WeakReference<IServiceReference>>> it = this._configuableSvcs.entrySet().iterator();
+        while (it.hasNext()) {
+            if (it.next().getValue().get() == null) {
+                it.remove();
+            }
+        }
     }
 }

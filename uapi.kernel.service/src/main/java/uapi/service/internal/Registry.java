@@ -187,7 +187,7 @@ public class Registry implements IRegistry, IService, IInjectable {
                     Guarder.by(this._unsatisfiedLock).run(() -> {
                         // Check whether the new register service depends on existing service
                         Observable.from(this._unsatisfiedSvcs.values())
-                                .filter(existingSvc -> CollectionHelper.isContains(dependencyIds, existingSvc.getId()))
+                                .filter(existingSvc -> svcHolder.isDependsOn(existingSvc.getId()))
                                 .subscribe(svcHolder::setDependency);
                         // Check whether existing service depends on the new register service
                         Observable.from(this._unsatisfiedSvcs.values())
@@ -238,7 +238,7 @@ public class Registry implements IRegistry, IService, IInjectable {
     private final class SatisfyDecider implements ISatisfyHook {
 
         @Override
-        public boolean isSatisfied(Object service) {
+        public boolean isSatisfied(IServiceReference serviceRef) {
             boolean containsNull = false;
             boolean isSatisfied = true;
             for (WeakReference<ISatisfyHook> hookRef : Registry.this._satisfyHooks) {
@@ -247,7 +247,7 @@ public class Registry implements IRegistry, IService, IInjectable {
                     containsNull = true;
                     continue;
                 }
-                isSatisfied = hook.isSatisfied(service);
+                isSatisfied = hook.isSatisfied(serviceRef);
                 if (! isSatisfied) {
                     break;
                 }
