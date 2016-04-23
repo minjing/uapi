@@ -13,10 +13,7 @@ import uapi.helper.StringHelper;
 import uapi.service.*;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,14 +30,14 @@ public class Registry implements IRegistry, IService, IInjectable {
     private final SatisfyDecider _satisfyDecider;
     private final Multimap<String, ServiceHolder> _unsatisfiedSvcs;
     private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
-    private final List<IServiceLoader> _serviceLoaders;
+    private final Map<String, IServiceLoader> _serviceLoaders;
 
     public Registry() {
         this._unsatisfiedLock = new ReentrantLock();
         this._unsatisfiedSvcs = LinkedListMultimap.create();
         this._satisfyHooks = new CopyOnWriteArrayList<>();
         this._satisfyDecider = new SatisfyDecider();
-        this._serviceLoaders = new LinkedList<>();
+        this._serviceLoaders = new HashMap<>();
     }
 
     private volatile boolean _inited = false;
@@ -161,6 +158,21 @@ public class Registry implements IRegistry, IService, IInjectable {
                 .subscribe(ServiceHolder::tryInitService);
     }
 
+    @Override
+    public void registerServiceLoader(
+            final IServiceLoader serviceLoader) {
+        ArgumentChecker.notNull(serviceLoader, "serviceLoader");
+
+        String name = serviceLoader.getName();
+        IServiceLoader existing = this._serviceLoaders.putIfAbsent(name, serviceLoader);
+        if (existing != null) {
+            throw new InvalidArgumentException(
+                    "There has an service loader{} named {}",
+                    existing, name);
+        }
+
+    }
+
     int getCount() {
         return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
     }
@@ -211,27 +223,19 @@ public class Registry implements IRegistry, IService, IInjectable {
             this._satisfyHooks.add(new WeakReference<>(hook));
             return;
         }
-        if (IServiceLoader.class.getName().equals(injection.getId()) && injection.getObject() instanceof IServiceLoader) {
-            this._serviceLoaders.add((IServiceLoader) injection.getObject());
-            return;
-        }
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
     }
 
     @Override
     public String[] getDependentIds() {
         return new String[] {
-                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), IRegistry.LOCATION, IRegistry.FROM_LOCAL),
-                StringHelper.makeString("{}{}{}", IServiceLoader.class.getName(), IRegistry.LOCATION, IRegistry.FROM_LOCAL)
+                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), IRegistry.LOCATION, IRegistry.FROM_LOCAL)
         };
     }
 
     @Override
     public boolean isOptional(String id) throws InvalidArgumentException {
         if (ISatisfyHook.class.getName().equals(id)) {
-            return true;
-        }
-        if (IServiceLoader.class.getName().equals(id)) {
             return true;
         }
         throw new InvalidArgumentException("The Registry does not depends on service {}", id);

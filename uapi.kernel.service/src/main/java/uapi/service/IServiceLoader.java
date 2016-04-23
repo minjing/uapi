@@ -7,5 +7,5 @@ public interface IServiceLoader {
 
     String getName();
 
-    void prepareLoad(final String serviceId);
+    void request(final String serviceId);
 }

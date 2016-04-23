@@ -1,8 +1,7 @@
 package uapi.config;
 
 /**
- * A parser used to parse configured input to output
- *
+ * A parser used to parse configured value to specified type
  */
 public interface IConfigValueParser {
 

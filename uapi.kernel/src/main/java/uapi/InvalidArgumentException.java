@@ -1,5 +1,8 @@
 package uapi;
 
+/**
+ * The exception indicate the input argument is invalid
+ */
 public class InvalidArgumentException extends KernelException {
 
     private static final long serialVersionUID = -1108366334118915560L;

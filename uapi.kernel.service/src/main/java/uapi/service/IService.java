@@ -1,11 +1,9 @@
 package uapi.service;
 
-import uapi.InvalidArgumentException;
-import uapi.KernelException;
 import uapi.annotation.Type;
 
 /**
- * Created by min on 16/2/22.
+ * Implement this interface will indicate the object is managed by framework
  */
 public interface IService {
 

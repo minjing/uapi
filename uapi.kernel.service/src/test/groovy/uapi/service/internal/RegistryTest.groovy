@@ -4,9 +4,7 @@ import spock.lang.Specification
 import uapi.service.IRegistry
 import uapi.service.ISatisfyHook
 import uapi.service.IService
-import uapi.service.IWatcher
 import uapi.service.Injection
-import uapi.service.annotation.Inject
 
 /**
  * Test case for Registry

@@ -6,7 +6,7 @@ import uapi.annotation.MethodMeta;
 import uapi.helper.ArgumentChecker;
 
 /**
- * Created by xquan on 2/19/2016.
+ * A meta of a setter
  */
 public class SetterMeta extends MethodMeta {
 

@@ -1,11 +1,17 @@
 package uapi.app;
 
 /**
- * Created by min on 16/3/11.
+ * The IAppLifecycle contains some callback methods which will be invoked by application lifecycle
  */
 public interface IAppLifecycle {
 
+    /**
+     * Invoked when application is started
+     */
     void onStarted();
 
+    /**
+     * Invoked when application is stopped
+     */
     void onStopped();
 }

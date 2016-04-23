@@ -25,8 +25,6 @@ import java.util.Map;
 @Service({ ICliConfigProvider.class })
 public class CliConfigProvider implements ICliConfigProvider {
 
-    public static final String DEFAULT_OPTION_PREFIX           = "-";
-    public static final String DEFAULT_OPTION_VALUE_SEPARATOR  = "=";
     public static final String QUALIFY                         = "cli.";
 
     @Inject

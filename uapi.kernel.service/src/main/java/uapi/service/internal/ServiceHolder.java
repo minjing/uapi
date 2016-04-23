@@ -153,6 +153,12 @@ class ServiceHolder implements IServiceReference {
         return false;
     }
 
+    List<String> getUnresolvedServices(String from) {
+        ArgumentChecker.notEmpty(from, "from");
+//        Observable.from(this._dependencies.entries())
+        return null;
+    }
+
     boolean isInited() {
         return this._stateManagement._state == State.Initialized;
     }

@@ -1,5 +1,8 @@
 package uapi.helper;
 
+/**
+ * A changeable boolean object
+ */
 public class ChangeableBoolean {
 
     private boolean _value;

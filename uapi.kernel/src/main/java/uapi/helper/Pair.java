@@ -3,12 +3,29 @@ package uapi.helper;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
 
+/**
+ * A pair contains two values
+ *
+ * @param   <LT>
+ *          left value type
+ * @param   <RT>
+ *          right value type
+ */
 public class Pair<LT, RT> {
 
     private final LT _lValue;
 
     private final RT _rValue;
 
+    /**
+     * Split a string by specific separator and using it to construct a Pair instance
+     *
+     * @param   combined
+     *          The combined string which used to split
+     * @param   separator
+     *          The separator
+     * @return  A Pair instance
+     */
     public static Pair<String, String> splitTo(String combined, String separator) {
         ArgumentChecker.notEmpty(combined, "combined");
         ArgumentChecker.notEmpty(separator, "separator");

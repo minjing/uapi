@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+/**
+ * Some useful function for collection
+ */
 public final class CollectionHelper {
 
     public static final Object[] emptyArray = new Object[0];
@@ -18,14 +21,20 @@ public final class CollectionHelper {
     }
 
     /**
-     * Check whether the collection contains one of specified elements.
+     * Check whether the collection contains one of specified elements and
+     * return matched element or null if nothing is matched
      *
-     * @param collection
-     * @param elements
-     * @param <T>
-     * @return
+     * @param   collection
+     *          The collection which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  Matched element or null if nothing is matched
      */
-    public static <T> T contains(Collection<T> collection, T... elements) {
+    public static <T> T contains(
+            final Collection<T> collection,
+            final T... elements) {
         ArgumentChecker.notNull(collection, "collection");
         for (T element : elements) {
             if (collection.contains(element)) {
@@ -35,7 +44,21 @@ public final class CollectionHelper {
         return null;
     }
 
-    public static <T> T contains(T[] array, T... elements) {
+    /**
+     * Check whether the array contains on of specified elements and return matched
+     * element or null if nothing is matched
+     *
+     * @param   array
+     *          The array which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  Matched element of null if nothing is matched
+     */
+    public static <T> T contains(
+            final T[] array,
+            final T... elements) {
         ArgumentChecker.notNull(array, "array");
         for (T element : elements) {
             for (T item : array) {
@@ -47,7 +70,23 @@ public final class CollectionHelper {
         return null;
     }
 
-    public static <T> T strictContains(Collection<T> collection, T... elements) {
+    /**
+     * Check whether the collection contains one of specified elements and
+     * return matched element or null if nothing is matched
+     * The method using strict matching which mean using compared object must
+     * is same object (same object address)
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  Matched element or null if nothing is matched
+     */
+    public static <T> T strictContains(
+            final Collection<T> collection,
+            final T... elements) {
         ArgumentChecker.notNull(collection, "collection");
         for (T element : elements) {
             for (T item : collection) {
@@ -59,7 +98,23 @@ public final class CollectionHelper {
         return null;
     }
 
-    public static <T> T strictContains(T[] array, T... elements) {
+    /**
+     * Check whether the array contains on of specified elements and return matched
+     * element or null if nothing is matched
+     * The method using strict matching which mean using compared object must
+     * is same object (same object address)
+     *
+     * @param   array
+     *          The array which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  Matched element of null if nothing is matched
+     */
+    public static <T> T strictContains(
+            final T[] array,
+            final T... elements) {
         ArgumentChecker.notNull(array, "array");
         for (T element : elements) {
             for (T item : array) {
@@ -71,27 +126,104 @@ public final class CollectionHelper {
         return null;
     }
 
-    public static <T> boolean isContains(Collection<T> collection, T... elements) {
+    /**
+     * Check specified collection contains one specified elements
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   elements
+     *          The elements which used for element matching
+     * @param   <T>
+     *          The element type
+     * @return  True the collection contains one otherwise return false
+     */
+    public static <T> boolean isContains(
+            final Collection<T> collection,
+            final T... elements) {
         return contains(collection, elements) != null;
     }
 
-    public static <T> boolean isContains(T[] array, T... elements) {
+    /**
+     * Check specified array contains one specified elements
+     *
+     * @param   array
+     *          The array which will be checked
+     * @param   elements
+     *          The elements which used for element matching
+     * @param   <T>
+     *          The element type
+     * @return  True means the array contains one otherwise return false
+     */
+    public static <T> boolean isContains(
+            final T[] array,
+            final T... elements) {
         return contains(array, elements) != null;
     }
 
-    public static <T> boolean isStrictContains(Collection<T> collection, T... elements) {
+    /**
+     * Check specified collection contains one specified elements
+     * The method using strict matching which mean using compared object must
+     * is same object (same object address)
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   elements
+     *          The elements which used for element matching
+     * @param   <T>
+     *          The element type
+     * @return  True the collection contains one otherwise return false
+     */
+    public static <T> boolean isStrictContains(
+            final Collection<T> collection,
+            final T... elements) {
         return strictContains(collection, elements) != null;
     }
 
-    public static <T> boolean isStrictContains(T[] array, T... elements) {
+    /**
+     * Check specified array contains one specified elements
+     * The method using strict matching which mean using compared object must
+     * is same object (same object address)
+     *
+     * @param   array
+     *          The array which will be checked
+     * @param   elements
+     *          The elements which used for element matching
+     * @param   <T>
+     *          The element type
+     * @return  True means the array contains one otherwise return false
+     */
+    public static <T> boolean isStrictContains(
+            final T[] array,
+            final T... elements) {
         return strictContains(array, elements) != null;
     }
 
-    public static String asString(Object[] array) {
+    /**
+     * Convert an array to a string, each array element will be construct with
+     * {@code DEFAULT_SEPARATOR}
+     *
+     * @param   array
+     *          The array
+     * @return  The string
+     */
+    public static String asString(
+            final Object[] array) {
         return asString(array, DEFAULT_SEPARATOR);
     }
 
-    public static String asString(Object[] array, String separator) {
+    /**
+     * Convert an array to a string, each array element wil be construct with specified
+     * separator
+     *
+     * @param   array
+     *          The array
+     * @param   separator
+     *          The separator
+     * @return  The string
+     */
+    public static String asString(
+            final Object[] array,
+            final String separator) {
         if (array == null || array.length == 0) {
             return StringHelper.EMPTY;
         }
@@ -101,7 +233,19 @@ public final class CollectionHelper {
         return sb.deleteCharAt(sb.length() - sepLen).toString();
     }
 
-    public static String asString(Collection collection, String separator) {
+    /**
+     * Convert an collection to a string, each collection element wil be construct with specified
+     * separator
+     *
+     * @param   collection
+     *          The collection
+     * @param   separator
+     *          The separator
+     * @return  The string
+     */
+    public static String asString(
+            final Collection collection,
+            final String separator) {
         if (collection.size() == 0) {
             return StringHelper.EMPTY;
         }
@@ -112,6 +256,15 @@ public final class CollectionHelper {
         return sb.deleteCharAt(sb.length() - sepLen).toString();
     }
 
+    /**
+     * Compare two list, make sure two list has same item and same order
+     *
+     * @param   l1
+     *          First list which will be compared
+     * @param   l2
+     *          Second list which will be compared
+     * @return  true means two list is equals otherwise return false
+     */
     public static boolean equals(List l1, List l2) {
         if (l1 == l2) {
             return true;
@@ -139,6 +292,15 @@ public final class CollectionHelper {
         return true;
     }
 
+    /**
+     * Compare two Set, make sure two set has same item
+     *
+     * @param   s1
+     *          First set which will be compared
+     * @param   s2
+     *          Second set which will be compared
+     * @return  true means two set is equals otherwise return false
+     */
     public static boolean equals(Set s1, Set s2) {
         if (s1 == s2) {
             return true;

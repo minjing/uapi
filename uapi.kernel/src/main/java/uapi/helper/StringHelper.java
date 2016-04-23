@@ -112,20 +112,4 @@ public final class StringHelper {
         }
         return new String(target);
     }
-
-//    public static String[] split(final String source, final char separator) {
-//        ArgumentChecker.notEmpty(source, "source");
-//        List<String> result = new ArrayList<>();
-//        StringBuilder buffer = new StringBuilder();
-//        for (int i = 0; i < source.length(); i++) {
-//            char c = source.charAt(0);
-//            if (c == separator && buffer.length() > 0) {
-//                result.add(buffer.toString());
-//                buffer.delete(0, buffer.length() - 1);
-//            } else {
-//                buffer.append(c);
-//            }
-//        }
-//        return result.toArray(new String[result.size()]);
-//    }
 }

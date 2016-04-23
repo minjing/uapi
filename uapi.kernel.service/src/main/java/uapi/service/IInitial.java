@@ -1,13 +1,12 @@
 package uapi.service;
 
 /**
- * Created by min on 16/2/25.
+ * Implement this interface will indicate the object can be initialized
  */
 public interface IInitial {
 
+    /**
+     * Initialize the object instance
+     */
     void init();
-
-//    default boolean lazy() {
-//        return true;
-//    }
 }
