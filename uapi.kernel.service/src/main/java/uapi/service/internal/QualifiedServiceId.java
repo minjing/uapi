@@ -4,15 +4,31 @@ import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
 import uapi.helper.StringHelper;
-import uapi.service.IRegistry;
 
 /**
  * The QualifiedServiceId indicate service id and where is the service from
  */
 public class QualifiedServiceId extends Pair<String, String> {
 
+    /**
+     * The separator used to separate service id and service from
+     * Like service@location
+     */
+    public static final String LOCATION     = "@";
+
+    /**
+     * Indicate the service can be matched any location, normally
+     * the {@code Inject} annotation can indicate where is the location of the request service
+     */
+    public static final String FROM_ANY     = "Any";
+
+    /**
+     * Indicate the service is from local
+     */
+    public static final String FROM_LOCAL   = "Local";
+
     public static QualifiedServiceId splitTo(String combined) {
-        return splitTo(combined, IRegistry.LOCATION);
+        return splitTo(combined, LOCATION);
     }
 
     public static QualifiedServiceId splitTo(String combined, String separator) {
@@ -55,7 +71,7 @@ public class QualifiedServiceId extends Pair<String, String> {
         if (getFrom().equals(qsId.getFrom())) {
             return true;
         }
-        if (qsId.getFrom().equals(IRegistry.FROM_ANY)) {
+        if (qsId.getFrom().equals(FROM_ANY)) {
             return true;
         }
         return false;

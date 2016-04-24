@@ -127,10 +127,10 @@ class RegistryTest extends Specification {
         registry.register(svc1, svc2)
 
         then:
-        registry.findService("1", IRegistry.FROM_LOCAL) == svc1
-        registry.findService("2", IRegistry.FROM_LOCAL) == svc1
-        registry.findService("3", IRegistry.FROM_LOCAL) == svc2
-        registry.findService("4", IRegistry.FROM_LOCAL) == svc2
+        registry.findService("1", QualifiedServiceId.FROM_LOCAL) == svc1
+        registry.findService("2", QualifiedServiceId.FROM_LOCAL) == svc1
+        registry.findService("3", QualifiedServiceId.FROM_LOCAL) == svc2
+        registry.findService("4", QualifiedServiceId.FROM_LOCAL) == svc2
         registry.getCount() == 4
     }
 }

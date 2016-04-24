@@ -26,9 +26,9 @@ class ServiceHolderTest extends Specification {
         holder.inited == inited
 
         where:
-        serviceId   | from                  | service           | resolved  | inited
-        "1"         | IRegistry.FROM_LOCAL  | Mock(Object)      | true      | false
-        "2"         | IRegistry.FROM_LOCAL  | Mock(IService)    | true      | false
+        serviceId   | from                          | service           | resolved  | inited
+        "1"         | QualifiedServiceId.FROM_LOCAL | Mock(Object)      | true      | false
+        "2"         | QualifiedServiceId.FROM_LOCAL | Mock(IService)    | true      | false
     }
 
     def "Test init service on a normal service"() {
@@ -47,9 +47,9 @@ class ServiceHolderTest extends Specification {
 //        holder.inited == inited
 
         where:
-        serviceId   | from                  | service           | resolved  | inited
-        "1"         | IRegistry.FROM_LOCAL  | Mock(Object)      | true      | true
-        "2"         | IRegistry.FROM_LOCAL  | Mock(IService)    | true      | true
+        serviceId   | from                          | service           | resolved  | inited
+        "1"         | QualifiedServiceId.FROM_LOCAL | Mock(Object)      | true      | true
+        "2"         | QualifiedServiceId.FROM_LOCAL | Mock(IService)    | true      | true
     }
 
         def "Test init service which is IInitial instance"() {
@@ -69,8 +69,8 @@ class ServiceHolderTest extends Specification {
         1 * initialSvc.init()
 
         where:
-        serviceId   | from                  | resolved  | inited
-        "3"         | IRegistry.FROM_LOCAL  | true      | true
+        serviceId   | from                          | resolved  | inited
+        "3"         | QualifiedServiceId.FROM_LOCAL | true      | true
     }
 
     def "Test service with dependency"() {
@@ -87,8 +87,8 @@ class ServiceHolderTest extends Specification {
         holder.id == serviceId
 
         where:
-        serviceId   | from                  | resolved  | inited    | dependId
-        "1"         | IRegistry.FROM_LOCAL  | false     | false     | "dep01"
+        serviceId   | from                          | resolved  | inited    | dependId
+        "1"         | QualifiedServiceId.FROM_LOCAL | false     | false     | "dep01"
     }
 /*
     def "Test set service dependency"() {

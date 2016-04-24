@@ -2,6 +2,7 @@ package uapi.service.annotation;
 
 import uapi.helper.StringHelper;
 import uapi.service.IRegistry;
+import uapi.service.internal.QualifiedServiceId;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,5 +23,5 @@ public @interface Inject {
      *
      * @return  Injected service from
      */
-    String from() default IRegistry.FROM_ANY;
+    String from() default QualifiedServiceId.FROM_ANY;
 }

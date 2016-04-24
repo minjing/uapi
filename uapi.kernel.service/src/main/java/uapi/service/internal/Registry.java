@@ -77,7 +77,7 @@ public class Registry implements IRegistry, IService, IInjectable {
             final Object service,
             final String... serviceIds
     ) throws InvalidArgumentException {
-        register(FROM_LOCAL, service, serviceIds);
+        register(QualifiedServiceId.FROM_LOCAL, service, serviceIds);
     }
 
     @Override
@@ -181,7 +181,7 @@ public class Registry implements IRegistry, IService, IInjectable {
             final IService svc) {
         final String[] svcIds = svc.getIds();
         final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
-        registerService(FROM_LOCAL, svc, svcIds, dependencyIds);
+        registerService(QualifiedServiceId.FROM_LOCAL, svc, svcIds, dependencyIds);
     }
 
     private void registerService(
@@ -229,7 +229,8 @@ public class Registry implements IRegistry, IService, IInjectable {
     @Override
     public String[] getDependentIds() {
         return new String[] {
-                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), IRegistry.LOCATION, IRegistry.FROM_LOCAL)
+                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(),
+                        QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL)
         };
     }
 

@@ -12,23 +12,6 @@ import java.util.List;
 public interface IRegistry extends IInitial {
 
     /**
-     * The separator used to separate service id and service from
-     * Like service@location
-     */
-    String LOCATION     = "@";
-
-    /**
-     * Indicate the service can be matched any location, normally
-     * the {@code Inject} annotation can indicate where is the location of the request service
-     */
-    String FROM_ANY     = "Any";
-
-    /**
-     * Indicate the service is from local
-     */
-    String FROM_LOCAL   = "Local";
-
-    /**
      * Register a local service
      *
      * @param   service

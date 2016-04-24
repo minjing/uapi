@@ -58,7 +58,7 @@ class ServiceHolder implements IServiceReference {
         this._stateMonitors = new LinkedList<>();
 
         Observable.from(dependencies)
-                .map(dependency -> QualifiedServiceId.splitTo(dependency, IRegistry.LOCATION))
+                .map(dependency -> QualifiedServiceId.splitTo(dependency, QualifiedServiceId.LOCATION))
                 .subscribe(pair -> this._dependencies.put(pair, null));
 
         // Create StateMonitor here since it need read dependencies information.
@@ -132,13 +132,13 @@ class ServiceHolder implements IServiceReference {
     private QualifiedServiceId findDependentId(QualifiedServiceId qsId) {
         return Observable.from(this._dependencies.keySet())
                 .filter(dpendQsvcId -> dpendQsvcId.getId().equals(qsId.getId()))
-                .filter(dpendQsvcId -> dpendQsvcId.getFrom().equals(IRegistry.FROM_ANY) || dpendQsvcId.equals(qsId))
+                .filter(dpendQsvcId -> dpendQsvcId.getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.equals(qsId))
                 .toBlocking().firstOrDefault(null);
     }
 
     boolean isDependsOn(final String serviceId) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
-        return isDependsOn(new QualifiedServiceId(serviceId, IRegistry.FROM_LOCAL));
+        return isDependsOn(new QualifiedServiceId(serviceId, QualifiedServiceId.FROM_LOCAL));
     }
 
     boolean isDependsOn(QualifiedServiceId qualifiedServiceId) {
@@ -199,7 +199,7 @@ class ServiceHolder implements IServiceReference {
 
         public void onInitialized(final QualifiedServiceId qsId) {
             if (this._dependencyStatus.put(qsId, true) == null) {
-                if (this._dependencyStatus.remove(new QualifiedServiceId(qsId.getId(), IRegistry.FROM_ANY)) == null) {
+                if (this._dependencyStatus.remove(new QualifiedServiceId(qsId.getId(), QualifiedServiceId.FROM_ANY)) == null) {
                     throw new InvalidArgumentException("The service {} does not depends on {}",
                             ServiceHolder.this._qualifiedSvcId, qsId);
                 }

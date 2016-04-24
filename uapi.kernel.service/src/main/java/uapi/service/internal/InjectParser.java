@@ -133,7 +133,7 @@ class InjectParser {
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
             List<String> dependentIds = setterBuilders.parallelStream()
                     .map(builder -> (SetterMeta.Builder) builder)
-                    .map(setterBuilder -> setterBuilder.getInjectId() + IRegistry.LOCATION + setterBuilder.getInjectFrom())
+                    .map(setterBuilder -> setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom())
                     .collect(Collectors.toList());
             // Check duplicated dependency
             dependentIds.stream()
