@@ -77,6 +77,16 @@ public class QualifiedServiceId extends Pair<String, String> {
         return false;
     }
 
+    public boolean canFrom(final String from) {
+        ArgumentChecker.notEmpty(from, "from");
+        if (getFrom().equals(FROM_ANY)) {
+            return true;
+        } else if (getFrom().equals(from)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return StringHelper.makeString("{}@{}", getId(), getFrom());

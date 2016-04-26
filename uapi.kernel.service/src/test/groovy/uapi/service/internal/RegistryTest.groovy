@@ -1,9 +1,11 @@
 package uapi.service.internal
 
 import spock.lang.Specification
+import uapi.service.IInjectable
 import uapi.service.IRegistry
 import uapi.service.ISatisfyHook
 import uapi.service.IService
+import uapi.service.IServiceLoader
 import uapi.service.Injection
 
 /**
@@ -132,5 +134,30 @@ class RegistryTest extends Specification {
         registry.findService("3", QualifiedServiceId.FROM_LOCAL) == svc2
         registry.findService("4", QualifiedServiceId.FROM_LOCAL) == svc2
         registry.getCount() == 4
+    }
+
+    static interface IInjectableService extends IService, IInjectable {}
+
+    def 'Test getUnresolvedServices method'() {
+        def svc = Mock(IInjectableService) {
+            getIds() >> ["1"]
+            getDependentIds() >> [dependQSvcId]
+        }
+        def svcLoader = Mock(IServiceLoader) {
+            getName() >> "Test"
+            load(dependSvcId) >> dependSvc
+        }
+
+        when:
+        registry.register(svc)
+        registry.registerServiceLoader(svcLoader)
+
+        then:
+        1 * svcLoader.load(dependSvcId)
+
+        where:
+        dependSvcId     | dependQSvcId  | dependSvc
+        'd1'            | 'd1@Test'     | 'abc'
+        'd2'            | 'd2@Any'      | 'abc'
     }
 }

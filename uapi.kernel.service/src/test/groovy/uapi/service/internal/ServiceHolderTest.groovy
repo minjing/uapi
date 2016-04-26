@@ -22,7 +22,6 @@ class ServiceHolderTest extends Specification {
         expect:
         holder.id == serviceId
         holder.service == service
-//        holder.isSatisfied() == resolved
         holder.inited == inited
 
         where:
@@ -33,9 +32,10 @@ class ServiceHolderTest extends Specification {
 
     def "Test init service on a normal service"() {
         given:
-        ISatisfyHook mockHook = Mock(ISatisfyHook)
+        ISatisfyHook mockHook = Mock(ISatisfyHook) {
+            isSatisfied(_) >> true
+        }
         ServiceHolder holder = new ServiceHolder(from, service, serviceId, mockHook)
-        mockHook.isSatisfied(service) >> true
 
         when:
         holder.tryInitService()
@@ -43,8 +43,7 @@ class ServiceHolderTest extends Specification {
         then:
         holder.id == serviceId
         holder.service == service
-//        holder.isSatisfied() == resolved
-//        holder.inited == inited
+        holder.inited == inited
 
         where:
         serviceId   | from                          | service           | resolved  | inited
@@ -55,14 +54,14 @@ class ServiceHolderTest extends Specification {
         def "Test init service which is IInitial instance"() {
         given:
         IInitial initialSvc = Mock(IInitial)
-        ISatisfyHook mockHook = Mock(ISatisfyHook)
+        ISatisfyHook mockHook = Mock(ISatisfyHook) {
+            isSatisfied(_) >> true;
+        }
         ServiceHolder holder = new ServiceHolder(from, initialSvc, serviceId, mockHook)
-        mockHook.isSatisfied(holder) >> true
 
         when:
         holder.id == serviceId
         holder.service == initialSvc
-//        holder.isSatisfied() == resolved
         holder.tryInitService()
 
         then:
@@ -90,17 +89,18 @@ class ServiceHolderTest extends Specification {
         serviceId   | from                          | resolved  | inited    | dependId
         "1"         | QualifiedServiceId.FROM_LOCAL | false     | false     | "dep01"
     }
-/*
+
     def "Test set service dependency"() {
         given:
         IInjectable injectableSvc = Mock(IInjectable)
         ServiceHolder dependSvc = Mock(ServiceHolder) {
-            getId() >> 'dep01@Local'
-            isSatisfied() >> true
+            getId() >> 'dep01'
+            getQualifiedId() >> QualifiedServiceId.splitTo('dep01@Local')
             getService() >> new Object()
+            tryInitService() >> true
         }
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
-            isSatisfied(injectableSvc) >> true
+            isSatisfied(_) >> true
         }
         ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
 
@@ -110,13 +110,12 @@ class ServiceHolderTest extends Specification {
 
         then:
         holder.id == serviceId
-        holder.satisfied == resolved
         holder.inited == inited
         1 * injectableSvc.injectObject(_)
 
         where:
-        serviceId   | from                  | resolved  | inited
-        "1"         | IRegistry.FROM_LOCAL  | true      | true
+        serviceId   | from                          | resolved  | inited
+        "1"         | QualifiedServiceId.FROM_LOCAL | true      | true
     }
 
     def "Test depends on a service factory"() {
@@ -126,12 +125,13 @@ class ServiceHolderTest extends Specification {
             createService(injectableSvc) >> new Object()
         }
         ServiceHolder dependSvc = Mock(ServiceHolder) {
-            getId() >> 'dep01@Local'
-            isSatisfied() >> true
+            getId() >> 'dep01'
+            getQualifiedId() >> QualifiedServiceId.splitTo('dep01@Local')
             getService() >> svcFactory
+            tryInitService() >> true
         }
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
-            isSatisfied(injectableSvc) >> true
+            isSatisfied(_) >> true
         }
         ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
 
@@ -141,13 +141,32 @@ class ServiceHolderTest extends Specification {
 
         then:
         holder.id == serviceId
-        holder.satisfied == resolved
         holder.inited == inited
         1 * injectableSvc.injectObject(_)
 
         where:
-        serviceId   | from                  | resolved  | inited
-        "1"         | IRegistry.FROM_LOCAL  | true      | true
+        serviceId   | from                          | resolved  | inited
+        "1"         | QualifiedServiceId.FROM_LOCAL | true      | true
     }
-    */
+
+    def "Test getUnresolvedServices method"() {
+        given:
+        IInjectable injectableSvc = Mock(IInjectable)
+        ISatisfyHook mockHook = Mock(ISatisfyHook) {
+            isSatisfied(_) >> true
+        }
+        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
+
+        when:
+        holder.tryInitService()
+
+        then:
+        holder.id == serviceId
+        holder.inited == inited
+        holder.getUnresolvedServices('Local') == ['dep01']
+
+        where:
+        serviceId   | from                          | inited
+        "1"         | QualifiedServiceId.FROM_LOCAL | false
+    }
 }

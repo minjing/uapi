@@ -1,11 +1,11 @@
 package uapi.service;
 
 /**
- * A service loader take a role to load external service
+ * A service loader used to load external service
  */
 public interface IServiceLoader {
 
     String getName();
 
-    void request(final String serviceId);
+    <T> T load(final String serviceId);
 }

@@ -89,10 +89,6 @@ class ServiceHolder implements IServiceReference {
         this._stateManagement.goon();
     }
 
-    QualifiedServiceId getQualifiedServiceId() {
-        return this._qualifiedSvcId;
-    }
-
     void start() {
         this._started = true;
         this._stateManagement.goon();
@@ -112,11 +108,11 @@ class ServiceHolder implements IServiceReference {
     void setDependency(ServiceHolder service) {
         ArgumentChecker.notNull(service, "service");
 
-        if (! isDependsOn(service.getQualifiedServiceId())) {
+        if (! isDependsOn(service.getQualifiedId())) {
             throw new KernelException("The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
         }
         // remove null entry first
-        QualifiedServiceId qsvcId = findDependentId(service.getQualifiedServiceId());
+        QualifiedServiceId qsvcId = findDependentId(service.getQualifiedId());
         if (qsvcId == null) {
             throw new KernelException("The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
         }
@@ -155,12 +151,21 @@ class ServiceHolder implements IServiceReference {
 
     List<String> getUnresolvedServices(String from) {
         ArgumentChecker.notEmpty(from, "from");
-//        Observable.from(this._dependencies.entries())
-        return null;
+        List<String> ids = Observable.from(this._dependencies.entries())
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .filter(qsId -> qsId.canFrom(from))
+                .map(QualifiedServiceId::getId)
+                .toList().toBlocking().first();
+        return ids;
     }
 
     boolean isInited() {
         return this._stateManagement._state == State.Initialized;
+    }
+
+    boolean isUninited() {
+        return this._stateManagement._state != State.Initialized;
     }
 
     boolean tryInitService() {

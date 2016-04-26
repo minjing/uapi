@@ -3,6 +3,10 @@ dependencies {
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
     compile project(':uapi.config')
+
+    compile (
+            "org.springframework:spring-context:${spring_version}"
+    )
 }
 
 jar {

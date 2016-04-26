@@ -171,6 +171,15 @@ public class Registry implements IRegistry, IService, IInjectable {
                     existing, name);
         }
 
+        Observable.from(this._unsatisfiedSvcs.values())
+                .filter(ServiceHolder::isUninited)
+                .flatMap(serviceHolder -> Observable.from(serviceHolder.getUnresolvedServices(name)))
+                .subscribe(svcId -> {
+                    Object svc = serviceLoader.load(svcId);
+                    if (svc != null) {
+                        this.register(name, svc, svcId);
+                    }
+                });
     }
 
     int getCount() {
