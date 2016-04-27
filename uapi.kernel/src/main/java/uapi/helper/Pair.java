@@ -69,7 +69,6 @@ public class Pair<LT, RT> {
 
         if (!_lValue.equals(pair._lValue)) return false;
         return _rValue.equals(pair._rValue);
-
     }
 
     @Override

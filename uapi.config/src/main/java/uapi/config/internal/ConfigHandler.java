@@ -64,7 +64,7 @@ public class ConfigHandler extends AnnotationsHandler {
             Element svcRegElem = builderContext.findFieldWith(classElement, IRegistry.class, Inject.class);
             if (svcRegElem == null) {
                 throw new KernelException(
-                        "The {} must defined an field with type {} and annotated with {}",
+                        "The {} must define a field with type {} and annotated with {}",
                         classElement, IRegistry.class.getName(), Inject.class.getName());
             }
             String svcRegFieldName = svcRegElem.getSimpleName().toString();

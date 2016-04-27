@@ -1,0 +1,14 @@
+dependencies {
+    compile project(':uapi.kernel')
+    compile project(':uapi.kernel.annotation')
+    compile project(':uapi.kernel.service')
+    compile project(':uapi.config')
+
+    compile (
+        "org.eclipse.jetty:jetty-server:${jetty_version}"
+    )
+}
+
+jar {
+    manifest.attributes
+}

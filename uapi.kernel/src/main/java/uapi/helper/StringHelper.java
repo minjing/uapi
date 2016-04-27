@@ -5,6 +5,9 @@ import rx.Observable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -111,5 +114,23 @@ public final class StringHelper {
             target[k++] = HEX_DIGITS[sbyte & MASK_F];
         }
         return new String(target);
+    }
+
+    public static String firstLine(String str) {
+        ArgumentChecker.notNull(str, "str");
+        BufferedReader br = new BufferedReader(new StringReader(str));
+        String line = "";
+        try {
+            line = br.readLine();
+        } catch (IOException ex) {
+            throw new InvalidArgumentException("Can't read input string - {}", str);
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+                throw new KernelException("Close string reader failed");
+            }
+        }
+        return line == null ? StringHelper.EMPTY : line;
     }
 }
