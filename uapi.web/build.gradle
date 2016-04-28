@@ -5,7 +5,8 @@ dependencies {
     compile project(':uapi.config')
 
     compile (
-        "org.eclipse.jetty:jetty-server:${jetty_version}"
+            "org.eclipse.jetty:jetty-server:${jetty_version}",
+            "org.eclipse.jetty:jetty-servlet:${jetty_version}"
     )
 }
 
