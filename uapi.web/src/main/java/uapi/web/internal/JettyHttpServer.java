@@ -15,6 +15,7 @@ import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 import uapi.web.IHttpServer;
+import uapi.web.IWebConfigurableKey;
 import uapi.web.MappableHttpServlet;
 
 import javax.servlet.http.HttpServlet;
@@ -27,13 +28,13 @@ import java.util.List;
 @Service
 public class JettyHttpServer implements IHttpServer {
 
-    @Config(path="server.http.host")
+    @Config(path=IWebConfigurableKey.SERVER_HTTP_HOST)
     String _host;
 
-    @Config(path="server.http.port")
+    @Config(path=IWebConfigurableKey.SERVER_HTTP_PORT)
     int _port;
 
-    @Config(path="server.http.idle-timeout", optional=true)
+    @Config(path=IWebConfigurableKey.SERVER_HTTP_IDLE_TIMEOUT, optional=true)
     long _idleTimeout = 3000L;
 
     @Inject
