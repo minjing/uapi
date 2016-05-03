@@ -29,6 +29,7 @@ public class ConfigHandler extends AnnotationsHandler {
 
     private static final String CONFIG_INFOS                = "ConfigInfos";
     private static final String FIELD_SVC_REG               = "FieldServiceRegistry";
+    private static final String IS_FIELD_SVC_REG_DEFINED    = "IsFieldServiceRegistryDefined";
 
     private static final String TEMPLATE_GET_PATHS          = "template/getPaths_method.ftl";
     private static final String TEMPLATE_IS_OPTIONAL_CONFIG = "template/isOptionalConfig_method.ftl";
@@ -62,15 +63,22 @@ public class ConfigHandler extends AnnotationsHandler {
 
             // Get field which is reference IRegistry instance
             Element svcRegElem = builderContext.findFieldWith(classElement, IRegistry.class, Inject.class);
-            if (svcRegElem == null) {
-                throw new KernelException(
-                        "The {} must define a field with type {} and annotated with {}",
-                        classElement, IRegistry.class.getName(), Inject.class.getName());
+//            if (svcRegElem == null) {
+//                throw new KernelException(
+//                        "The {} must define a field with type {} and annotated with {}",
+//                        classElement, IRegistry.class.getName(), Inject.class.getName());
+//            }
+            String svcRegFieldName = "_registry";
+            boolean isSvcRegFieldDefined = false;
+            if (svcRegElem != null) {
+                svcRegFieldName = svcRegElem.getSimpleName().toString();
+                isSvcRegFieldDefined = true;
             }
-            String svcRegFieldName = svcRegElem.getSimpleName().toString();
+//            String svcRegFieldName = svcRegElem.getSimpleName().toString();
 
             ClassMeta.Builder classBuilder = builderContext.findClassBuilder(classElement);
             classBuilder.putTransience(FIELD_SVC_REG, svcRegFieldName);
+            classBuilder.putTransience(IS_FIELD_SVC_REG_DEFINED, isSvcRegFieldDefined);
             List<ConfigInfo> cfgInfos = classBuilder.getTransience(CONFIG_INFOS);
             if (cfgInfos == null) {
                 cfgInfos = new ArrayList<>();
@@ -98,12 +106,22 @@ public class ConfigHandler extends AnnotationsHandler {
         Observable.from(builderContext.getBuilders()).subscribe(classBuilder -> {
             List<ConfigInfo> configInfos = classBuilder.getTransience(CONFIG_INFOS);
             String fieldSvcReg = classBuilder.getTransience(FIELD_SVC_REG);
+            Boolean isFieldSvcRegDef = classBuilder.getTransience(IS_FIELD_SVC_REG_DEFINED);
             if (configInfos == null) {
                 return;
             }
             Map<String, Object> tempModel = new HashMap<>();
             tempModel.put("configInfos", configInfos);
             tempModel.put("fieldSvcReg", fieldSvcReg);
+
+            if (! isFieldSvcRegDef) {
+                classBuilder
+                        .addFieldBuilder(FieldMeta.builder()
+                                .addModifier(Modifier.PRIVATE)
+                                .setTypeName(IRegistry.class.getCanonicalName())
+                                .setName(fieldSvcReg)
+                                .setIsList(false));
+            }
             classBuilder
                     .addImplement(IConfigurable.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()

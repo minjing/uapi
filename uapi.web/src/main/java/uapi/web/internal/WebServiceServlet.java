@@ -1,7 +1,8 @@
 package uapi.web.internal;
 
-import uapi.service.annotation.Inject;
+import uapi.config.annotation.Config;
 import uapi.service.annotation.Service;
+import uapi.web.IWebConfigurableKey;
 import uapi.web.MappableHttpServlet;
 
 import javax.servlet.ServletException;
@@ -10,17 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Created by xquan on 4/28/2016.
+ * Generic web service url mapping: /[prefix]/[web service name]
  */
 @Service(MappableHttpServlet.class)
 public class WebServiceServlet extends MappableHttpServlet {
 
-    private static final String URL_MAPPING = "/ws/*";
+    private static final String DEFAULT_URI_PATTERN = "/ws/*";
 
+    @Config(path=IWebConfigurableKey.WS_URI_PATTERN)
+    String _uriPattern = DEFAULT_URI_PATTERN;
 
     @Override
     public String getPathPattern() {
-        return URL_MAPPING;
+        return this._uriPattern;
     }
 
     @Override

@@ -95,6 +95,7 @@ public final class FieldMeta {
         ) throws KernelException {
             checkStatus();
             ArgumentChecker.notNull(modifier, "modifier");
+            this._modifiers.add(modifier);
             return this;
         }
 

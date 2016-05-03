@@ -13,9 +13,9 @@ extends ${className}
 
 <#list fields as field>
     <#if field.isList>
-    ${field.modifiers} java.util.List<${field.type}> ${field.name} = new java.util.ArrayList<>();
+    ${field.modifiers} java.util.List<${field.typeName}> ${field.name} = new java.util.ArrayList<>();
     <#else>
-    ${field.modifiers} ${field.type} ${field.name};
+    ${field.modifiers} ${field.typeName} ${field.name};
     </#if>
 
 </#list>
