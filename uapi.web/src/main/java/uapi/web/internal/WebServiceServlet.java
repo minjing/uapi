@@ -16,7 +16,7 @@ import java.io.IOException;
 public class WebServiceServlet extends MappableHttpServlet {
 
     private static final String URL_MAPPING = "/ws/*";
-    
+
 
     @Override
     public String getPathPattern() {
