@@ -10,9 +10,13 @@ public interface ILogger {
 
     void warn(String message, Object... parameters);
 
+    void warn(Throwable t);
+
     void warn(Throwable t, String message, Object... parameters);
 
     void error(String message, Object... parameters);
+
+    void error(Throwable t);
 
     void error(Throwable t, String message, Object... parameters);
 }

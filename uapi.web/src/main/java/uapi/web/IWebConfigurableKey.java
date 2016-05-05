@@ -15,7 +15,7 @@ public interface IWebConfigurableKey extends IConfigurableKey {
     String SERVER_HTTP_IDLE_TIMEOUT = "server.http.idle-timeout";
 
     /**
-     * Below configurations are used in WebServiceServlet
+     * Below configurations are used in RestfulServiceServlet
      */
     String WS_URI_PATTERN           = "ws.url-pattern";
 }

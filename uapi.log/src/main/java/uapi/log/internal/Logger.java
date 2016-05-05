@@ -32,6 +32,11 @@ final class Logger implements ILogger {
     }
 
     @Override
+    public void warn(Throwable t) {
+        this._slfLogger.warn(t.getMessage(), t);
+    }
+
+    @Override
     public void warn(Throwable t, String message, Object... parameters) {
         this._slfLogger.warn(StringHelper.makeString(message, parameters), t);
     }
@@ -39,6 +44,11 @@ final class Logger implements ILogger {
     @Override
     public void error(String message, Object... parameters) {
         this._slfLogger.error(message, parameters);
+    }
+
+    @Override
+    public void error(Throwable t) {
+        this._slfLogger.error(t.getMessage(), t);
     }
 
     @Override

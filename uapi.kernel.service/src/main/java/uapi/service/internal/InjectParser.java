@@ -2,6 +2,7 @@ package uapi.service.internal;
 
 import com.google.common.base.Strings;
 import freemarker.template.Template;
+import uapi.IIdentifiable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.annotation.*;
@@ -16,6 +17,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -48,16 +50,38 @@ class InjectParser {
             String fieldName = fieldElement.getSimpleName().toString();
             String fieldTypeName = fieldElement.asType().toString();
             boolean isCollection = isCollection(fieldElement, builderCtx);
+            boolean isMap = isMap(fieldElement, builderCtx);
             String setterName = ClassHelper.makeSetterName(fieldName, isCollection);
+            String idType = null;
             if (isCollection) {
-                List<String> typeArgs = getTypeArguments(fieldElement);
+                List<TypeMirror> typeArgs = getTypeArguments(fieldElement);
                 if (typeArgs.size() != 1) {
                     throw new KernelException(
                             "The collection field [{}.{}] must be define only ONE type argument",
                             classElemt.getSimpleName().toString(),
                             fieldElement.getSimpleName().toString());
                 }
-                fieldTypeName = typeArgs.get(0);
+                fieldTypeName = typeArgs.get(0).toString();
+            } else if (isMap) {
+                List<TypeMirror> typeArgs = getTypeArguments(fieldElement);
+                if (typeArgs.size() != 2) {
+                    throw new KernelException(
+                            "The map field [{}.{}] must be define only TWO type arguments",
+                            classElemt.getSimpleName().toString(),
+                            fieldElement.getSimpleName().toString());
+                }
+                idType = typeArgs.get(0).toString();
+                Types typeUtils = builderCtx.getTypeUtils();
+                Elements elemtUtils = builderCtx.getElementUtils();
+                TypeElement identifiableElemt = elemtUtils.getTypeElement( IIdentifiable.class.getCanonicalName());
+                DeclaredType identifiableType = typeUtils.getDeclaredType(identifiableElemt);
+                if (! typeUtils.isAssignable(typeArgs.get(1), identifiableType)) {
+                    throw new KernelException(
+                            "The value type of the field [{}.{}] must be implement IIdentifiable interface",
+                            classElemt.getSimpleName().toString(),
+                            fieldElement.getSimpleName().toString());
+                }
+                fieldTypeName = typeArgs.get(1).toString();
             }
 
             Inject inject = fieldElement.getAnnotation(Inject.class);
@@ -77,6 +101,9 @@ class InjectParser {
             String code;
             if (isCollection) {
                 code = StringHelper.makeString("{}.add({});", fieldName, paramName);
+            } else if (isMap) {
+                code = StringHelper.makeString("{}.put( ({}) (({}) {}).getId(), {} );",
+                        fieldName, idType, IIdentifiable.class.getCanonicalName(), paramName, paramName);
             } else {
                 code = StringHelper.makeString("{}={};", fieldName, paramName);
             }
@@ -117,11 +144,24 @@ class InjectParser {
         return typeUtils.isAssignable(fieldElement.asType(), collectionType);
     }
 
-    private List<String> getTypeArguments(Element fieldElement) {
-        final List<String> typeArgs = new ArrayList<>();
+    private boolean isMap(
+            final Element fieldElement,
+            final IBuilderContext builderCtx) {
+        Elements elemtUtils = builderCtx.getElementUtils();
+        Types typeUtils = builderCtx.getTypeUtils();
+        WildcardType wildcardType = typeUtils.getWildcardType(null, null);
+        TypeElement collectionTypeElemt = elemtUtils.getTypeElement(
+                Map.class.getCanonicalName());
+        DeclaredType mapType = typeUtils.getDeclaredType(
+                collectionTypeElemt, wildcardType, wildcardType);
+        return typeUtils.isAssignable(fieldElement.asType(), mapType);
+    }
+
+    private List<TypeMirror> getTypeArguments(Element fieldElement) {
+        final List<TypeMirror> typeArgs = new ArrayList<>();
         DeclaredType declaredType = (DeclaredType) fieldElement.asType();
         declaredType.getTypeArguments().forEach(
-                typeMirror -> typeArgs.add(typeMirror.toString()));
+                typeMirror -> typeArgs.add(typeMirror));
         return typeArgs;
     }
 

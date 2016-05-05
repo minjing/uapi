@@ -1,9 +1,9 @@
-package uapi.web.annotation;
+package uapi.web;
 
 /**
  * Created by min on 16/5/2.
  */
-public enum MethodType {
+public enum HttpMethod {
 
     GET(0x1),
     PUT(0x2),
@@ -12,7 +12,7 @@ public enum MethodType {
 
     private final int _value;
 
-    MethodType(int value) {
+    HttpMethod(int value) {
         this._value = value;
     }
 

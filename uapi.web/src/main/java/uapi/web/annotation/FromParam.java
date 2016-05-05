@@ -6,11 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicate where are the web service parameters value from
+ * Indicate the value should be extracted from query string of the HTTP request
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.SOURCE)
-public @interface FromQueryString {
+public @interface FromParam {
 
+    /**
+     * The query string key name
+     *
+     * @return  The query string key name
+     */
     String value();
 }
