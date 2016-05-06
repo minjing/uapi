@@ -18,4 +18,6 @@ public interface IWebConfigurableKey extends IConfigurableKey {
      * Below configurations are used in RestfulServiceServlet
      */
     String WS_URI_PATTERN           = "ws.url-pattern";
+    String WS_ENCODER               = "ws.encoder";
+    String WS_DECODER               = "ws.decoder";
 }

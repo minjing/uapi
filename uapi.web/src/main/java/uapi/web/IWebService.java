@@ -1,18 +1,20 @@
 package uapi.web;
 
+import uapi.IIdentifiable;
+
 import java.util.List;
 
 /**
  * A interface for web service
  */
-public interface IWebService {
+public interface IWebService extends IIdentifiable<String> {
 
-    /**
-     * Retrieve the name of the web service
-     *
-     * @return  The web service name
-     */
-    String getName();
+//    /**
+//     * Retrieve the name of the web service
+//     *
+//     * @return  The web service name
+//     */
+//    String getName();
 
     /**
      * Get web service method argument information which is related with specific http method.

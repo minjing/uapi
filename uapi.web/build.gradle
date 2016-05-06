@@ -6,7 +6,8 @@ dependencies {
 
     compile (
             "org.eclipse.jetty:jetty-server:${jetty_version}",
-            "org.eclipse.jetty:jetty-servlet:${jetty_version}"
+            "org.eclipse.jetty:jetty-servlet:${jetty_version}",
+            "com.fasterxml.jackson.jr:jackson-jr-objects:${jackson_version}"
     )
 }
 

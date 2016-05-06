@@ -20,7 +20,7 @@ public abstract class ArgumentMeta {
         Param,
 
         /**
-         * The argument vaue can be retrieved from HTTP request URI
+         * The argument value can be retrieved from HTTP request URI
          */
         Uri
     }
