@@ -5,16 +5,9 @@ import uapi.IIdentifiable;
 import java.util.List;
 
 /**
- * A interface for web service
+ * A interface for restful service
  */
-public interface IWebService extends IIdentifiable<String> {
-
-//    /**
-//     * Retrieve the name of the web service
-//     *
-//     * @return  The web service name
-//     */
-//    String getName();
+public interface IHttpService extends IIdentifiable<String> {
 
     /**
      * Get web service method argument information which is related with specific http method.

@@ -38,9 +38,6 @@ public class JettyHttpServer implements IHttpServer {
     long _idleTimeout = 3000L;
 
     @Inject
-    IRegistry _registry;
-
-    @Inject
     ILogger _logger;
 
     @Inject

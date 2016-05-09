@@ -28,13 +28,10 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     private static final char SEPARATOR_QUERY_PARAM             = '&';
     private static final char SEPARATOR_QUERY_PARAM_KEY_VALUE   = '=';
 
-    @Config(path=IWebConfigurableKey.WS_URI_PATTERN)
+    @Config(path=IWebConfigurableKey.RESTFUL_URI_PATTERN, optional=true)
     String _uriPattern = DEFAULT_URI_PATTERN;
 
-    @Config(path=IWebConfigurableKey.WS_DECODER)
-    String _decoderName;
-
-    @Config(path=IWebConfigurableKey.WS_ENCODER)
+    @Config(path=IWebConfigurableKey.RESTFUL_ENCODER)
     String _encoderName;
 
     @Inject
@@ -44,7 +41,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     Map<String, IResponseWriter> _responseEncoders = new HashMap<>();
 
     @Inject
-    Map<String, IWebService> _webSvcs = new HashMap<>();
+    Map<String, IHttpService> _httpSvcs = new HashMap<>();
 
     @Init
     public void init() {
@@ -95,7 +92,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
         String svcName = uriInfo.serviceName;
-        IWebService matchedWebSvc = this._webSvcs.get(svcName);
+        IHttpService matchedWebSvc = this._httpSvcs.get(svcName);
         if (matchedWebSvc == null) {
             throw new KernelException("No web service is matched name {}", svcName);
         }
@@ -107,7 +104,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                     String value = null;
                     if (from == ArgumentMeta.From.Header) {
                         value = request.getHeader(((NamedArgumentMeta) argMeta).getName());
-                    } else if (from == ArgumentMeta.From.Uri) {
+                        } else if (from == ArgumentMeta.From.Uri) {
                         value = uriInfo.uriParams.get(((IndexedArgumentMeta) argMeta).getIndex());
                     } else if (from == ArgumentMeta.From.Param) {
                         value = uriInfo.queryParams.get(((NamedArgumentMeta) argMeta).getName());
@@ -122,6 +119,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         if (encoder == null) {
             throw new KernelException("The response encode was not found - {}", this._encoderName);
         }
+        encoder.write(result, response);
     }
 
     private Object parseValue(String value, String type) {
@@ -208,7 +206,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     private final class UriInfo {
 
         private String serviceName;
-        private List<String> uriParams;
-        private Map<String, String> queryParams;
+        private List<String> uriParams = new ArrayList<>();
+        private Map<String, String> queryParams = new HashMap<>();
     }
 }
