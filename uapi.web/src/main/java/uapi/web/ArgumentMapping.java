@@ -6,7 +6,7 @@ import uapi.helper.ArgumentChecker;
 /**
  * Created by xquan on 5/3/2016.
  */
-public abstract class ArgumentMeta {
+public class ArgumentMapping {
 
     public enum From {
         /**
@@ -36,7 +36,7 @@ public abstract class ArgumentMeta {
         return this._type;
     }
 
-    public ArgumentMeta(
+    public ArgumentMapping(
             final From from,
             final String type
     ) throws InvalidArgumentException {

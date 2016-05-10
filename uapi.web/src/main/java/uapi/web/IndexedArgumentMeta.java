@@ -5,7 +5,7 @@ import uapi.InvalidArgumentException;
 /**
  * Created by xquan on 5/3/2016.
  */
-public class IndexedArgumentMeta extends ArgumentMeta {
+public class IndexedArgumentMeta extends ArgumentMapping {
 
     private final int _idx;
 

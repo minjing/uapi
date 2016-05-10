@@ -1,7 +1,5 @@
 package uapi.web.annotation;
 
-import uapi.web.WebMethodType;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,14 +11,13 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
-public @interface WebMethod {
+public @interface Restful {
 
     /**
-     * Indicate what type is used for the web method
+     * Indicate which http methods are supported by this Restful interface
+     * See HttpMethod
      *
-     * @return  web method type
+     * @return  Supported http methods
      */
-    WebMethodType type();
-
-    int httpMethods();
+    int value();
 }

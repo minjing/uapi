@@ -41,7 +41,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     Map<String, IResponseWriter> _responseEncoders = new HashMap<>();
 
     @Inject
-    Map<String, IHttpService> _httpSvcs = new HashMap<>();
+    Map<String, IRestfulService> _httpSvcs = new HashMap<>();
 
     @Init
     public void init() {
@@ -92,21 +92,21 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
         String svcName = uriInfo.serviceName;
-        IHttpService matchedWebSvc = this._httpSvcs.get(svcName);
+        IRestfulService matchedWebSvc = this._httpSvcs.get(svcName);
         if (matchedWebSvc == null) {
             throw new KernelException("No web service is matched name {}", svcName);
         }
-        ArgumentMeta[] argMetas = matchedWebSvc.getMethodArgumentsInfo(method);
+        ArgumentMapping[] argMetas = matchedWebSvc.getMethodArgumentsInfo(method);
         List<Object> argValues = new ArrayList<>();
         Observable.from(argMetas)
                 .subscribe(argMeta -> {
-                    ArgumentMeta.From from = argMeta.getFrom();
+                    ArgumentMapping.From from = argMeta.getFrom();
                     String value = null;
-                    if (from == ArgumentMeta.From.Header) {
+                    if (from == ArgumentMapping.From.Header) {
                         value = request.getHeader(((NamedArgumentMeta) argMeta).getName());
-                        } else if (from == ArgumentMeta.From.Uri) {
+                        } else if (from == ArgumentMapping.From.Uri) {
                         value = uriInfo.uriParams.get(((IndexedArgumentMeta) argMeta).getIndex());
-                    } else if (from == ArgumentMeta.From.Param) {
+                    } else if (from == ArgumentMapping.From.Param) {
                         value = uriInfo.queryParams.get(((NamedArgumentMeta) argMeta).getName());
                     } else {
                         throw new KernelException("Unsupported from indication {}", from);

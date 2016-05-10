@@ -6,7 +6,7 @@ import uapi.helper.ArgumentChecker;
 /**
  * Created by xquan on 5/3/2016.
  */
-public class NamedArgumentMeta extends ArgumentMeta {
+public class NamedArgumentMeta extends ArgumentMapping {
 
     private final String _name;
 
