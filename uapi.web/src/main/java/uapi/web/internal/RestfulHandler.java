@@ -6,6 +6,7 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.MapHelper;
 import uapi.web.ArgumentMapping;
 import uapi.web.HttpMethod;
 import uapi.web.IRestfulService;
@@ -27,7 +28,9 @@ import java.util.*;
 @AutoService(IAnnotationsHandler.class)
 public class RestfulHandler extends AnnotationsHandler {
 
-    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO = "template/getMethodArgumentsInfo_method.ftl";
+    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO  = "template/getMethodArgumentsInfo_method.ftl";
+    private static final String TEMPLATE_INVOKE                     = "template/invoke_method.ftl";
+    private static final String HTTP_TO_METHOD_ARGS_MAPPING         = "HttpToMethodArgumentsMapping";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations =
@@ -46,7 +49,7 @@ public class RestfulHandler extends AnnotationsHandler {
     ) throws KernelException {
         ArgumentChecker.notNull(annotationType, "annotationType");
 
-        elements.forEach(methodElement -> {
+        Observable.from(elements).subscribe(methodElement -> {
             if (methodElement.getKind() != ElementKind.METHOD) {
                 throw new KernelException(
                         "The Restful annotation only can be applied on field",
@@ -60,32 +63,65 @@ public class RestfulHandler extends AnnotationsHandler {
             String methodName = methodElement.getSimpleName().toString();
             Restful restful = methodElement.getAnnotation(Restful.class);
             HttpMethod[] httpMethods = HttpMethod.parse(restful.value());
-            ExecutableElement execElem = (ExecutableElement) methodElement;
-            List<ArgumentMapping> argMappings = new ArrayList<>();
-            Observable.from(execElem.getParameters())
-                    .subscribe(paramElem -> argMappings.add(handleFromAnnotation(paramElem)));
-
-            Map<HttpMethod, List<ArgumentMapping>> httpMethodMappings = new HashMap<>();
-            Observable.from(httpMethods)
-                    .subscribe(httpMethod -> httpMethodMappings.put(httpMethod, argMappings));
-            Map<String, Object> modelGetArgs = new HashMap<>();
-            modelGetArgs.put("mappedArgMappings", httpMethodMappings);
-            Template tempGetArgs = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_ARGUMENTS_INFO);
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            clsBuilder.addImplement(IRestfulService.class.getCanonicalName())
-                    .addMethodBuilder(MethodMeta.builder()
-                            .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
-                            .addModifier(Modifier.PUBLIC)
-                            .setName("getMethodArgumentsInfo")
-                            .setReturnTypeName("uapi.web.ArgumentMapping[]")
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .setName("method")
-                                    .setType(HttpMethod.class.getCanonicalName()))
-                            .addCodeBuilder(CodeMeta.builder()
-                                    .setModel(modelGetArgs)
-                                    .setTemplate(tempGetArgs)));
-        });
+            Map<HttpMethod, MethodArgumentsMapping> httpMethodArgMappings =
+                    clsBuilder.createTransienceIfAbsent(HTTP_TO_METHOD_ARGS_MAPPING, HashMap::new);
+            HttpMethod found = MapHelper.findKey(httpMethodArgMappings, httpMethods);
+            if (found != null) {
+                throw new KernelException("Found multiple methods are mapped to same http method: {}", found);
+            }
+
+            ExecutableElement execElem = (ExecutableElement) methodElement;
+            MethodArgumentsMapping methodArgMapping = new MethodArgumentsMapping(methodName);
+            Observable.from(execElem.getParameters())
+                    .map(this::handleFromAnnotation)
+                    .subscribe(methodArgMapping::addArgumentMapping);
+            Observable.from(httpMethods)
+                    .subscribe(httpMethod -> httpMethodArgMappings.put(httpMethod, methodArgMapping));
+        }, t -> builderCtx.getLogger().error(t));
+
+        implementIRestfulService(builderCtx);
+    }
+
+    private void implementIRestfulService(
+            final IBuilderContext builderCtx
+    ) {
+        Template tempGetArgs = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_ARGUMENTS_INFO);
+        Template tempInvoke = builderCtx.loadTemplate(TEMPLATE_INVOKE);
+
+        Observable.from(builderCtx.getBuilders())
+                .subscribe(clsBuilder -> {
+                    Map<HttpMethod, MethodArgumentsMapping> model = clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING);
+                    clsBuilder.addImplement(IRestfulService.class.getCanonicalName())
+                            // implement getMethodArgumentsInfo method
+                            .addMethodBuilder(MethodMeta.builder()
+                                    .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                    .addModifier(Modifier.PUBLIC)
+                                    .setName("getMethodArgumentsInfo")
+                                    .setReturnTypeName("uapi.web.ArgumentMapping[]")
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName("method")
+                                            .setType(HttpMethod.class.getCanonicalName()))
+                                    .addCodeBuilder(CodeMeta.builder()
+                                            .setModel(model)
+                                            .setTemplate(tempGetArgs)))
+                            // implement invoke method
+                            .addMethodBuilder(MethodMeta.builder()
+                                    .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                    .addModifier(Modifier.PUBLIC)
+                                    .setName("invoke")
+                                    .setReturnTypeName(Object.class.getCanonicalName())
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName("method")
+                                            .setType(HttpMethod.class.getCanonicalName()))
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName("args")
+                                            .setType("java.util.List<Object>"))
+                                    .addCodeBuilder(CodeMeta.builder()
+                                            .setModel(model)
+                                            .setTemplate(tempInvoke)));
+                });
     }
 
     private ArgumentMapping handleFromAnnotation(

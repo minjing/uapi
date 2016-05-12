@@ -11,4 +11,9 @@ public class Functionals {
     public interface Extractor<I, O, T extends Throwable> {
         O accept(I instance) throws T;
     }
+
+    @FunctionalInterface
+    public interface Creator<T> {
+        T accept();
+    }
 }

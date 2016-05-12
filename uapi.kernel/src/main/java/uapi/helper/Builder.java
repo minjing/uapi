@@ -49,6 +49,31 @@ public abstract class Builder<T> {
     }
 
     /**
+     * Receive previously saved transience object by its name
+     * The creator will be invoked if the related transience object is absent
+     *
+     * @param   name
+     *          The name of transience object
+     * @param   <E>
+     *          The type of transience object
+     * @return  The transience object or null
+     */
+    @SuppressWarnings("unchecked")
+    public <E> E createTransienceIfAbsent(
+            final String name,
+            final Functionals.Creator<E> creator) {
+        ArgumentChecker.required(name, "name");
+        E e = (E) this._transiences.get(name);
+        if (e != null) {
+            return e;
+        }
+        ArgumentChecker.required(creator, "creator");
+        e = creator.accept();
+        this._transiences.put(name, e);
+        return e;
+    }
+
+    /**
      * Build instance by currently properties setting
      *
      * @return  The instance
