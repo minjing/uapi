@@ -3,3 +3,11 @@ age: 22
 address:
   - office: aaa
   - home: bbb
+server:
+  http:
+    - host: 127.0.0.1
+    - port: 8080
+    - idle-timeout: 5000
+
+restful:
+  - encoder: JSON

@@ -9,8 +9,6 @@ import java.util.List;
  */
 public interface IRestfulService extends IIdentifiable<String> {
 
-
-
     /**
      * Get restful service method argument information which is related with specific http method.
      * One restful service method can be mapped to one or more http method that's said one http request

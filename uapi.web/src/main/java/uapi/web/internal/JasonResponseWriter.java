@@ -13,11 +13,11 @@ import java.io.IOException;
 @Service(IResponseWriter.class)
 public class JasonResponseWriter implements IResponseWriter<Object> {
 
-    private static final String JASON   = "JASON";
+    private static final String NAME_JSON   = "JSON";
 
     @Override
     public String getId() {
-        return JASON;
+        return NAME_JSON;
     }
 
     @Override

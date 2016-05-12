@@ -13,6 +13,11 @@ public enum HttpMethod {
     POST(0x4),
     DELETE(0x8);
 
+    public static final int Get     = 0x1;
+    public static final int Put     = 0x2;
+    public static final int Post    = 0x4;
+    public static final int Delete  = 0x8;
+
     public static HttpMethod[] parse(int value) {
         List<HttpMethod> httpMethods = new ArrayList<>();
         if ((value & GET._value) == GET._value) {

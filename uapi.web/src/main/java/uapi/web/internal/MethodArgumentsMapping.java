@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * Created by xquan on 5/11/2016.
  */
-final class MethodArgumentsMapping {
+public final class MethodArgumentsMapping {
 
     private final String _name;
     private final List<ArgumentMapping> _argMappings;
@@ -34,5 +34,10 @@ final class MethodArgumentsMapping {
 
     public List<ArgumentMapping> getArgumentMappings() {
         return this._argMappings;
+    }
+
+    @Override
+    public String toString() {
+        return "MethodArgumentsMapping[name=" + this._name + ", argMapping=" + this._argMappings + "]";
     }
 }

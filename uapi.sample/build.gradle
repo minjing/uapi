@@ -4,6 +4,7 @@ dependencies {
     compile project(':uapi.kernel.service')
     compile project(':uapi.config')
     compile project(':uapi.app')
+    compile project(':uapi.web')
 }
 
 jar {

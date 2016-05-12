@@ -45,4 +45,9 @@ public class ArgumentMapping {
         this._from = from;
         this._type = type;
     }
+
+    @Override
+    public String toString() {
+        return "ArgumentMapping[from=" + this._from + ", type=" + this._type + "]";
+    }
 }

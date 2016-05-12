@@ -45,18 +45,17 @@ public class JettyHttpServer implements IHttpServer {
     List<MappableHttpServlet> _servlets = new LinkedList<>();
 
     private Server _server;
-    private ServerConnector _serverConnector;
     private ServletHandler _servletHandler;
 
     @Init
     public void init() {
         this._server = new Server();
 
-        this._serverConnector = new ServerConnector(this._server);
-        this._serverConnector.setHost(this._host);
-        this._serverConnector.setPort(this._port);
-        this._serverConnector.setIdleTimeout(this._idleTimeout);
-        this._server.addConnector(this._serverConnector);
+        ServerConnector serverConnector = new ServerConnector(this._server);
+        serverConnector.setHost(this._host);
+        serverConnector.setPort(this._port);
+        serverConnector.setIdleTimeout(this._idleTimeout);
+        this._server.addConnector(serverConnector);
 
         this._servletHandler = new ServletHandler();
         this._server.setHandler(this._servletHandler);
@@ -92,12 +91,4 @@ public class JettyHttpServer implements IHttpServer {
         }
         this._logger.info("Http server is stopped at host {} on port {}", this._host, this._port);
     }
-
-//    @Override
-//    public <T extends HttpServlet> void registerServlet(
-//            final String path,
-//            final Class<T> servletClass) {
-//        ArgumentChecker.required(path, "path");
-//        ArgumentChecker.required(servletClass, "servletClass");
-//    }
 }
