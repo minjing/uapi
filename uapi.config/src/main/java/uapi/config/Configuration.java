@@ -11,6 +11,7 @@ import uapi.service.internal.QualifiedServiceId;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -110,11 +111,12 @@ public class Configuration {
             setValue((Map<String, Object>) value);
         }
         this._value = value;
+
         Observable.from(this._configuableSvcs.values())
                 .filter(ref -> ref.get() != null)
                 .map(WeakReference::get)
                 .doOnNext(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
-                .subscribe(IServiceReference::notifySatisfied);
+                .subscribe(IServiceReference::notifySatisfied, t -> t.printStackTrace());
         cleanNullReference();
     }
 
@@ -125,6 +127,11 @@ public class Configuration {
             Configuration config = getOrCreateChild(entry.getKey());
             config.setValue(entry.getValue());
         });
+    }
+
+    public void setValue(final List<Object> configList) {
+        ArgumentChecker.notNull(configList, "configList");
+        // TODO:
     }
 
     public void setValue(final String path, final Object value) {

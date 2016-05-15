@@ -2,6 +2,7 @@ package uapi.service.internal;
 
 import com.google.common.base.Strings;
 import freemarker.template.Template;
+import rx.Observable;
 import uapi.IIdentifiable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
@@ -51,7 +52,7 @@ class InjectParser {
             String fieldTypeName = fieldElement.asType().toString();
             boolean isCollection = isCollection(fieldElement, builderCtx);
             boolean isMap = isMap(fieldElement, builderCtx);
-            String setterName = ClassHelper.makeSetterName(fieldName, isCollection);
+            String setterName = ClassHelper.makeSetterName(fieldName, isCollection, isMap);
             String idType = null;
             if (isCollection) {
                 List<TypeMirror> typeArgs = getTypeArguments(fieldElement);
@@ -251,6 +252,69 @@ class InjectParser {
 //            }
         });
     }
+
+//    private void implementInjectable(
+//            final IBuilderContext builderCtx,
+//            final ClassMeta.Builder classBuilder,
+//            final List<DependencyInfo> dependencyInfos
+//    ) {
+//        Observable.from(dependencyInfos)
+//                .subscribe(depInfo -> {
+//                    List<String> dependentIds = new LinkedList<>();
+//                    dependentIds.add(depInfo.getDependencyId());
+//                    Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
+//                    Map<String, Object> tempModelDependentIds = new HashMap<>();
+//                    tempModelDependentIds.put("dependentIds", dependentIds);
+//
+//                    if (depInfo.isGenerateField()) {
+//                        classBuilder
+//                                .addFieldBuilder(FieldMeta.builder()
+//                                        .addModifier(Modifier.PRIVATE)
+//                                        .setTypeName(depInfo.getFieldType())
+//                                        .setName(depInfo.getFieldName())
+//                                        .setIsList(false));
+//                    }
+//
+//                    classBuilder
+//                            .addMethodBuilder(SetterMeta.builder()
+//                                    .setFieldName(depInfo.getFieldName())
+//                                    .setInjectId(depInfo.getDependencyId())
+//                                    .setInjectFrom(depInfo.getInjectFrom())
+//                                    .setInjectType(depInfo.getFieldType())
+//                                    .setName(setterName)
+//                                    .setReturnTypeName(Type.VOID)
+//                                    .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
+//                                    .addParameterBuilder(ParameterMeta.builder()
+//                                            .addModifier(Modifier.FINAL)
+//                                            .setName(paramName)
+//                                            .setType(fieldTypeName))
+//                                    .addCodeBuilder(CodeMeta.builder()
+//                                            .addRawCode(code)))
+//                            .addMethodBuilder(MethodMeta.builder()
+//                                    .addAnnotationBuilder(AnnotationMeta.builder()
+//                                            .setName(AnnotationMeta.OVERRIDE))
+//                                    .setName(IService.METHOD_GET_DEPENDENT_ID)
+//                                    .addModifier(Modifier.PUBLIC)
+//                                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
+//                                    .addCodeBuilder(CodeMeta.builder()
+//                                            .setTemplate(tempDependentIds)
+//                                            .setModel(tempModelDependentIds)))
+//                            .addMethodBuilder(MethodMeta.builder()
+//                                    .addAnnotationBuilder(AnnotationMeta.builder()
+//                                            .setName("Override"))
+//                                    .addModifier(Modifier.PUBLIC)
+//                                    .setName(methodName)
+//                                    .setReturnTypeName(Type.VOID)
+//                                    .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
+//                                    .addParameterBuilder(ParameterMeta.builder()
+//                                            .addModifier(Modifier.FINAL)
+//                                            .setName(paramName)
+//                                            .setType(paramType))
+//                                    .addCodeBuilder(CodeMeta.builder()
+//                                            .setModel(tempModel)
+//                                            .setTemplate(temp)));
+//                });
+//    }
 
     public static final class SetterModel {
 

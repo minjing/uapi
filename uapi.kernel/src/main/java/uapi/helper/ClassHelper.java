@@ -17,8 +17,9 @@ public final class ClassHelper {
     private static final String FIELD_PREFIX    = "_";
     private static final String SETTER_PREFIX   = "set";
     private static final String ADD_PREFIX      = "add";
+    private static final String PUT_PREFIX      = "put";
 
-    public static String makeSetterName(String fieldName, boolean isCollection) {
+    public static String makeSetterName(String fieldName, boolean isCollection, boolean isMap) {
         if (Strings.isNullOrEmpty(fieldName)) {
             throw new IllegalArgumentException("The field name can't be empty or null");
         }
@@ -28,10 +29,13 @@ public final class ClassHelper {
         } else {
             propName = fieldName;
         }
-        String setterName = null;
+        String setterName;
         if (isCollection) {
             propName = WordHelper.singularize(propName);
             setterName = ADD_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
+        } else if (isMap) {
+            propName = WordHelper.singularize(propName);
+            setterName = PUT_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
         } else {
             setterName = SETTER_PREFIX + propName.substring(0, 1).toUpperCase() + propName.substring(1, propName.length());
         }

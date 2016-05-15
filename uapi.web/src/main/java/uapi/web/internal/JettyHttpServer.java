@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * A web server implemented by Jetty
  */
-@Service
+@Service(IHttpServer.class)
 public class JettyHttpServer implements IHttpServer {
 
     @Config(path=IWebConfigurableKey.SERVER_HTTP_HOST)

@@ -12,12 +12,12 @@ class ClassHelperTest extends Specification {
 
     def 'test CollectionField'() {
         expect:
-        ClassHelper.makeSetterName(prop, isCollection) == setterName
+        ClassHelper.makeSetterName(prop, isCollection, isMap) == setterName
 
         where:
-        prop        | isCollection  | setterName
-        'messages'  | true          | 'addMessage'
-        'children'  | true          | 'addChild'
+        prop        | isCollection  | isMap | setterName
+        'messages'  | true          | false | 'addMessage'
+        'children'  | true          | false | 'addChild'
     }
 
     def  'test GetInterfaceParameterizedClasses'() {

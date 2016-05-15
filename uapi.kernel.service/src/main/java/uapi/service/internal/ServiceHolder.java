@@ -222,25 +222,32 @@ class ServiceHolder implements IServiceReference {
                 return this._state == State.Initialized;
             }
             this._changing = true;
+            boolean successful = false;
             switch (this._state) {
                 case Unresolved:
-                    tryResolve();
+                    successful = tryResolve();
                     break;
                 case Resolved:
-                    tryInject();
+                    successful = tryInject();
                     break;
                 case Injected:
-                    trySatisfy();
+                    successful = trySatisfy();
                     break;
                 case Satisfied:
-                    tryInit();
+                    successful = tryInit();
                     break;
                 case Initialized:
                     // do nothing
+                    successful = true;
                     break;
                 default:
                     throw new KernelException("Unsupported state {}", this._state);
             }
+            if (! successful) {
+                this._changing = false;
+                return false;
+            }
+
             // Notify upstream services
             Observable.from(ServiceHolder.this._stateMonitors)
                     .subscribe(monitor -> monitor.onInitialized(ServiceHolder.this._qualifiedSvcId));
