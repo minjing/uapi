@@ -10,9 +10,7 @@ import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.web.ArgumentMapping;
-import uapi.web.HttpMethod;
-import uapi.web.IRestfulService;
+import uapi.web.*;
 import uapi.web.annotation.FromHeader;
 import uapi.web.annotation.FromParam;
 import uapi.web.annotation.FromUri;
@@ -159,11 +157,11 @@ public class RestfulHandler extends AnnotationsHandler {
         FromParam fromParam = paramElem.getAnnotation(FromParam.class);
         ArgumentMapping argMapping = null;
         if (fromUri != null) {
-            argMapping = new ArgumentMapping(ArgumentMapping.From.Uri, paramType);
+            argMapping = new IndexedArgumentMapping(ArgumentMapping.From.Uri, paramType, fromUri.value());
         } else if (fromHeader != null) {
-            argMapping = new ArgumentMapping(ArgumentMapping.From.Header, paramType);
+            argMapping = new NamedArgumentMapping(ArgumentMapping.From.Header, paramType, fromHeader.value());
         } else if (fromParam != null) {
-            argMapping = new ArgumentMapping(ArgumentMapping.From.Param, paramType);
+            argMapping = new NamedArgumentMapping(ArgumentMapping.From.Param, paramType, fromParam.value());
         }
         return argMapping;
     }

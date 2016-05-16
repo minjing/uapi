@@ -4,8 +4,8 @@ import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.Type;
 import uapi.config.annotation.Config;
-import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
+import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -43,6 +43,9 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     @Inject
     Map<String, IRestfulService> _httpSvcs = new HashMap<>();
 
+    @Inject
+    IRegistry _registry;
+
     @Init
     public void init() {
 
@@ -50,7 +53,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     @Override
     public String getPathPattern() {
-        return this._uriPattern;
+        return this._uriPattern + "*";
     }
 
     @Override
@@ -103,11 +106,11 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                     ArgumentMapping.From from = argMeta.getFrom();
                     String value = null;
                     if (from == ArgumentMapping.From.Header) {
-                        value = request.getHeader(((NamedArgumentMeta) argMeta).getName());
+                        value = request.getHeader(((NamedArgumentMapping) argMeta).getName());
                         } else if (from == ArgumentMapping.From.Uri) {
-                        value = uriInfo.uriParams.get(((IndexedArgumentMeta) argMeta).getIndex());
+                        value = uriInfo.uriParams.get(((IndexedArgumentMapping) argMeta).getIndex());
                     } else if (from == ArgumentMapping.From.Param) {
-                        value = uriInfo.queryParams.get(((NamedArgumentMeta) argMeta).getName());
+                        value = uriInfo.queryParams.get(((NamedArgumentMapping) argMeta).getName())[0];
                     } else {
                         throw new KernelException("Unsupported from indication {}", from);
                     }
@@ -123,22 +126,22 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     }
 
     private Object parseValue(String value, String type) {
-        if (Type.STRING.equals(type)) {
+        if (Type.Q_STRING.equals(type)) {
             return value;
         }
-        if (Type.BOOLEAN.equals(type)) {
+        if (Type.Q_BOOLEAN.equals(type)) {
             return Boolean.parseBoolean(value);
         }
-        if (Type.INTEGER.equals(type)) {
+        if (Type.Q_INTEGER.equals(type)) {
             return Integer.parseInt(value);
         }
-        if (Type.LONG.equals(type)) {
+        if (Type.Q_LONG.equals(type)) {
             return Long.parseLong(value);
         }
-        if (Type.FLOAT.equals(type)) {
+        if (Type.Q_FLOAT.equals(type)) {
             return Float.parseFloat(value);
         }
-        if (Type.DOUBLE.equals(type)) {
+        if (Type.Q_DOUBLE.equals(type)) {
             return Double.parseDouble(value);
         }
         throw new KernelException("Unknown type name {}", type);
@@ -155,7 +158,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
         UriInfo uriInfo = new UriInfo();
         StringBuilder buffer = new StringBuilder();
-        for (int i = this._uriPattern.length() - 1; i < path.length(); i++) {
+        for (int i = this._uriPattern.length(); i < path.length(); i++) {
             char c = path.charAt(i);
             switch (c) {
                 case '/':
@@ -171,7 +174,11 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             }
         }
         if (buffer.length() > 0) {
-            uriInfo.uriParams.add(buffer.toString());
+            if (uriInfo.serviceName == null) {
+                uriInfo.serviceName = buffer.toString();
+            } else {
+                uriInfo.uriParams.add(buffer.toString());
+            }
             buffer.delete(0, buffer.length());
         }
         if (query != null) {
@@ -184,21 +191,23 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                         key = buffer.toString();
                         buffer.delete(0, buffer.length());
                         break;
-                    case SEPARATOR_QUERY_PARAM:
-                        value = buffer.toString();
-                        if (ArgumentChecker.isEmpty(key) || ArgumentChecker.isEmpty(value)) {
-                            throw new KernelException("The query string of uri {} is invalid: empty key or value");
-                        }
-                        uriInfo.queryParams.put(key, value);
-                        key = null;
-                        value = null;
-                        buffer.delete(0, buffer.length());
-                        break;
+//                    case SEPARATOR_QUERY_PARAM:
+//                        value = buffer.toString();
+//                        if (ArgumentChecker.isEmpty(key) || ArgumentChecker.isEmpty(value)) {
+//                            throw new KernelException("The query string of uri {} is invalid: empty key or value");
+//                        }
+//                        uriInfo.queryParams.put(key, value);
+//                        key = null;
+//                        value = null;
+//                        buffer.delete(0, buffer.length());
+//                        break;
                     default:
                         buffer.append(c);
                 }
             }
         }
+        Observable.from(request.getParameterMap().entrySet())
+                .subscribe(entry -> uriInfo.queryParams.put(entry.getKey(), entry.getValue()));
 
         return uriInfo;
     }
@@ -207,6 +216,6 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
         private String serviceName;
         private List<String> uriParams = new ArrayList<>();
-        private Map<String, String> queryParams = new HashMap<>();
+        private Map<String, String[]> queryParams = new HashMap<>();
     }
 }

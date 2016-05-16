@@ -41,6 +41,9 @@ public class JettyHttpServer implements IHttpServer {
     ILogger _logger;
 
     @Inject
+    IRegistry _registry;
+
+    @Inject
     @Optional
     List<MappableHttpServlet> _servlets = new LinkedList<>();
 
