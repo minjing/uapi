@@ -1,7 +1,11 @@
+apply plugin: 'application'
+
 dependencies {
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
+    compile project(':uapi.service.spring')
+    compile project(':uapi.log')
     compile project(':uapi.config')
     compile project(':uapi.app')
     compile project(':uapi.web')
@@ -9,4 +13,22 @@ dependencies {
 
 jar {
     manifest.attributes
+}
+
+mainClassName = 'uapi.app.internal.Launcher'
+
+task copyConfig {
+    def cfgDir = file("conf")
+    outputs.dir cfgDir
+}
+
+distributions {
+    main {
+        baseName = 'uapi-sample'
+        contents {
+            from (copyConfig) {
+                into "conf"
+            }
+        }
+    }
 }

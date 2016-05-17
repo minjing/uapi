@@ -9,7 +9,7 @@ import uapi.web.annotation.FromUri;
 import uapi.web.annotation.Restful;
 
 /**
- * Created by xquan on 5/12/2016.
+ * The restful service for hello
  */
 @Service(IRestfulService.class)
 @Exposure("hello")
@@ -22,11 +22,4 @@ public class HelloRestful {
     ) {
         return "Hello " + name + ", " + test;
     }
-
-//    @Restful(HttpMethod.Post)
-//    public String sayHello(
-//            @FromParam("name") String name
-//    ) {
-//        return "Hello " + name;
-//    }
 }

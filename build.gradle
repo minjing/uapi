@@ -3,7 +3,7 @@ subprojects {
     apply plugin: 'groovy'
     apply plugin: 'jacoco'
 
-    version = "${project_version}"
+    version = getProjectVersion()
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
@@ -40,3 +40,38 @@ subprojects {
 task wrapper(type: Wrapper) {
     gradleVersion = "${gradle_version}"
 }
+
+def getProjectVersion() {
+    def release = project.hasProperty("project_release") ? project.project_release.toBoolean() : null
+    def rcno = project.hasProperty("project_rcno") ? project.project_rcno.toInteger() : null
+    if (release) {
+        return "${project_version}-release"
+    } else if (rcno > 0) {
+        return "${project_version}-rc${rcno}"
+    } else {
+        def timestampFormat = new java.text.SimpleDateFormat('yyyyMMddHHmmss')
+        timestampFormat.timeZone = TimeZone.getTimeZone("UTC")
+        def ts = timestampFormat.format(new Date())
+        return "${project_version}-${ts}"
+    }
+}
+
+//apply plugin: 'application'
+//
+//mainClassName = 'uapi.app.internal.Launcher'
+//
+//task copyConfig {
+//    def cfgDir = file("conf")
+//    outputs.dir cfgDir
+//}
+//
+//distributions {
+//    main {
+//        baseName = 'uapi'
+//        contents {
+//            from (copyConfig) {
+//                into "conf"
+//            }
+//        }
+//    }
+//}
