@@ -2,10 +2,6 @@ dependencies {
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
-    compile project(':uapi.config')
-    compile project(':uapi.service')
-
-    compile ("com.squareup.okhttp3:okhttp:${okhttp_version}")
 }
 
 jar {

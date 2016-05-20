@@ -9,6 +9,8 @@ import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.web.Constant;
+import uapi.service.web.HttpMethod;
 import uapi.web.*;
 
 import javax.servlet.ServletException;
@@ -23,13 +25,11 @@ import java.util.*;
 @Service(MappableHttpServlet.class)
 public class RestfulServiceServlet extends MappableHttpServlet {
 
-    private static final String DEFAULT_URI_PATTERN             = "/rest/";
     private static final String SEPARATOR_URI_QUERY_PARAM       = "\\?";
-    private static final char SEPARATOR_QUERY_PARAM             = '&';
     private static final char SEPARATOR_QUERY_PARAM_KEY_VALUE   = '=';
 
-    @Config(path=IWebConfigurableKey.RESTFUL_URI_PATTERN, optional=true)
-    String _uriPattern = DEFAULT_URI_PATTERN;
+    @Config(path=IWebConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
+    String _uriPrefix = Constant.DEF_RESTFUL_URI_PREFIX;
 
     @Config(path=IWebConfigurableKey.RESTFUL_ENCODER)
     String _encoderName;
@@ -53,7 +53,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     @Override
     public String getPathPattern() {
-        return this._uriPattern + "*";
+        return this._uriPrefix + "*";
     }
 
     @Override
@@ -149,8 +149,8 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     private UriInfo parseUri(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        if (uri.indexOf(this._uriPattern) != 0) {
-            throw new KernelException("The requested URI {} is not prefixed by {}", uri, this._uriPattern);
+        if (uri.indexOf(this._uriPrefix) != 0) {
+            throw new KernelException("The requested URI {} is not prefixed by {}", uri, this._uriPrefix);
         }
         String[] pathAndQuery = uri.split(SEPARATOR_URI_QUERY_PARAM);
         String path = pathAndQuery[0];
@@ -158,7 +158,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
         UriInfo uriInfo = new UriInfo();
         StringBuilder buffer = new StringBuilder();
-        for (int i = this._uriPattern.length(); i < path.length(); i++) {
+        for (int i = this._uriPrefix.length(); i < path.length(); i++) {
             char c = path.charAt(i);
             switch (c) {
                 case '/':

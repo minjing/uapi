@@ -2,7 +2,7 @@ package uapi.sample;
 
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.web.HttpMethod;
+import uapi.service.web.HttpMethod;
 import uapi.web.IRestfulService;
 import uapi.web.annotation.FromParam;
 import uapi.web.annotation.FromUri;

@@ -1,6 +1,5 @@
 include 'uapi.kernel', 'uapi.kernel.annotation', 'uapi.kernel.service'
-include 'uapi.test', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.service.spring', 'uapi.service.remote'
+include 'uapi.test', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.service', 'uapi.service.spring', 'uapi.service.remote'
 include 'uapi.web'
 include 'uapi.app'
 include 'uapi.sample'
-

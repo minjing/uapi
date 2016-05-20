@@ -4,6 +4,7 @@ dependencies {
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
+    compile project(':uapi.service')
     compile project(':uapi.service.spring')
     compile project(':uapi.log')
     compile project(':uapi.config')

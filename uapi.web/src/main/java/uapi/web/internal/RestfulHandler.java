@@ -10,6 +10,7 @@ import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
+import uapi.service.web.HttpMethod;
 import uapi.web.*;
 import uapi.web.annotation.FromHeader;
 import uapi.web.annotation.FromParam;

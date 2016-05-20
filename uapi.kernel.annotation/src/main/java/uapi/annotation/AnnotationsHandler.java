@@ -52,10 +52,10 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
                 .filter(annotationType -> element.getAnnotation(annotationType) == null)
                 .toList().toBlocking().single();
         if (unAnnotateds == null || unAnnotateds.size() > 0) {
-            throw new KernelException("The {} element [{}.{}] does not annotated with {}.",
+            throw new KernelException("The {} element [{}] does not annotated with {}.",
                     element.getKind(),
-                    element.getEnclosingElement().getSimpleName().toString(),
-                    annotationTypes);
+                    element.getSimpleName().toString(),
+                    CollectionHelper.asString(annotationTypes));
         }
     }
 

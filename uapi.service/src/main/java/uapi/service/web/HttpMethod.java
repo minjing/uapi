@@ -1,22 +1,28 @@
-package uapi.web;
+package uapi.service.web;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by min on 16/5/2.
+ * Define http method
  */
 public enum HttpMethod {
 
-    GET(0x1),
-    PUT(0x2),
-    POST(0x4),
-    DELETE(0x8);
+    GET(HttpMethod.Get),
+    PUT(HttpMethod.Put),
+    POST(HttpMethod.Post),
+    DELETE(HttpMethod.Delete),
+    OPTIONS(HttpMethod.Options),
+    HEAD(HttpMethod.Head),
+    TRACE(HttpMethod.Trace);
 
     public static final int Get     = 0x1;
     public static final int Put     = 0x2;
     public static final int Post    = 0x4;
     public static final int Delete  = 0x8;
+    public static final int Options = 0x16;
+    public static final int Head    = 0x32;
+    public static final int Trace   = 0x64;
 
     public static HttpMethod[] parse(int value) {
         List<HttpMethod> httpMethods = new ArrayList<>();
@@ -31,6 +37,15 @@ public enum HttpMethod {
         }
         if ((value & DELETE._value) == DELETE._value) {
             httpMethods.add(DELETE);
+        }
+        if ((value & OPTIONS._value) == OPTIONS._value) {
+            httpMethods.add(OPTIONS);
+        }
+        if ((value & HEAD._value) == HEAD._value) {
+            httpMethods.add(HEAD);
+        }
+        if ((value & TRACE._value) == TRACE._value) {
+            httpMethods.add(TRACE);
         }
         return httpMethods.toArray(new HttpMethod[httpMethods.size()]);
     }

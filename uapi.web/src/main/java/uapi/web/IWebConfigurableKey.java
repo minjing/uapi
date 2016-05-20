@@ -17,6 +17,6 @@ public interface IWebConfigurableKey extends IConfigurableKey {
     /**
      * Below configurations are used in RestfulServiceServlet
      */
-    String RESTFUL_URI_PATTERN      = "restful.url-pattern";
+    String RESTFUL_URI_PREFIX       = "restful.uri-prefix";
     String RESTFUL_ENCODER          = "restful.encoder";
 }
