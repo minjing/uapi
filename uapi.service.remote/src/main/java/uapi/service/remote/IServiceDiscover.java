@@ -5,14 +5,5 @@ package uapi.service.remote;
  */
 public interface IServiceDiscover {
 
-//    /**
-//     * Retrieve the specific service invocation driver
-//     *
-//     * @param   serviceId
-//     *          The service id
-//     * @return  The related invocation driver or null if no driver was found.
-//     */
-//    ICommunicationDriver getInvocationDriver(String serviceId);
-
-    Object discover(String serviceId);
+    Object discover(ServiceInterfaceMeta serviceInterfaceMeta);
 }

@@ -1,14 +1,13 @@
 package uapi.service.remote.internal;
 
-import uapi.KernelException;
 import uapi.config.annotation.Config;
-import uapi.helper.ArgumentChecker;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
-import uapi.service.remote.ICommunicationDriver;
+import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IRemoteServiceConfigurableKey;
 import uapi.service.remote.IServiceDiscover;
+import uapi.service.remote.ServiceInterfaceMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,16 +31,16 @@ public class ServiceDiscover implements IServiceDiscover {
     IRegistry _registry;
 
     @Inject
-    Map<String, ICommunicationDriver> _drivers = new HashMap<>();
+    Map<String, ICommunicator> _drivers = new HashMap<>();
 
 //    @Override
-//    public ICommunicationDriver getInvocationDriver(
+//    public ICommunicator getInvocationDriver(
 //            final String serviceId) {
 //        ArgumentChecker.required(serviceId, "serviceId");
 //        ArgumentChecker.required(this._host, "host");
 //        ArgumentChecker.required(this._port, "port");
 //        ArgumentChecker.required(this._driver, "driver");
-//        ICommunicationDriver driver = this._drivers.get(this._driver);
+//        ICommunicator driver = this._drivers.get(this._driver);
 //        if (driver == null) {
 //            throw new KernelException("No driver is named - " + this._driver);
 //        }
@@ -49,7 +48,7 @@ public class ServiceDiscover implements IServiceDiscover {
 //    }
 
     @Override
-    public Object discover(String serviceId) {
+    public Object discover(ServiceInterfaceMeta serviceInterfaceMeta) {
         return null;
     }
 }

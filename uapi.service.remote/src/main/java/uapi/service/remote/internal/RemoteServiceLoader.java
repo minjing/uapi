@@ -7,7 +7,7 @@ import uapi.service.IRegistry;
 import uapi.service.IServiceLoader;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
-import uapi.service.remote.ICommunicationDriver;
+import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IRemoteServiceConfigurableKey;
 import uapi.service.remote.IServiceDiscover;
 
@@ -32,7 +32,7 @@ public class RemoteServiceLoader implements IServiceLoader {
     IServiceDiscover _svcDiscover;
 
     @Inject
-    Map<String, ICommunicationDriver> _drivers = new HashMap<>();
+    Map<String, ICommunicator> _drivers = new HashMap<>();
 
     @Override
     public String getName() {
@@ -42,7 +42,7 @@ public class RemoteServiceLoader implements IServiceLoader {
     @Override
     public <T> T load(String serviceId) {
         ArgumentChecker.required(serviceId, "serviceId");
-        ICommunicationDriver driver = this._drivers.get(this._discoverDrv);
+        ICommunicator driver = this._drivers.get(this._discoverDrv);
         if (driver == null) {
             throw new KernelException("No driver named - {}", this._discoverDrv);
         }

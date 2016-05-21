@@ -8,8 +8,8 @@ import uapi.helper.ArgumentChecker;
  */
 public class ArgumentMapping {
 
-    private final ArgumentFrom _from;
-    private final String _type;
+    private ArgumentFrom _from;
+    private String _type;
 
     public ArgumentFrom getFrom() {
         return this._from;
@@ -17,6 +17,12 @@ public class ArgumentMapping {
 
     public String getType() {
         return this._type;
+    }
+
+    public ArgumentMapping(
+            final String type) {
+        ArgumentChecker.required(type, "type");
+        this._type = type;
     }
 
     public ArgumentMapping(

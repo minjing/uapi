@@ -1,15 +1,13 @@
 package uapi.service.remote.internal;
 
 import okhttp3.*;
-import okio.BufferedSink;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
-import uapi.service.annotation.Service;
-import uapi.service.remote.ICommunicationDriver;
+import uapi.service.remote.ICommunicator;
+import uapi.service.remote.ServiceMeta;
 import uapi.service.web.HttpMethod;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +20,8 @@ import java.util.Map;
  *
  * }
  */
-//@Service(ICommunicationDriver.class)
-public class RestfulJsonDriver implements ICommunicationDriver {
+//@Service(ICommunicator.class)
+public class RestfulCommunicator implements ICommunicator {
 
     private static final String id = "Restful-Json";
 
@@ -74,7 +72,7 @@ public class RestfulJsonDriver implements ICommunicationDriver {
     }
 
     @Override
-    public Object request(List<Pair> params, Object... args) {
+    public Object request(ServiceMeta serviceMeta, Object... args) {
         return null;
     }
 }

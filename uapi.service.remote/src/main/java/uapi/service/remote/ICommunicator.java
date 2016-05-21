@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * The service invocation driver is used to invoke service
  */
-public interface ICommunicationDriver extends IIdentifiable<String> {
+public interface ICommunicator extends IIdentifiable<String> {
 
-    Object request(List<Pair> params, Object... args);
+    Object request(ServiceMeta serviceMeta, Object... args);
 }
