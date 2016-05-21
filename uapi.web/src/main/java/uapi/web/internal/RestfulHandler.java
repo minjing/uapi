@@ -10,7 +10,7 @@ import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.service.web.HttpMethod;
+import uapi.service.web.*;
 import uapi.web.*;
 import uapi.web.annotation.FromHeader;
 import uapi.web.annotation.FromParam;
@@ -123,7 +123,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                     .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                     .addModifier(Modifier.PUBLIC)
                                     .setName("getMethodArgumentsInfo")
-                                    .setReturnTypeName("uapi.web.ArgumentMapping[]")
+                                    .setReturnTypeName("uapi.service.web.ArgumentMapping[]")
                                     .addParameterBuilder(ParameterMeta.builder()
                                             .setName("method")
                                             .setType(HttpMethod.class.getCanonicalName()))
@@ -158,11 +158,11 @@ public class RestfulHandler extends AnnotationsHandler {
         FromParam fromParam = paramElem.getAnnotation(FromParam.class);
         ArgumentMapping argMapping = null;
         if (fromUri != null) {
-            argMapping = new IndexedArgumentMapping(ArgumentMapping.From.Uri, paramType, fromUri.value());
+            argMapping = new IndexedArgumentMapping(ArgumentFrom.Uri, paramType, fromUri.value());
         } else if (fromHeader != null) {
-            argMapping = new NamedArgumentMapping(ArgumentMapping.From.Header, paramType, fromHeader.value());
+            argMapping = new NamedArgumentMapping(ArgumentFrom.Header, paramType, fromHeader.value());
         } else if (fromParam != null) {
-            argMapping = new NamedArgumentMapping(ArgumentMapping.From.Param, paramType, fromParam.value());
+            argMapping = new NamedArgumentMapping(ArgumentFrom.Param, paramType, fromParam.value());
         }
         return argMapping;
     }

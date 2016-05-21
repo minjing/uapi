@@ -1,7 +1,7 @@
 package uapi.web.internal;
 
 import uapi.helper.ArgumentChecker;
-import uapi.web.ArgumentMapping;
+import uapi.service.web.ArgumentMapping;
 
 import java.util.*;
 

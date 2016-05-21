@@ -1,4 +1,4 @@
-package uapi.web;
+package uapi.service.web;
 
 import uapi.InvalidArgumentException;
 
@@ -14,7 +14,7 @@ public class IndexedArgumentMapping extends ArgumentMapping {
     }
 
     public IndexedArgumentMapping(
-            final From from,
+            final ArgumentFrom from,
             final String type,
             final int index
     ) throws InvalidArgumentException {

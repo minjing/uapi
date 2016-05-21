@@ -1,4 +1,4 @@
-package uapi.web;
+package uapi.service.web;
 
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
@@ -15,7 +15,7 @@ public class NamedArgumentMapping extends ArgumentMapping {
     }
 
     public NamedArgumentMapping(
-            final From from,
+            final ArgumentFrom from,
             final String type,
             final String name
     ) throws InvalidArgumentException {

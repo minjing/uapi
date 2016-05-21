@@ -9,8 +9,7 @@ import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
-import uapi.service.web.Constant;
-import uapi.service.web.HttpMethod;
+import uapi.service.web.*;
 import uapi.web.*;
 
 import javax.servlet.ServletException;
@@ -103,13 +102,13 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         List<Object> argValues = new ArrayList<>();
         Observable.from(argMetas)
                 .subscribe(argMeta -> {
-                    ArgumentMapping.From from = argMeta.getFrom();
+                    ArgumentFrom from = argMeta.getFrom();
                     String value = null;
-                    if (from == ArgumentMapping.From.Header) {
+                    if (from == ArgumentFrom.Header) {
                         value = request.getHeader(((NamedArgumentMapping) argMeta).getName());
-                        } else if (from == ArgumentMapping.From.Uri) {
+                        } else if (from == ArgumentFrom.Uri) {
                         value = uriInfo.uriParams.get(((IndexedArgumentMapping) argMeta).getIndex());
-                    } else if (from == ArgumentMapping.From.Param) {
+                    } else if (from == ArgumentFrom.Param) {
                         value = uriInfo.queryParams.get(((NamedArgumentMapping) argMeta).getName())[0];
                     } else {
                         throw new KernelException("Unsupported from indication {}", from);

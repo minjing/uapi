@@ -1,4 +1,4 @@
-package uapi.web;
+package uapi.service.web;
 
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
@@ -8,27 +8,10 @@ import uapi.helper.ArgumentChecker;
  */
 public class ArgumentMapping {
 
-    public enum From {
-        /**
-         * The argument can be retrieved form HTTP header
-         */
-        Header,
-
-        /**
-         * The argument value can be retrieved from HTTP request query parameters, post parameter
-         */
-        Param,
-
-        /**
-         * The argument value can be retrieved from HTTP request URI
-         */
-        Uri
-    }
-
-    private final From _from;
+    private final ArgumentFrom _from;
     private final String _type;
 
-    public From getFrom() {
+    public ArgumentFrom getFrom() {
         return this._from;
     }
 
@@ -37,7 +20,7 @@ public class ArgumentMapping {
     }
 
     public ArgumentMapping(
-            final From from,
+            final ArgumentFrom from,
             final String type
     ) throws InvalidArgumentException {
         ArgumentChecker.required(from, "from");
