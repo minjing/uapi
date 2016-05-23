@@ -40,7 +40,7 @@ public class ServiceDiscover implements IServiceDiscover {
 //        ArgumentChecker.required(this._host, "host");
 //        ArgumentChecker.required(this._port, "port");
 //        ArgumentChecker.required(this._driver, "driver");
-//        ICommunicator driver = this._drivers.get(this._driver);
+//        ICommunicator driver = this._communicators.get(this._driver);
 //        if (driver == null) {
 //            throw new KernelException("No driver is named - " + this._driver);
 //        }

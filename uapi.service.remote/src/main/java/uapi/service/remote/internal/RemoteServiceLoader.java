@@ -23,7 +23,7 @@ import java.util.Map;
 public class RemoteServiceLoader implements IServiceLoader {
 
     @Config(path=IRemoteServiceConfigurableKey.LOADER_DISCOVER)
-    String _discoverDrv;
+    String _communicatorName;
 
     @Inject
     IRegistry _registry;
@@ -32,7 +32,7 @@ public class RemoteServiceLoader implements IServiceLoader {
     IServiceDiscover _svcDiscover;
 
     @Inject
-    Map<String, ICommunicator> _drivers = new HashMap<>();
+    Map<String, ICommunicator> _communicators = new HashMap<>();
 
     @Override
     public String getName() {
@@ -42,9 +42,9 @@ public class RemoteServiceLoader implements IServiceLoader {
     @Override
     public <T> T load(String serviceId) {
         ArgumentChecker.required(serviceId, "serviceId");
-        ICommunicator driver = this._drivers.get(this._discoverDrv);
-        if (driver == null) {
-            throw new KernelException("No driver named - {}", this._discoverDrv);
+        ICommunicator communicator = this._communicators.get(this._communicatorName);
+        if (communicator == null) {
+            throw new KernelException("No communicator named - {}", this._communicatorName);
         }
         return null;
     }
