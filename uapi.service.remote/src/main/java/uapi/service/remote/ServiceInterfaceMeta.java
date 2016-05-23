@@ -3,7 +3,9 @@ package uapi.service.remote;
 import uapi.helper.ArgumentChecker;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Hold service interface meta information.
@@ -11,7 +13,7 @@ import java.util.List;
 public final class ServiceInterfaceMeta {
 
     private final String _intfId;
-    private final List<ServiceMeta> _svcMetas;
+    private final Map<String, ServiceMeta> _svcMetas;
 
     public ServiceInterfaceMeta(
             final String interfaceId,
@@ -19,7 +21,7 @@ public final class ServiceInterfaceMeta {
         ArgumentChecker.required(interfaceId, "interfaceId");
         ArgumentChecker.required(svcMetas, "svcMetas");
         this._intfId = interfaceId;
-        this._svcMetas = Collections.unmodifiableList(svcMetas);
+        this._svcMetas = new HashMap<>();
     }
 
     public String getInterfaceId() {

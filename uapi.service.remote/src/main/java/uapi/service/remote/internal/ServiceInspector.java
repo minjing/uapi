@@ -1,6 +1,7 @@
 package uapi.service.remote.internal;
 
 import uapi.helper.ArgumentChecker;
+import uapi.service.remote.ServiceInterfaceMeta;
 
 /**
  * The ServiceInspector inspect specific service interface by its id
@@ -8,8 +9,8 @@ import uapi.helper.ArgumentChecker;
  */
 class ServiceInspector {
 
-    void inspect(final String serviceId) {
+    ServiceInterfaceMeta inspect(final String serviceId) {
         ArgumentChecker.required(serviceId, "serviceId");
-        return;
+        return null;
     }
 }

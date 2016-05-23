@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Hold remote service meta information
  */
-public final class ServiceMeta {
+public abstract class ServiceMeta {
 
     private final String _name;
     private List<ArgumentMapping> _argMappings;
@@ -50,4 +50,11 @@ public final class ServiceMeta {
         }
         this._argMappings = Collections.unmodifiableList(argMappings);
     }
+
+    /**
+     * Return name of the communicator which can handle this ServiceMeta
+     *
+     * @return Name of the communicator
+     */
+    public abstract String getCommunicatorName();
 }

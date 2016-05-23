@@ -1,13 +1,21 @@
 package uapi.service.remote.internal;
 
+import com.sun.org.apache.xpath.internal.Arg;
+import javafx.beans.NamedArg;
 import okhttp3.*;
+import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
 import uapi.service.remote.ICommunicator;
 import uapi.service.remote.ServiceMeta;
+import uapi.service.web.ArgumentMapping;
 import uapi.service.web.HttpMethod;
+import uapi.service.web.IndexedArgumentMapping;
+import uapi.service.web.NamedArgumentMapping;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +31,7 @@ import java.util.Map;
 //@Service(ICommunicator.class)
 public class RestfulCommunicator implements ICommunicator {
 
-    private static final String id = "Restful-Json";
+    public static final String id = "Restful-Json";
 
     private static final String CFG_URI     = "uri";
     private static final String CFG_METHOD  = "method";
@@ -73,6 +81,49 @@ public class RestfulCommunicator implements ICommunicator {
 
     @Override
     public Object request(ServiceMeta serviceMeta, Object... args) {
+        ArgumentChecker.required(serviceMeta, "serviceMeta");
+        ArgumentChecker.required(args, "args");
+
+        if (! (serviceMeta instanceof RestfulServiceMeta)) {
+            throw new KernelException("The {} can't handle : {}", this.getClass().getName(), serviceMeta.getClass().getName());
+        }
+        RestfulServiceMeta restfuSvcMeta = (RestfulServiceMeta) serviceMeta;
+        List<ArgumentMapping> argMappings = restfuSvcMeta.getArgumentMappings();
+        if (argMappings.size() != args.length) {
+            throw new KernelException("Found unmatched service {} argument size {}, expect {}",
+                    serviceMeta.getName(), argMappings.size(), args.length);
+        }
+
+        String baseUri = restfuSvcMeta.getUri();
+        HttpMethod reqMethod = restfuSvcMeta.getMethod();
+        List<Object> uriArgs = new ArrayList<>();
+        Map<String, Object> paramArgs = new HashMap<>();
+        for (int i = 0; i < argMappings.size(); i++) {
+            ArgumentMapping argMapping = argMappings.get(i);
+            if (argMapping instanceof IndexedArgumentMapping) {
+                int index = ((IndexedArgumentMapping) argMapping).getIndex();
+                if (index >= args.length) {
+                    throw new KernelException("The service {} argument {}'s index {} is out of real arguments index {}",
+                            restfuSvcMeta.getName(), i, index, args.length - 1);
+                }
+                uriArgs.set(index, args[i]);
+            } else if (argMapping instanceof NamedArgumentMapping) {
+                String argName = ((NamedArgumentMapping) argMapping).getName();
+                paramArgs.put(argName, args[i]);
+            } else {
+                throw new KernelException("Unsupported argument mapping type {}", argMapping.getClass().getName());
+            }
+        }
+
+        Request request = null;
+        if (reqMethod == HttpMethod.GET) {
+            Request.Builder reqBuild = new Request.Builder();
+        } else if (reqMethod == HttpMethod.POST) {
+
+        } else {
+            throw new KernelException("Unsupported HTTP method {}", reqMethod);
+        }
+
         return null;
     }
 }
