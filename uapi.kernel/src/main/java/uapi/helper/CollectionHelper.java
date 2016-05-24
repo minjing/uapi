@@ -21,6 +21,44 @@ public final class CollectionHelper {
     }
 
     /**
+     * Check whether the array contains null element or not
+     *
+     * @param   elements
+     *          The array which will be checked
+     * @param   <T>
+     *          The element type
+     * @return  If found null element in the array then return true otherwise return false
+     */
+    public static <T> boolean hasNull(final T... elements) {
+        ArgumentChecker.required(elements, "elements");
+        for (T element : elements) {
+            if (element == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the collection contains null element or not
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   <T>
+     *          The element type
+     * @return  If found null element in the collection then return true otherwise return false
+     */
+    public static <T> boolean hasNull(final Collection<T> collection) {
+        ArgumentChecker.required(collection, "collection");
+        for (T element : collection) {
+            if (element == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check whether the collection contains one of specified elements and
      * return matched element or null if nothing is matched
      *
@@ -231,6 +269,19 @@ public final class CollectionHelper {
         StringBuilder sb = new StringBuilder();
         Stream.of(array).forEach(item -> sb.append(item).append(separator));
         return sb.deleteCharAt(sb.length() - sepLen).toString();
+    }
+
+    /**
+     * Convert an collection to a string, each collection element will be construct with
+     * {@code DEFAULT_SEPARATOR}
+     * separator
+     *
+     * @param   collection
+     *          The collection
+     * @return  The string
+     */
+    public static String asString(final Collection collection) {
+        return asString(collection, DEFAULT_SEPARATOR);
     }
 
     /**

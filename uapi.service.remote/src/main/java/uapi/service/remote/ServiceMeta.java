@@ -2,6 +2,8 @@ package uapi.service.remote;
 
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
+import uapi.helper.StringHelper;
 import uapi.service.web.ArgumentMapping;
 
 import java.util.Collections;
@@ -13,19 +15,27 @@ import java.util.List;
 public abstract class ServiceMeta {
 
     private final String _name;
+    private final String _returnTypeName;
     private List<ArgumentMapping> _argMappings;
 
     public ServiceMeta(
             final String name,
+            final String valueParserName,
             final List<ArgumentMapping> argMappings) {
         ArgumentChecker.required(name, "name");
+        ArgumentChecker.required(valueParserName, "valueParserName");
         ArgumentChecker.required(argMappings, "argMappings");
         this._name = name;
+        this._returnTypeName = valueParserName;
         this._argMappings = Collections.unmodifiableList(argMappings);
     }
 
     public String getName() {
         return this._name;
+    }
+
+    public String getReturnTypeName() {
+        return this._returnTypeName;
     }
 
     public List<ArgumentMapping> getArgumentMappings() {
@@ -57,4 +67,10 @@ public abstract class ServiceMeta {
      * @return Name of the communicator
      */
     public abstract String getCommunicatorName();
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("name={},returnTypeName={},communicatorName={},argMappings={}",
+                this._name, this._returnTypeName, getCommunicatorName(), CollectionHelper.asString(this._argMappings));
+    }
 }

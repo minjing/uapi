@@ -7,6 +7,32 @@ import spock.lang.Specification
  */
 class CollectionHelperTest extends Specification {
 
+    def 'Test hasNull method on array'() {
+        expect:
+        CollectionHelper.hasNull(array) == hasNull
+
+        where:
+        array                           | hasNull
+        ["1", "2", "3"] as String[]     | false
+        [null, "2", "3"] as String[]    | true
+        ["1", "2", null] as String[]    | true
+        ["1", null, "3"] as String[]    | true
+        [null, null, null] as String[]  | true
+    }
+
+    def 'Test hasNull method on collection'() {
+        expect:
+        CollectionHelper.hasNull(array) == hasNull
+
+        where:
+        array               | hasNull
+        ["1", "2", "3"]     | false
+        [null, "2", "3"]    | true
+        ["1", "2", null]    | true
+        ["1", null, "3"]    | true
+        [null, null, null]  | true
+    }
+
     def 'Test isContains method on collection'() {
         expect:
         CollectionHelper.isContains(collection, item1, item2) == isContains
@@ -85,5 +111,15 @@ class CollectionHelperTest extends Specification {
         array                   | item1                 | item2                 | result
         ["1", "2"] as String[]  | new String("1")       | new String("2")       | null
         ["1", "2"] as String[]  | "1"                   | "2"                   | "1"
+    }
+
+    def 'Test asString method on collection'() {
+        expect:
+        CollectionHelper.asString(collection) == result
+
+        where:
+        collection              | result
+        ["1", "2"]              | "1,2"
+        ["1", null]             | "1,null"
     }
 }
