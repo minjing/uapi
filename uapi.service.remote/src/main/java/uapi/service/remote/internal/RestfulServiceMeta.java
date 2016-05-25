@@ -15,16 +15,20 @@ public class RestfulServiceMeta extends ServiceMeta {
 
     private String _uri;
     private HttpMethod _method;
+    private String _format;
 
     public RestfulServiceMeta(
             final String name,
             final String valueParserName,
             final List<ArgumentMapping> argMappings,
             final String uri,
-            final HttpMethod httpMethod) {
+            final HttpMethod httpMethod,
+            final String format
+    ) {
         super(name, valueParserName, argMappings);
         ArgumentChecker.required(uri, "uri");
         ArgumentChecker.required(httpMethod, "httpMethod");
+        ArgumentChecker.required(format, "format");
         this._uri = uri;
         this._method = httpMethod;
     }
@@ -37,6 +41,10 @@ public class RestfulServiceMeta extends ServiceMeta {
         return this._method;
     }
 
+    public String getFormat() {
+        return this._format;
+    }
+
     @Override
     public String getCommunicatorName() {
         return RestfulCommunicator.id;
@@ -44,6 +52,7 @@ public class RestfulServiceMeta extends ServiceMeta {
 
     @Override
     public String toString() {
-        return StringHelper.makeString("RestfulServiceMeta[{},uri={},method={}]", super.toString(), this._uri, this._method);
+        return StringHelper.makeString("RestfulServiceMeta[{},uri={},method={},format{}]",
+                super.toString(), this._uri, this._method, this._format);
     }
 }

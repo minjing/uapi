@@ -2,6 +2,8 @@ dependencies {
     compile project(':uapi.kernel')
     compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
+
+    compile "com.fasterxml.jackson.jr:jackson-jr-objects:${jackson_version}"
 }
 
 jar {
