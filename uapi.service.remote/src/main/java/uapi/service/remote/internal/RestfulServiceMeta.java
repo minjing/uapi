@@ -44,8 +44,7 @@ public class RestfulServiceMeta extends ServiceMeta {
     public String getFormat() {
         return this._format;
     }
-
-    @Override
+    
     public String getCommunicatorName() {
         return RestfulCommunicator.id;
     }

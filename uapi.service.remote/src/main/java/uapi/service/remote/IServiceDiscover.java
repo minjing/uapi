@@ -5,5 +5,5 @@ package uapi.service.remote;
  */
 public interface IServiceDiscover {
 
-    Object discover(ServiceInterfaceMeta serviceInterfaceMeta);
+    ServiceInterfaceMeta discover(ServiceInterfaceMeta serviceInterfaceMeta);
 }

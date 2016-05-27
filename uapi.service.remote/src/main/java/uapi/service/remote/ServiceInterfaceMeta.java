@@ -1,11 +1,9 @@
 package uapi.service.remote;
 
+import rx.Observable;
 import uapi.helper.ArgumentChecker;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Hold service interface meta information.
@@ -22,6 +20,7 @@ public final class ServiceInterfaceMeta {
         ArgumentChecker.required(svcMetas, "svcMetas");
         this._intfId = interfaceId;
         this._svcMetas = new HashMap<>();
+        Observable.from(svcMetas).subscribe(svcMeta -> this._svcMetas.put(svcMeta.getName(), svcMeta));
     }
 
     public String getInterfaceId() {
@@ -32,5 +31,16 @@ public final class ServiceInterfaceMeta {
         ArgumentChecker.required(serviceName, "serviceName");
         ArgumentChecker.required(argumentTypes, "argumentType");
         return null;
+    }
+
+    public Collection<ServiceMeta> getServices() {
+        return this._svcMetas.values();
+    }
+
+    public void updateServiceMetas(List<ServiceMeta> serviceMetas) {
+        Observable.from(serviceMetas)
+                .subscribe(serviceMeta -> {
+
+                });
     }
 }

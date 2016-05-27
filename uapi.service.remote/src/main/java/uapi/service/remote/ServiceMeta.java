@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Hold remote service meta information
  */
-public abstract class ServiceMeta {
+public class ServiceMeta {
 
     private final String _name;
     private final String _returnTypeName;
@@ -20,13 +20,13 @@ public abstract class ServiceMeta {
 
     public ServiceMeta(
             final String name,
-            final String valueParserName,
+            final String returnTypeName,
             final List<ArgumentMapping> argMappings) {
         ArgumentChecker.required(name, "name");
-        ArgumentChecker.required(valueParserName, "valueParserName");
+        ArgumentChecker.required(returnTypeName, "valueParserName");
         ArgumentChecker.required(argMappings, "argMappings");
         this._name = name;
-        this._returnTypeName = valueParserName;
+        this._returnTypeName = returnTypeName;
         this._argMappings = Collections.unmodifiableList(argMappings);
     }
 
@@ -61,16 +61,16 @@ public abstract class ServiceMeta {
         this._argMappings = Collections.unmodifiableList(argMappings);
     }
 
-    /**
-     * Return name of the communicator which can handle this ServiceMeta
-     *
-     * @return Name of the communicator
-     */
-    public abstract String getCommunicatorName();
+//    /**
+//     * Return name of the communicator which can handle this ServiceMeta
+//     *
+//     * @return Name of the communicator
+//     */
+//    public abstract String getCommunicatorName();
 
     @Override
     public String toString() {
-        return StringHelper.makeString("name={},returnTypeName={},communicatorName={},argMappings={}",
-                this._name, this._returnTypeName, getCommunicatorName(), CollectionHelper.asString(this._argMappings));
+        return StringHelper.makeString("name={},returnTypeName={},argMappings={}",
+                this._name, this._returnTypeName, CollectionHelper.asString(this._argMappings));
     }
 }

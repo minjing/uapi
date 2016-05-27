@@ -7,7 +7,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Service;
 
 /**
- * Created by xquan on 5/25/2016.
+ * A string formatter for JSON
  */
 @Service(IStringFormatter.class)
 public class JsonStringFormatter implements IStringFormatter, IIdentifiable<String> {
