@@ -72,7 +72,7 @@ public class SayGreeting {
         this._greeting.greeting();
     }
 }
-```java
+```
 
 ### Use Service Factory
 
@@ -131,7 +131,7 @@ name: Hello
 age: 22
 ```
 
-And then you need launch application with *-config=conf/config.yml" option.
+And then you need launch application with *-config=conf/config.yml" option, the configuration will be inject to the service automatically.
 
 *Note:* The IRegistry is required, since the Configuration framework need use it to find out dependent service.
 
