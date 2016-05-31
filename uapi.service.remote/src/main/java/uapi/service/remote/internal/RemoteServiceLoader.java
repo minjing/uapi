@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) 2010 The UAPI Authors
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at the LICENSE file.
+ *
+ * You must gained the permission from the authors if you want to
+ * use the project into a commercial product
+ */
+
 package uapi.service.remote.internal;
 
 import uapi.KernelException;
@@ -10,6 +19,7 @@ import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IRemoteServiceConfigurableKey;
 import uapi.service.remote.IServiceDiscover;
+import uapi.service.remote.ServiceInterfaceMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +39,16 @@ public class RemoteServiceLoader implements IServiceLoader {
     IRegistry _registry;
 
     @Inject
+    ServiceInspector _svcInspector;
+
+    @Inject
     IServiceDiscover _svcDiscover;
 
     @Inject
     Map<String, ICommunicator> _communicators = new HashMap<>();
+
+    @Inject
+    ProxyBuilder _proxyBuilder;
 
     @Override
     public String getName() {
@@ -46,6 +62,8 @@ public class RemoteServiceLoader implements IServiceLoader {
         if (communicator == null) {
             throw new KernelException("No communicator named - {}", this._communicatorName);
         }
-        return null;
+        ServiceInterfaceMeta svcIntfMeta = this._svcInspector.inspect(serviceId);
+        svcIntfMeta = this._svcDiscover.discover(svcIntfMeta);
+        return (T) this._proxyBuilder.build(svcIntfMeta);
     }
 }

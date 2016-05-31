@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) 2010 The UAPI Authors
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at the LICENSE file.
+ *
+ * You must gained the permission from the authors if you want to
+ * use the project into a commercial product
+ */
+
 package uapi.service.remote.internal;
 
 import okhttp3.*;
@@ -48,15 +57,15 @@ public class RestfulCommunicator implements ICommunicator {
         if (! (serviceMeta instanceof RestfulServiceMeta)) {
             throw new KernelException("The {} can't handle : {}", this.getClass().getName(), serviceMeta.getClass().getName());
         }
-        RestfulServiceMeta restfuSvcMeta = (RestfulServiceMeta) serviceMeta;
-        List<ArgumentMapping> argMappings = restfuSvcMeta.getArgumentMappings();
+        RestfulServiceMeta restfulSvcMeta = (RestfulServiceMeta) serviceMeta;
+        List<ArgumentMapping> argMappings = restfulSvcMeta.getArgumentMappings();
         if (argMappings.size() != args.length) {
             throw new KernelException("Found unmatched service {} argument size {}, expect {}",
                     serviceMeta.getName(), argMappings.size(), args.length);
         }
 
-        String format = restfuSvcMeta.getFormat();
-        HttpMethod reqMethod = restfuSvcMeta.getMethod();
+        String format = restfulSvcMeta.getFormat();
+        HttpMethod reqMethod = restfulSvcMeta.getMethod();
         List<Triple<ArgumentMapping, String, Object>> uriArgs = new ArrayList<>();
         Map<String, Triple<ArgumentMapping, String, Object>> paramArgs = new HashMap<>();
         Map<String, Triple<ArgumentMapping, String, Object>> headerArgs = new HashMap<>();
@@ -66,7 +75,7 @@ public class RestfulCommunicator implements ICommunicator {
                 int index = ((IndexedArgumentMapping) argMapping).getIndex();
                 if (index >= args.length) {
                     throw new KernelException("The service {} argument {}'s index {} is out of real arguments index {}",
-                            restfuSvcMeta.getName(), i, index, args.length - 1);
+                            restfulSvcMeta.getName(), i, index, args.length - 1);
                 }
                 uriArgs.set(index, new Triple<>(argMapping, format, args[i]));
             } else if (argMapping instanceof NamedArgumentMapping) {
@@ -84,12 +93,12 @@ public class RestfulCommunicator implements ICommunicator {
         // Ensure urlArgs must be sequent
         if (CollectionHelper.hasNull(uriArgs)) {
             throw new KernelException("The uri arguments of service {} has empty argument: {}",
-                    restfuSvcMeta.getName(), CollectionHelper.asString(uriArgs));
+                    restfulSvcMeta.getName(), CollectionHelper.asString(uriArgs));
         }
 
         // Construct request uri from uriArgs
         Request.Builder reqBuild = new Request.Builder();
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(restfuSvcMeta.getUri()).newBuilder();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(restfulSvcMeta.getUri()).newBuilder();
         Observable.from(uriArgs).subscribe(uriArg -> urlBuilder.addPathSegment(encodeValue(uriArg)));
 
         // Construct request parameters
@@ -122,9 +131,9 @@ public class RestfulCommunicator implements ICommunicator {
         try {
             Response response = httpClient.newCall(request).execute();
             return decodeResponse(new Triple<>(
-                    restfuSvcMeta.getReturnTypeName(), restfuSvcMeta.getFormat(), response.body().string()));
+                    restfulSvcMeta.getReturnTypeName(), restfulSvcMeta.getFormat(), response.body().string()));
         } catch (IOException ex) {
-            throw new KernelException(ex, "Encounter an error when invoke service {}", restfuSvcMeta.toString());
+            throw new KernelException(ex, "Encounter an error when invoke service {}", restfulSvcMeta.toString());
         }
     }
 
