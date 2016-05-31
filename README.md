@@ -18,6 +18,8 @@ It contains below components:
 * Flow - The generic work flow framework
 * Web - The web framework to support RESTful service
 
+*This framework is still under developing, most features are unstable and the APIs may be changed frequently, welcome to evaluate and give me the feedback*
+
 ## A DI framework
 
 The core component of UAPI is a DI framework which is Annotation based.
