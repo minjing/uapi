@@ -9,6 +9,8 @@
 
 package uapi.service.web;
 
+import uapi.InvalidArgumentException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +59,26 @@ public enum HttpMethod {
             httpMethods.add(TRACE);
         }
         return httpMethods.toArray(new HttpMethod[httpMethods.size()]);
+    }
+
+    public static HttpMethod parse(String value) {
+        if (HttpMethod.GET.name().equalsIgnoreCase(value)) {
+            return HttpMethod.GET;
+        } else if (HttpMethod.PUT.name().equalsIgnoreCase(value)) {
+            return HttpMethod.PUT;
+        } else if (HttpMethod.POST.name().equalsIgnoreCase(value)) {
+            return HttpMethod.POST;
+        } else if (HttpMethod.DELETE.name().equalsIgnoreCase(value)) {
+            return HttpMethod.DELETE;
+        } else if (HttpMethod.OPTIONS.name().equalsIgnoreCase(value)) {
+            return HttpMethod.OPTIONS;
+        } else if (HttpMethod.HEAD.name().equalsIgnoreCase(value)) {
+            return HttpMethod.HEAD;
+        } else if (HttpMethod.TRACE.name().equalsIgnoreCase(value)) {
+            return HttpMethod.TRACE;
+        } else {
+            throw new InvalidArgumentException("No HttpMethod can be mapped to {}", value);
+        }
     }
 
     private final int _value;

@@ -5,6 +5,7 @@ dependencies {
     compile project(':uapi.config')
     compile project(':uapi.service')
 
+    compile ("com.fasterxml.jackson.core:jackson-annotations:${jackson_version}")
     compile ("com.squareup.okhttp3:okhttp:${okhttp_version}")
 }
 

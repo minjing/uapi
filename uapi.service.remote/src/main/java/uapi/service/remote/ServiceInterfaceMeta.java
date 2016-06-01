@@ -9,7 +9,10 @@
 
 package uapi.service.remote;
 
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import rx.Observable;
+import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 
 import java.util.*;
@@ -20,7 +23,8 @@ import java.util.*;
 public final class ServiceInterfaceMeta {
 
     private final String _intfId;
-    private final Map<String, ServiceMeta> _svcMetas;
+    private final Multimap<String, ServiceMeta> _svcMetas;
+    private String _commName;
 
     public ServiceInterfaceMeta(
             final String interfaceId,
@@ -28,7 +32,7 @@ public final class ServiceInterfaceMeta {
         ArgumentChecker.required(interfaceId, "interfaceId");
         ArgumentChecker.required(svcMetas, "svcMetas");
         this._intfId = interfaceId;
-        this._svcMetas = new HashMap<>();
+        this._svcMetas = LinkedListMultimap.create();
         Observable.from(svcMetas).subscribe(svcMeta -> this._svcMetas.put(svcMeta.getName(), svcMeta));
     }
 
@@ -36,20 +40,46 @@ public final class ServiceInterfaceMeta {
         return this._intfId;
     }
 
-    public ServiceMeta getService(String serviceName, String... argumentTypes) {
-        ArgumentChecker.required(serviceName, "serviceName");
-        ArgumentChecker.required(argumentTypes, "argumentType");
-        return null;
+    public void updateServiceMetas(List<ServiceMeta> svcMetas) {
+        ArgumentChecker.required(svcMetas, "svcMetas");
+        if (this._svcMetas.size() != svcMetas.size()) {
+            throw new KernelException("Defined different service count, expect {}, actually {}",
+                    this._svcMetas.size(), svcMetas.size());
+        }
+        // Check updated service metas are matched which exiting service metas
+        for (ServiceMeta svcMeta : svcMetas) {
+            ArgumentChecker.notNull(svcMeta, "svcMeta");
+            String name = svcMeta.getName();
+            Collection<ServiceMeta> existings = this._svcMetas.get(name);
+            if (existings == null || existings.size() == 0) {
+                throw new KernelException("No service meta was found by name - {}", name);
+            }
+            boolean isMatched = false;
+            for (ServiceMeta existing : existings) {
+                if (existing.isSame(svcMeta)) {
+                    isMatched = true;
+                    break;
+                }
+            }
+            if (! isMatched) {
+                throw new KernelException("Can't found matched service meta for {}", svcMeta);
+            }
+        }
+        // Clean all existing service metas and put updated service meta
+        this._svcMetas.clear();
+        Observable.from(svcMetas).subscribe(svcMeta -> this._svcMetas.put(svcMeta.getName(), svcMeta));
     }
 
     public Collection<ServiceMeta> getServices() {
         return this._svcMetas.values();
     }
 
-    public void updateServiceMetas(List<ServiceMeta> serviceMetas) {
-        Observable.from(serviceMetas)
-                .subscribe(serviceMeta -> {
+    public void setCommunicatorName(String communicatorName) {
+        ArgumentChecker.required(communicatorName, "communicatorName");
+        this._commName = communicatorName;
+    }
 
-                });
+    public String getCommunicatorName() {
+        return this._commName;
     }
 }

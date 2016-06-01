@@ -9,6 +9,8 @@
 
 package uapi.service.remote;
 
+import java.util.List;
+
 /**
  * The IServiceInterfaceProxy will act as specific service proxy to
  * interactive with remote real service.
@@ -21,7 +23,7 @@ public interface IServiceInterfaceProxy {
      * @param   communicator
      *          The ICommunicator instance
      */
-    void setCommunicator(ICommunicator communicator);
+    void setCommunicators(List<ICommunicator> communicator);
 
     /**
      * Set service interface meta class

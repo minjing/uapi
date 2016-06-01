@@ -23,6 +23,14 @@ public class IndexedArgumentMapping extends ArgumentMapping {
     }
 
     public IndexedArgumentMapping(
+            final String type,
+            final int index
+    ) throws InvalidArgumentException {
+        super(type);
+        this._idx = index;
+    }
+
+    public IndexedArgumentMapping(
             final ArgumentFrom from,
             final String type,
             final int index

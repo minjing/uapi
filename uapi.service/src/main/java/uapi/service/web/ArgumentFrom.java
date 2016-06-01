@@ -9,6 +9,8 @@
 
 package uapi.service.web;
 
+import uapi.KernelException;
+
 /**
  * Indicate where is the argument from.
  */
@@ -27,5 +29,17 @@ public enum ArgumentFrom {
     /**
      * The argument value can be retrieved from HTTP request URI
      */
-    Uri
+    Uri;
+
+    public static ArgumentFrom parse(String from) {
+        if (Header.name().equalsIgnoreCase(from)) {
+            return Header;
+        } else if (Param.name().equalsIgnoreCase(from)) {
+            return Param;
+        } else if (Uri.name().equalsIgnoreCase(from)) {
+            return Uri;
+        } else {
+            throw new KernelException("No ArgumentFrom can be mapped to {}", from);
+        }
+    }
 }

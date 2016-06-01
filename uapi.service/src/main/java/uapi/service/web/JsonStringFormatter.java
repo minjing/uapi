@@ -15,11 +15,14 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Service;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * A string formatter for JSON
  */
 @Service(IStringFormatter.class)
-public class JsonStringFormatter implements IStringFormatter, IIdentifiable<String> {
+public class JsonStringFormatter implements IStringFormatter {
 
     public static final String NAME = "JSON";
 
@@ -50,7 +53,13 @@ public class JsonStringFormatter implements IStringFormatter, IIdentifiable<Stri
         ArgumentChecker.required(value, "value");
         ArgumentChecker.required(type, "type");
         try {
-            return JSON.std.beanFrom(type, value);
+            if (type.equals(Map.class)) {
+                return JSON.std.mapFrom(value);
+            } else if (type.equals(List.class)) {
+                return JSON.std.listFrom(value);
+            } else {
+                return JSON.std.beanFrom(type, value);
+            }
         } catch (Exception ex) {
             throw new KernelException(ex);
         }

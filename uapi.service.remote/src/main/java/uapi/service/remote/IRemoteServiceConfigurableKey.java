@@ -30,7 +30,6 @@ public interface IRemoteServiceConfigurableKey extends IConfigurableKey {
 
     String DISCOVER_COMM        = "service.remote.discover.communicator";
     String DISCOVER_HOST        = "service.remote.discover.host";
-    String DISCOVER_PORT        = "service.remote.discover.port";
-    String DISCOVER_CALL_TYPE   = "service.remote.discover.call_type";
+    String DISCOVER_PORT        = "service.remote.discover.port";;
     String DISCOVER_URI_PREFIX  = "service.remote.discover.uri_prefix";
 }

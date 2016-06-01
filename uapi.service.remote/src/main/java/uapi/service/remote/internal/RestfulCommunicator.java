@@ -148,7 +148,7 @@ public class RestfulCommunicator implements ICommunicator {
     private String encodeValue(Triple<ArgumentMapping, String, Object> valueInfo) {
         String typeName = valueInfo.getLeftValue().getType();
         IStringResolver resolver = this._resolvers.get(typeName);
-        if (resolver ==  null) {
+        if (resolver == null) {
             throw new KernelException("No resolver was mapped to name {}", typeName);
         }
         return resolver.encode(valueInfo.getRightValue(), valueInfo.getCenterValue());

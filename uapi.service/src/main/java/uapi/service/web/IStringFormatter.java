@@ -9,12 +9,13 @@
 
 package uapi.service.web;
 
+import uapi.IIdentifiable;
 import uapi.KernelException;
 
 /**
  * Created by xquan on 5/25/2016.
  */
-public interface IStringFormatter<T> {
+public interface IStringFormatter<T> extends IIdentifiable<String> {
 
     String format(T value, Class<T> type) throws KernelException;
 

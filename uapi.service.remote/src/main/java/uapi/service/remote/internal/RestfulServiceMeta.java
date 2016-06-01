@@ -28,13 +28,13 @@ public class RestfulServiceMeta extends ServiceMeta {
 
     public RestfulServiceMeta(
             final String name,
-            final String valueParserName,
+            final String returnTypeName,
             final List<ArgumentMapping> argMappings,
             final String uri,
             final HttpMethod httpMethod,
             final String format
     ) {
-        super(name, valueParserName, argMappings);
+        super(name, returnTypeName, argMappings);
         ArgumentChecker.required(uri, "uri");
         ArgumentChecker.required(httpMethod, "httpMethod");
         ArgumentChecker.required(format, "format");

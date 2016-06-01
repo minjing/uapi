@@ -44,6 +44,11 @@ public class ArgumentMapping {
         this._type = type;
     }
 
+    public boolean isSameType(ArgumentMapping argumentMapping) {
+        ArgumentChecker.required(argumentMapping, "argumentMapping");
+        return this._type.equals(argumentMapping._type);
+    }
+
     @Override
     public String toString() {
         return "ArgumentMapping[from=" + this._from + ", type=" + this._type + "]";

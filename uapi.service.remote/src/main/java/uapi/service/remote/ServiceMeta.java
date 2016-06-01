@@ -51,31 +51,26 @@ public class ServiceMeta {
         return this._argMappings;
     }
 
-    public void updateArgumentMappings(List<ArgumentMapping> argMappings) {
-        ArgumentChecker.required(argMappings, "argMappings");
-        if (this._argMappings.size() != argMappings.size()) {
-            throw new InvalidArgumentException(
-                    "The service {} argument size is not matched, expect {} actually {}",
-                    this._name, this._argMappings.size(), argMappings.size());
+    public boolean isSame(ServiceMeta other) {
+        if (other == null) {
+            return false;
+        }
+        if (! this._name.equals(other._name)) {
+            return false;
+        }
+        if (! this._returnTypeName.equals(other._name)) {
+            return false;
+        }
+        if (this._argMappings.size() != other._argMappings.size()) {
+            return false;
         }
         for (int i = 0; i < this._argMappings.size(); i++) {
-            ArgumentMapping argMapping1 = this._argMappings.get(i);
-            ArgumentMapping argMapping2 = argMappings.get(i);
-            if (! argMapping1.getType().equals(argMapping2.getType())) {
-                throw new InvalidArgumentException(
-                        "Found unmatched argument in service {}, expected {} actually {}",
-                        this._name, argMapping1, argMapping2);
+            if (! this._argMappings.get(i).isSameType(other._argMappings.get(i))) {
+                return false;
             }
         }
-        this._argMappings = Collections.unmodifiableList(argMappings);
+        return true;
     }
-
-//    /**
-//     * Return name of the communicator which can handle this ServiceMeta
-//     *
-//     * @return Name of the communicator
-//     */
-//    public abstract String getCommunicatorName();
 
     @Override
     public String toString() {
