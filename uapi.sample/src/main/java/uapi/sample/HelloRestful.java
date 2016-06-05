@@ -20,7 +20,7 @@ import uapi.web.annotation.Restful;
 /**
  * The restful service for hello
  */
-@Service(IRestfulService.class)
+@Service()
 @Exposure("hello")
 public class HelloRestful {
 

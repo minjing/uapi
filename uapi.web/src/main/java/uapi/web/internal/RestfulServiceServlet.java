@@ -46,10 +46,10 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     ILogger _logger;
 
     @Inject
-    Map<String, IResponseWriter> _responseEncoders = new HashMap<>();
+    Map<String, IResponseWriter> _responseWriters = new HashMap<>();
 
     @Inject
-    Map<String, IRestfulService> _httpSvcs = new HashMap<>();
+    Map<String, IRestfulService> _restSvcs = new HashMap<>();
 
     @Inject
     IRegistry _registry;
@@ -103,7 +103,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
         String svcName = uriInfo.serviceName;
-        IRestfulService matchedWebSvc = this._httpSvcs.get(svcName);
+        IRestfulService matchedWebSvc = this._restSvcs.get(svcName);
         if (matchedWebSvc == null) {
             throw new KernelException("No web service is matched name {}", svcName);
         }
@@ -126,7 +126,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                 }, this._logger::error);
         Object result = matchedWebSvc.invoke(method, argValues);
 
-        IResponseWriter encoder = this._responseEncoders.get(this._encoderName);
+        IResponseWriter encoder = this._responseWriters.get(this._encoderName);
         if (encoder == null) {
             throw new KernelException("The response encode was not found - {}", this._encoderName);
         }

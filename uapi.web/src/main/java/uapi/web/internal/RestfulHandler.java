@@ -17,6 +17,7 @@ import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
+import uapi.service.IServiceBuilderHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
 import uapi.service.web.*;
@@ -92,7 +93,6 @@ public class RestfulHandler extends AnnotationsHandler {
                 throw new KernelException("Found multiple methods are mapped to same http method: {}", found);
             }
 
-
             ExecutableElement execElem = (ExecutableElement) methodElement;
             MethodArgumentsMapping methodArgMapping = new MethodArgumentsMapping(methodName);
             Observable.from(execElem.getParameters())
@@ -118,6 +118,10 @@ public class RestfulHandler extends AnnotationsHandler {
                     String codeGetId = StringHelper.makeString("return \"{}\";", clsBuilder.getTransience(EXPOSED_NAME).toString());
                     Map<String, Object> model = new HashMap<>();
                     model.put("model", httpMethodMappings);
+
+                    IServiceBuilderHelper svcHelper = clsBuilder.getTransience(IServiceBuilderHelper.key);
+                    svcHelper.addServiceId(IRestfulService.class.getCanonicalName());
+
                     clsBuilder.addImplement(IRestfulService.class.getCanonicalName())
                             // implement getId method
                             .addMethodBuilder(MethodMeta.builder()

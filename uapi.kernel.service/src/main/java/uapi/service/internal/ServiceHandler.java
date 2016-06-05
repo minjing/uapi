@@ -15,8 +15,10 @@ import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.service.IService;
+import uapi.service.IServiceBuilderHelper;
 import uapi.service.IServiceFactory;
 import uapi.service.annotation.Service;
 
@@ -36,6 +38,8 @@ public final class ServiceHandler extends AnnotationsHandler {
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Service.class };
 
     private static final String TEMPLATE_GET_IDS            = "template/getIds_method.ftl";
+
+    private static final String VAR_SVC_IDS                 = "serviceIds";
 
     @Override
     protected Class<? extends Annotation>[] getOrderedAnnotations() {
@@ -76,8 +80,8 @@ public final class ServiceHandler extends AnnotationsHandler {
                 serviceIds = new String[] { svcId.toString() };
             }
             Template tempGetIds = builderCtx.loadTemplate(TEMPLATE_GET_IDS);
-            Map<String, Object> tempModelInit = new HashMap<>();
-            tempModelInit.put("serviceIds", serviceIds);
+            Map<String, Object> tempModelGetIds = new HashMap<>();
+            tempModelGetIds.put(VAR_SVC_IDS, serviceIds);
 
             // Build class builder
             classBuilder
@@ -96,7 +100,11 @@ public final class ServiceHandler extends AnnotationsHandler {
                             .setReturnTypeName(IService.METHOD_GETIDS_RETURN_TYPE)
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempGetIds)
-                                    .setModel(tempModelInit)));
+                                    .setModel(tempModelGetIds)));
+
+            // Add helper
+            ServiceBuilderHelper helper = new ServiceBuilderHelper(tempModelGetIds);
+            classBuilder.putTransience(IServiceBuilderHelper.key, helper);
         });
     }
 
@@ -126,5 +134,25 @@ public final class ServiceHandler extends AnnotationsHandler {
                 .map(typeElem -> typeElem.getQualifiedName().toString())
                 .subscribe(types::add);
         return types;
+    }
+
+    private final class ServiceBuilderHelper implements IServiceBuilderHelper {
+
+        private final Map<String, Object> _tempGetIdsModel;
+
+        private ServiceBuilderHelper(final Map<String, Object> tempGetIdsModel) {
+            this._tempGetIdsModel = tempGetIdsModel;
+        }
+
+        @Override
+        public void addServiceId(String serviceId) {
+            ArgumentChecker.required(serviceId, "serviceId");
+            List<String> newIdList = new ArrayList<>();
+            String[] existings = (String[]) this._tempGetIdsModel.get(VAR_SVC_IDS);
+            Observable.from(existings).subscribe(newIdList::add);
+            newIdList.add(serviceId);
+            String[] newIds = newIdList.toArray(new String[newIdList.size()]);
+            this._tempGetIdsModel.put(VAR_SVC_IDS, newIds);
+        }
     }
 }
