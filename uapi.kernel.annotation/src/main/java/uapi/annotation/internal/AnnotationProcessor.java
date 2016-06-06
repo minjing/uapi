@@ -65,7 +65,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                     Object handler = handlerClass.newInstance();
                     if (!(handler instanceof AnnotationsHandler)) {
                         this._logger.error(
-                                "The handler [{}] is not an instance of AnnotationHandler",
+                                "The handler [{}] is not an instance of AnnotationsHandler",
                                 handler.getClass().getName());
                         return;
                     }
@@ -115,6 +115,11 @@ public class AnnotationProcessor extends AbstractProcessor {
         }
         //this._logger.info("Start processing annotation for {} " + roundEnv.getRootElements());
         BuilderContext buildCtx = new BuilderContext(this._procEnv, roundEnv);
+        // Init for builder context
+        Observable.from(this._handlers)
+                .map(handler -> handler.getHelper())
+                .filter(helper -> helper != null)
+                .subscribe(buildCtx::putHelper);
         Observable.from(this._handlers)
                 .doOnNext(handler -> _logger.info("Invoke annotation handler -> {}", handler))
                 .subscribe(handler -> handler.handle(buildCtx), _logger::error);

@@ -33,6 +33,14 @@ public interface IAnnotationsHandler {
      */
     Class<? extends Annotation>[] getSupportedAnnotations();
 
+
+    /**
+     * Return the specific helper for this handler
+     *
+     * @return  The handler helper or null if no helper for this handler
+     */
+    IHandlerHelper getHelper();
+
     /**
      * Handle all annotated element with context
      *

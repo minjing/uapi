@@ -18,7 +18,7 @@ import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.service.IService;
-import uapi.service.IServiceBuilderHelper;
+import uapi.service.IServiceHandlerHelper;
 import uapi.service.IServiceFactory;
 import uapi.service.annotation.Service;
 
@@ -26,7 +26,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A annotation handler used to handler Service annotation
@@ -41,9 +40,18 @@ public final class ServiceHandler extends AnnotationsHandler {
 
     private static final String VAR_SVC_IDS                 = "serviceIds";
 
+    private static final String MODEL_GET_IDS               = "ModelGetId";
+
+    private final ServiceHandlerHelper _helper = new ServiceHandlerHelper();
+
     @Override
     protected Class<? extends Annotation>[] getOrderedAnnotations() {
         return orderedAnnotations;
+    }
+
+    @Override
+    public IHandlerHelper getHelper() {
+        return this._helper;
     }
 
     @Override
@@ -80,8 +88,9 @@ public final class ServiceHandler extends AnnotationsHandler {
                 serviceIds = new String[] { svcId.toString() };
             }
             Template tempGetIds = builderCtx.loadTemplate(TEMPLATE_GET_IDS);
-            Map<String, Object> tempModelGetIds = new HashMap<>();
-            tempModelGetIds.put(VAR_SVC_IDS, serviceIds);
+            this._helper.addServiceId(classBuilder, serviceIds);
+//            Map<String, Object> tempModelGetIds = classBuilder.createTransienceIfAbsent(MODEL_GET_IDS, HashMap::new);
+//            tempModelGetIds.put(VAR_SVC_IDS, serviceIds);
 
             // Build class builder
             classBuilder
@@ -100,11 +109,13 @@ public final class ServiceHandler extends AnnotationsHandler {
                             .setReturnTypeName(IService.METHOD_GETIDS_RETURN_TYPE)
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempGetIds)
-                                    .setModel(tempModelGetIds)));
+                                    .setModel(classBuilder.getTransience(MODEL_GET_IDS))));
 
+            // Put model to the class builder to make other handler can modify it by helper
+//            classBuilder.putTransience(MODEL_GET_IDS, tempModelGetIds);
             // Add helper
-            ServiceBuilderHelper helper = new ServiceBuilderHelper(tempModelGetIds);
-            classBuilder.putTransience(IServiceBuilderHelper.key, helper);
+//            ServiceBuilderHelper helper = new ServiceBuilderHelper(tempModelGetIds);
+//            classBuilder.putTransience(IServiceHandlerHelper.key, helper);
         });
     }
 
@@ -136,23 +147,32 @@ public final class ServiceHandler extends AnnotationsHandler {
         return types;
     }
 
-    private final class ServiceBuilderHelper implements IServiceBuilderHelper {
+    private final class ServiceHandlerHelper implements IServiceHandlerHelper {
 
-        private final Map<String, Object> _tempGetIdsModel;
+//        private Map<String, Object> _tempGetIdsModel;
 
-        private ServiceBuilderHelper(final Map<String, Object> tempGetIdsModel) {
-            this._tempGetIdsModel = tempGetIdsModel;
+        private ServiceHandlerHelper() { }
+
+        @Override
+        public String getName() {
+            return IServiceHandlerHelper.name;
         }
 
         @Override
-        public void addServiceId(String serviceId) {
-            ArgumentChecker.required(serviceId, "serviceId");
-            List<String> newIdList = new ArrayList<>();
-            String[] existings = (String[]) this._tempGetIdsModel.get(VAR_SVC_IDS);
-            Observable.from(existings).subscribe(newIdList::add);
-            newIdList.add(serviceId);
-            String[] newIds = newIdList.toArray(new String[newIdList.size()]);
-            this._tempGetIdsModel.put(VAR_SVC_IDS, newIds);
+        public void addServiceId(ClassMeta.Builder classBuilder, String... serviceIds) {
+            ArgumentChecker.required(serviceIds, "serviceIds");
+
+            Map<String, Object> tempGetIdsModel = classBuilder.createTransienceIfAbsent(MODEL_GET_IDS, HashMap::new);
+            String[] idArr = (String[]) tempGetIdsModel.get(VAR_SVC_IDS);
+            if (idArr == null) {
+                idArr = serviceIds;
+            } else {
+                List<String> idList = new ArrayList<>();
+                Observable.from(idArr).subscribe(idList::add);
+                Observable.from(serviceIds).subscribe(idList::add);
+                idArr = idList.toArray(new String[idList.size()]);
+            }
+            tempGetIdsModel.put(VAR_SVC_IDS, idArr);
         }
     }
 }

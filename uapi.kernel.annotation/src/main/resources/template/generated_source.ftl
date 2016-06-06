@@ -20,23 +20,23 @@ extends ${className}
 
 </#list>
 
-<#list methods as method>
-    <#list method.annotations as annotation>
+<#list methods as methodInfo>
+    <#list methodInfo.annotations as annotation>
     @${annotation.name}<#list annotation.arguments>(<#items as argument>${argument.name}=<#if argument.isString>"${argument.value}"<#else>${argument.value}</#if></#items>)</#list>
     </#list>
-    ${method.modifiers} ${method.returnTypeName} ${method.name} (
-    <#list method.parameters as parameter>
+    ${methodInfo.modifiers} ${methodInfo.returnTypeName} ${methodInfo.name} (
+    <#list methodInfo.parameters as parameter>
             ${parameter.modifiers} ${parameter.type} ${parameter.name}<#sep>, </#sep>
     </#list>
-    ) <#list method.throwTypeNames>throws <#items as throw>${throw}<#sep>, </#sep></#items></#list> {
-    <#if method.invokeSuperBefore>
-        super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
+    ) <#list methodInfo.throwTypeNames>throws <#items as throw>${throw}<#sep>, </#sep></#items></#list> {
+    <#if methodInfo.invokeSuperBefore>
+        super.${methodInfo.name}(<#list methodInfo.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
     </#if>
-    <#list method.codes as code>
+    <#list methodInfo.codes as code>
         ${code.code}
     </#list>
-    <#if method.invokeSuperAfter>
-        super.${method.name}(<#list method.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
+    <#if methodInfo.invokeSuperAfter>
+        super.${methodInfo.name}(<#list methodInfo.parameters as parameter>${parameter.name}<#sep>, </#sep></#list>);
     </#if>
     }
 

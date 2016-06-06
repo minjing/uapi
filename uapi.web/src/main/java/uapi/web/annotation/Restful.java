@@ -29,4 +29,11 @@ public @interface Restful {
      * @return  Supported http methods
      */
     int value();
+
+//    /**
+//     * The uri prefix of this restful
+//     *
+//     * @return  The uri prefix
+//     */
+//    String prefix() default "";
 }

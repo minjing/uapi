@@ -17,7 +17,7 @@ import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
-import uapi.service.IServiceBuilderHelper;
+import uapi.service.IServiceHandlerHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
 import uapi.service.web.*;
@@ -27,10 +27,9 @@ import uapi.web.annotation.FromParam;
 import uapi.web.annotation.FromUri;
 import uapi.web.annotation.Restful;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -44,6 +43,7 @@ public class RestfulHandler extends AnnotationsHandler {
     private static final String TEMPLATE_INVOKE                     = "template/invoke_method.ftl";
     private static final String HTTP_TO_METHOD_ARGS_MAPPING         = "HttpToMethodArgumentsMapping";
     private static final String EXPOSED_NAME                        = "ExposedName";
+    private static final String INTERFACE_METHOD_MAPPING            = "InterfaceMethodMapping";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations =
@@ -100,9 +100,79 @@ public class RestfulHandler extends AnnotationsHandler {
                     .subscribe(methodArgMapping::addArgumentMapping);
             Observable.from(httpMethods)
                     .subscribe(httpMethod -> httpMethodArgMappings.put(httpMethod.toString(), methodArgMapping));
+
+            scanImplementation((TypeElement) classElement, methodArgMapping, clsBuilder, builderCtx);
         }, t -> builderCtx.getLogger().error(t));
 
         implementIRestfulService(builderCtx);
+    }
+
+    private void scanImplementation(
+            final TypeElement classElement,
+            final MethodArgumentsMapping methodArgsMapping,
+            final ClassMeta.Builder clsBuilder,
+            final IBuilderContext builderContext) {
+        Map<MethodInfo, MethodArgumentsMapping> intfMethodMappings = clsBuilder.createTransienceIfAbsent(INTERFACE_METHOD_MAPPING, HashMap::new);
+        if (intfMethodMappings.size() == 0) {
+            // Scan interface methods
+            List<TypeMirror> intfs = (List<TypeMirror>) classElement.getInterfaces();
+
+            if (intfs.size() == 0) {
+                // No interface is implemented, just return
+                return;
+            } else if (intfs.size() == 1) {
+                DeclaredType dType = (DeclaredType) intfs.get(0);
+                List<Element> elements = (List<Element>) dType.asElement().getEnclosedElements();
+                Observable.from(elements)
+                        .filter(element -> element.getKind() == ElementKind.METHOD)
+                        .map(this::fetchMethodInfo)
+                        .doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
+                        .subscribe(methodInfo -> intfMethodMappings.put(methodInfo, null), t -> builderContext.getLogger().error(t));
+            } else if (intfs.size() > 1) {
+                // Found more then 1 interface so we need indicate which one should be exposed
+            } else {
+                throw new KernelException(
+                        "Invalid interface implementation for class - {}",
+                        classElement.getSimpleName().toString());
+            }
+        }
+        // Add matched method argument mapping
+        Observable.from(intfMethodMappings.entrySet())
+                .filter(entry -> isSameMethod(entry.getKey(), methodArgsMapping))
+                .subscribe(entry -> entry.setValue(methodArgsMapping));
+    }
+
+    private boolean isSameMethod(MethodInfo methodInfo, MethodArgumentsMapping methodArgsMapping) {
+        if (! methodInfo.getName().equals(methodArgsMapping.getName())) {
+            return false;
+        }
+        String[] argTypes = methodInfo.getArgumentTypes();
+        List<ArgumentMapping> argMappings = methodArgsMapping.getArgumentMappings();
+        if (argTypes.length != argMappings.size()) {
+            return false;
+        }
+        if (argTypes.length == 0 && argMappings.size() == 0) {
+            return true;
+        }
+        for (int i = 0; i < argTypes.length; i++) {
+            if (! argTypes[i].equals(argMappings.get(i).getType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private MethodInfo fetchMethodInfo(Element methodElement) {
+        String methodName = methodElement.getSimpleName().toString();
+        ExecutableElement execMethod = (ExecutableElement) methodElement;
+        List<VariableElement> argElements = (List<VariableElement>) execMethod.getParameters();
+        List<String> argTypes = new ArrayList<>();
+        Observable.from(argElements)
+                .filter(argElement -> argElement.getKind() == ElementKind.PARAMETER)
+                .map(argElement -> argElement.asType().toString())
+                .subscribe(argTypes::add);
+        String rtnType = execMethod.getReturnType().toString();
+        return new MethodInfo(methodName, argTypes, rtnType);
     }
 
     private void implementIRestfulService(
@@ -110,6 +180,10 @@ public class RestfulHandler extends AnnotationsHandler {
     ) {
         Template tempGetArgs = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_ARGUMENTS_INFO);
         Template tempInvoke = builderCtx.loadTemplate(TEMPLATE_INVOKE);
+        IServiceHandlerHelper svcHelper = (IServiceHandlerHelper) builderCtx.getHelper(IServiceHandlerHelper.name);
+        if (svcHelper == null) {
+            throw new KernelException("No service handler helper was found");
+        }
 
         Observable.from(builderCtx.getBuilders())
                 .filter(clsBuilder -> clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING) != null)
@@ -119,8 +193,9 @@ public class RestfulHandler extends AnnotationsHandler {
                     Map<String, Object> model = new HashMap<>();
                     model.put("model", httpMethodMappings);
 
-                    IServiceBuilderHelper svcHelper = clsBuilder.getTransience(IServiceBuilderHelper.key);
-                    svcHelper.addServiceId(IRestfulService.class.getCanonicalName());
+//                    IServiceHandlerHelper svcHelper = clsBuilder.getTransience(IServiceHandlerHelper.name);
+//                    svcHelper.addServiceId(IRestfulService.class.getCanonicalName());
+                    svcHelper.addServiceId(clsBuilder, IRestfulService.class.getCanonicalName());
 
                     clsBuilder.addImplement(IRestfulService.class.getCanonicalName())
                             // implement getId method

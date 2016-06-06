@@ -13,10 +13,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
-import uapi.annotation.AnnotationHandler;
-import uapi.annotation.ClassMeta;
-import uapi.annotation.IBuilderContext;
-import uapi.annotation.LogSupport;
+import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
@@ -30,9 +27,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +40,7 @@ public final class BuilderContext implements IBuilderContext {
     private final RoundEnvironment _roundEnv;
     private final List<ClassMeta.Builder> _clsBuilders = new ArrayList<>();
     private final Configuration _tempConf;
+    private final Map<String, IHandlerHelper> _helpers = new HashMap<>();
 
     public BuilderContext(
             final ProcessingEnvironment processingEnvironment,
@@ -179,5 +175,17 @@ public final class BuilderContext implements IBuilderContext {
             return null;
         }
         return elems.get(0);
+    }
+
+    @Override
+    public void putHelper(IHandlerHelper helper) {
+        ArgumentChecker.required(helper, "helper");
+        this._helpers.put(helper.getName(), helper);
+    }
+
+    @Override
+    public IHandlerHelper getHelper(String name) {
+        ArgumentChecker.required(name, "name");
+        return this._helpers.get(name);
     }
 }

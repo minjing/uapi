@@ -50,6 +50,10 @@ public interface IBuilderContext {
 
     ClassMeta.Builder findClassBuilder(Element classElement);
 
+    void putHelper(IHandlerHelper helper);
+
+    IHandlerHelper getHelper(String name);
+
     void checkModifiers(
             final Element element,
             final Class<? extends Annotation> annotation,

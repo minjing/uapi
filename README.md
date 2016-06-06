@@ -235,7 +235,7 @@ The Web framework is developing, it will be a part of remote service framework, 
 
 The service will be exposed as a RESTful service, the access URL like: http://localhost/restful/hello/[name]?test=test
 The @Exposure declare the service will be exposed as RESTful service with "hello" context.
-The [name] will be mapped to name argument of sayHello method, and the test query parameter will be mapped to test argument of sayHello method.
+The [name] will be mapped to name argument of sayHello methodInfo, and the test query parameter will be mapped to test argument of sayHello methodInfo.
 
 ## Version History
 * v0.2 - in working

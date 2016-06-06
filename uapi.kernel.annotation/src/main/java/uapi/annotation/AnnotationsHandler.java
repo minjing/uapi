@@ -132,6 +132,10 @@ public abstract class AnnotationsHandler implements IAnnotationsHandler {
 
     protected abstract Class<? extends Annotation>[] getOrderedAnnotations();
 
+    public IHandlerHelper getHelper() {
+        return null;
+    }
+
     /**
      * Handle specified annotation on specified annotated elements
      *
