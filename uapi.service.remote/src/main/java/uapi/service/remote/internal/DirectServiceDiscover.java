@@ -31,18 +31,18 @@ import java.util.Map;
 @Service(IServiceDiscover.class)
 public class DirectServiceDiscover implements IServiceDiscover {
 
-    private static final String INTF_ID         = "interface-id";
-    private static final String SVC_METAS       = "service-metas";
-    private static final String NAME            = "name";
-    private static final String RTN_TYPE_NAME   = "return-type-name";
-    private static final String URI             = "uri";
-    private static final String METHOD          = "method";
-    private static final String FORMAT          = "format";
-    private static final String COMM_TYPE       = "communication-type";
-    private static final String ARG_METAS       = "argument-metas";
-    private static final String TYPE_NAME       = "type-name";
-    private static final String FROM            = "from";
-    private static final String INDEX           = "index";
+//    private static final String INTF_ID         = "interface-id";
+//    private static final String SVC_METAS       = "service-metas";
+//    private static final String NAME            = "name";
+//    private static final String RTN_TYPE_NAME   = "return-type-name";
+//    private static final String URI             = "uri";
+//    private static final String METHOD          = "method";
+//    private static final String FORMAT          = "format";
+//    private static final String COMM_TYPE       = "communication-type";
+//    private static final String ARG_METAS       = "argument-metas";
+//    private static final String TYPE_NAME       = "type-name";
+//    private static final String FROM            = "from";
+//    private static final String INDEX           = "index";
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_COMM)
     String _communicatorName;
@@ -70,7 +70,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
             throw new KernelException("No communicator was found by name {}", this._communicatorName);
         }
 
-        // The request url should be: HTTP GET /[context]/interfaceId
+        // The request url should be: HTTP GET /[context]/
         // The response JSON should be:
         // {
         //     interface-id: 'xxx',
@@ -93,8 +93,8 @@ public class DirectServiceDiscover implements IServiceDiscover {
         // verify service interface meta from remote
         if (RestfulCommunicator.id.equals(communicator.getId())) {
             // do restful way
-            String url = StringHelper.makeString("http://{}:{}/{}/{}",
-                    this._host, this._port, this._uriPrefix, serviceInterfaceMeta.getInterfaceId());
+            String url = StringHelper.makeString("http://{}:{}/{}",
+                    this._host, this._port, this._uriPrefix);
 
             RestfulServiceMeta svcMeta = new RestfulServiceMeta(
                     "DiscoverService",
@@ -117,30 +117,30 @@ public class DirectServiceDiscover implements IServiceDiscover {
 
     private List<ServiceMeta> parseResponse(Map response) {
         List<ServiceMeta> svcMetas = new ArrayList<>();
-        List<Map> svcList = (List<Map>) response.get(SVC_METAS);
+        List<Map> svcList = (List<Map>) response.get(Constant.SVC_METAS);
         if (svcList == null || svcList.size() == 0) {
-            throw new KernelException("No service meta is defined in service interface - {}", response.get(INTF_ID));
+            throw new KernelException("No service meta is defined in service interface - {}", response.get(Constant.INTF_ID));
         }
         for (Map svc : svcList) {
-            String commType = (String) svc.get(COMM_TYPE);
+            String commType = (String) svc.get(Constant.COMM_TYPE);
             if (RestfulCommunicator.id.equals(commType)) {
-                String svcName = (String) svc.get(NAME);
-                String rtnType = (String) svc.get(RTN_TYPE_NAME);
-                String uri = (String) svc.get(URI);
-                HttpMethod method = HttpMethod.parse((String) svc.get(METHOD));
-                String format = (String) svc.get(FORMAT);
-                List<Map> argList = (List<Map>) svc.get(ARG_METAS);
+                String svcName = (String) svc.get(Constant.NAME);
+                String rtnType = (String) svc.get(Constant.RTN_TYPE_NAME);
+                String uri = (String) svc.get(Constant.URI);
+                HttpMethod method = HttpMethod.parse((String) svc.get(Constant.METHOD));
+                String format = (String) svc.get(Constant.FORMAT);
+                List<Map> argList = (List<Map>) svc.get(Constant.ARG_METAS);
                 List<ArgumentMapping> args = new ArrayList<>();
                 if (argList != null || argList.size() > 0) {
                     for (Map arg : argList) {
                         ArgumentMapping argMapping;
-                        String argName = (String) arg.get(NAME);
-                        String argType = (String) arg.get(TYPE_NAME);
-                        ArgumentFrom argFrom = ArgumentFrom.parse((String) arg.get(FROM));
+                        String argName = (String) arg.get(Constant.NAME);
+                        String argType = (String) arg.get(Constant.TYPE_NAME);
+                        ArgumentFrom argFrom = ArgumentFrom.parse((String) arg.get(Constant.FROM));
                         if (! Strings.isNullOrEmpty(argName)) {
                             argMapping = new NamedArgumentMapping(argFrom, argType, argName);
                         } else {
-                            int index = Integer.parseInt((String) arg.get(INDEX));
+                            int index = Integer.parseInt((String) arg.get(Constant.INDEX));
                             argMapping = new IndexedArgumentMapping(argFrom, argType, index);
                         }
                         args.add(argMapping);

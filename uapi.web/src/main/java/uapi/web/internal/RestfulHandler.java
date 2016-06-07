@@ -10,13 +10,13 @@
 package uapi.web.internal;
 
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ArrayTable;
+import com.google.common.collect.Table;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
-import uapi.helper.ArgumentChecker;
-import uapi.helper.MapHelper;
-import uapi.helper.StringHelper;
+import uapi.helper.*;
 import uapi.service.IServiceHandlerHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
@@ -112,24 +112,33 @@ public class RestfulHandler extends AnnotationsHandler {
             final MethodArgumentsMapping methodArgsMapping,
             final ClassMeta.Builder clsBuilder,
             final IBuilderContext builderContext) {
-        Map<MethodInfo, MethodArgumentsMapping> intfMethodMappings = clsBuilder.createTransienceIfAbsent(INTERFACE_METHOD_MAPPING, HashMap::new);
-        if (intfMethodMappings.size() == 0) {
+        TripleMap<String, MethodInfo, MethodArgumentsMapping> intfMethodMap =
+                clsBuilder.createTransienceIfAbsent(INTERFACE_METHOD_MAPPING, TripleMap::new);
+        if (intfMethodMap.size() == 0) {
             // Scan interface methods
             List<TypeMirror> intfs = (List<TypeMirror>) classElement.getInterfaces();
 
             if (intfs.size() == 0) {
-                // No interface is implemented, just return
-                return;
-            } else if (intfs.size() == 1) {
-                DeclaredType dType = (DeclaredType) intfs.get(0);
-                List<Element> elements = (List<Element>) dType.asElement().getEnclosedElements();
-                Observable.from(elements)
-                        .filter(element -> element.getKind() == ElementKind.METHOD)
-                        .map(this::fetchMethodInfo)
-                        .doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
-                        .subscribe(methodInfo -> intfMethodMappings.put(methodInfo, null), t -> builderContext.getLogger().error(t));
-            } else if (intfs.size() > 1) {
-                // Found more then 1 interface so we need indicate which one should be exposed
+                // No interface is implemented, do nothing
+            } else if (intfs.size() > 0) {
+                Observable.from(intfs)
+                        .map(intf -> (DeclaredType) intf)
+                        .subscribe(dType -> {
+                            String intfName = dType.toString();
+                            List<MethodInfo> methods = getInterfaceMethods(dType, builderContext);
+                            intfMethodMap.put(intfName, methods);
+                        });
+
+//            } else if (intfs.size() == 1) {
+//                DeclaredType dType = (DeclaredType) intfs.get(0);
+//                List<Element> elements = (List<Element>) dType.asElement().getEnclosedElements();
+//                Observable.from(elements)
+//                        .filter(element -> element.getKind() == ElementKind.METHOD)
+//                        .map(this::fetchMethodInfo)
+//                        //.doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
+//                        .subscribe(methodInfo -> intfMethodMappings.put(methodInfo, null), t -> builderContext.getLogger().error(t));
+//            } else if (intfs.size() > 1) {
+//                // Found more then 1 interface so we need indicate which one should be exposed
             } else {
                 throw new KernelException(
                         "Invalid interface implementation for class - {}",
@@ -137,9 +146,23 @@ public class RestfulHandler extends AnnotationsHandler {
             }
         }
         // Add matched method argument mapping
-        Observable.from(intfMethodMappings.entrySet())
-                .filter(entry -> isSameMethod(entry.getKey(), methodArgsMapping))
-                .subscribe(entry -> entry.setValue(methodArgsMapping));
+        Observable.from(intfMethodMap.entrySet())
+                .subscribe(intfEntry -> {
+                    Observable.from(intfEntry.getValue().entrySet())
+                            .filter(methodEntry -> isSameMethod(methodEntry.getKey(), methodArgsMapping))
+                            .subscribe(methodEntry -> methodEntry.setValue(methodArgsMapping));
+                });
+    }
+
+    private List<MethodInfo> getInterfaceMethods(DeclaredType intfType, IBuilderContext builderCtx) {
+        List<Element> elements = (List<Element>) intfType.asElement().getEnclosedElements();
+        List<MethodInfo> methods = new ArrayList<>();
+        Observable.from(elements)
+                .filter(element -> element.getKind() == ElementKind.METHOD)
+                .map(this::fetchMethodInfo)
+                //.doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
+                .subscribe(methods::add, t -> builderCtx.getLogger().error(t));
+        return methods;
     }
 
     private boolean isSameMethod(MethodInfo methodInfo, MethodArgumentsMapping methodArgsMapping) {
@@ -193,8 +216,6 @@ public class RestfulHandler extends AnnotationsHandler {
                     Map<String, Object> model = new HashMap<>();
                     model.put("model", httpMethodMappings);
 
-//                    IServiceHandlerHelper svcHelper = clsBuilder.getTransience(IServiceHandlerHelper.name);
-//                    svcHelper.addServiceId(IRestfulService.class.getCanonicalName());
                     svcHelper.addServiceId(clsBuilder, IRestfulService.class.getCanonicalName());
 
                     clsBuilder.addImplement(IRestfulService.class.getCanonicalName())
@@ -233,6 +254,19 @@ public class RestfulHandler extends AnnotationsHandler {
                                     .addCodeBuilder(CodeMeta.builder()
                                             .setModel(model)
                                             .setTemplate(tempInvoke)));
+
+                    // Check whether there are interface need to exposed
+                    TripleMap<String, MethodInfo, MethodArgumentsMapping> intfMethodMap =
+                            clsBuilder.getTransience(INTERFACE_METHOD_MAPPING);
+                    if (intfMethodMap != null) {
+                        Observable.from(intfMethodMap.entrySet())
+                                .filter(intfEntry -> ! intfMethodMap.hasEmptyValue(intfEntry.getKey()))
+                                .subscribe(intfEntry -> {
+                                    String intfName = intfEntry.getKey();
+
+                                });
+
+                    }
                 }, t -> builderCtx.getLogger().error(t));
     }
 

@@ -9,10 +9,12 @@
 
 package uapi.web.internal;
 
+import com.google.common.base.Strings;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.Type;
 import uapi.config.annotation.Config;
+import uapi.helper.CollectionHelper;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
@@ -35,6 +37,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     private static final String SEPARATOR_URI_QUERY_PARAM       = "\\?";
     private static final char SEPARATOR_QUERY_PARAM_KEY_VALUE   = '=';
+    private static final String PARAM_INTERFACE                 = "interface";
 
     @Config(path=IWebConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
     String _uriPrefix = Constant.DEF_RESTFUL_URI_PREFIX;
@@ -52,24 +55,67 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     Map<String, IRestfulService> _restSvcs = new HashMap<>();
 
     @Inject
+    Map<String, IRestfulInterface> _restIntfs = new HashMap<>();
+
+    @Inject
     IRegistry _registry;
 
     @Init
-    public void init() {
-
-    }
+    public void init() { }
 
     @Override
     public String getPathPattern() {
         return this._uriPrefix + "*";
     }
 
+    /**
+     * The response of restful interface query is:
+     *  {
+     *      interface-id: 'xxx',
+     *      communicator-name: 'xxx',
+     *      service-metas: [{
+     *          name: 'xxx',
+     *          return-type-name: 'xxx',
+     *          uri: 'xxx',
+     *          method: 'GET',
+     *          format: 'JSON',
+     *          communication-type: 'RESTful',
+     *          argument-metas: [{
+     *              type-name: 'xxx',
+     *              from: 'xxx',
+     *              index: 2,
+     *              name: 'xxx'
+     *          }, ...]
+     *      }, ...]
+     *  }
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doGet(
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws ServletException, IOException {
-        handlRequest(request, response, HttpMethod.GET);
+        UriInfo uriInfo = parseUri(request);
+        if (Strings.isNullOrEmpty(uriInfo.serviceName)) {
+            // Handle restful interface query
+            String[] intfNames = uriInfo.queryParams.get(PARAM_INTERFACE);
+            if (intfNames == null || intfNames.length != 1) {
+                throw new KernelException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
+            }
+            String intfName = intfNames[0];
+            if (Strings.isNullOrEmpty(intfName)) {
+                throw new KernelException("The queried restful service type can't be empty");
+            }
+            IRestfulInterface restfulIntf = this._restIntfs.get(intfName);
+            if (restfulIntf == null) {
+                // TODO:
+            }
+        } else {
+            handlRequest(request, response, HttpMethod.GET, uriInfo);
+        }
     }
 
     @Override
@@ -77,7 +123,8 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws ServletException, IOException {
-        handlRequest(request, response, HttpMethod.POST);
+        UriInfo uriInfo = parseUri(request);
+        handlRequest(request, response, HttpMethod.POST, uriInfo);
     }
 
     @Override
@@ -85,7 +132,8 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws ServletException, IOException {
-        handlRequest(request, response, HttpMethod.PUT);
+        UriInfo uriInfo = parseUri(request);
+        handlRequest(request, response, HttpMethod.PUT, uriInfo);
     }
 
     @Override
@@ -93,15 +141,16 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws ServletException, IOException {
-        handlRequest(request, response, HttpMethod.DELETE);
+        UriInfo uriInfo = parseUri(request);
+        handlRequest(request, response, HttpMethod.DELETE, uriInfo);
     }
 
     private void handlRequest(
             final HttpServletRequest request,
             final HttpServletResponse response,
-            final HttpMethod method
+            final HttpMethod method,
+            final UriInfo uriInfo
     ) throws ServletException, IOException {
-        UriInfo uriInfo = parseUri(request);
         String svcName = uriInfo.serviceName;
         IRestfulService matchedWebSvc = this._restSvcs.get(svcName);
         if (matchedWebSvc == null) {

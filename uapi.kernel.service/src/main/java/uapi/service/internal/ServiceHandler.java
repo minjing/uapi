@@ -149,8 +149,6 @@ public final class ServiceHandler extends AnnotationsHandler {
 
     private final class ServiceHandlerHelper implements IServiceHandlerHelper {
 
-//        private Map<String, Object> _tempGetIdsModel;
-
         private ServiceHandlerHelper() { }
 
         @Override
