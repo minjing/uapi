@@ -31,6 +31,8 @@ public interface IRestfulService extends IIdentifiable<String> {
      */
     ArgumentMapping[] getMethodArgumentsInfo(HttpMethod method);
 
+    String getReturnTypeName(HttpMethod method);
+
     /**
      * Invoke the web service by specific http method and parsed arguments
      *

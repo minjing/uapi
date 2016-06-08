@@ -40,6 +40,7 @@ import java.util.*;
 public class RestfulHandler extends AnnotationsHandler {
 
     private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO  = "template/getMethodArgumentsInfo_method.ftl";
+    private static final String TEMPLATE_GET_RETURN_TYPE_NAME       = "template/getReturnTypeName_method.ftl";
     private static final String TEMPLATE_INVOKE                     = "template/invoke_method.ftl";
     private static final String HTTP_TO_METHOD_ARGS_MAPPING         = "HttpToMethodArgumentsMapping";
     private static final String EXPOSED_NAME                        = "ExposedName";
@@ -83,6 +84,7 @@ public class RestfulHandler extends AnnotationsHandler {
             clsBuilder.putTransience(EXPOSED_NAME, exposedName);
 
             String methodName = methodElement.getSimpleName().toString();
+            String returnTypeName = ((ExecutableElement) methodElement).getReturnType().toString();
             Restful restful = methodElement.getAnnotation(Restful.class);
             HttpMethod[] httpMethods = HttpMethod.parse(restful.value());
 
@@ -94,7 +96,7 @@ public class RestfulHandler extends AnnotationsHandler {
             }
 
             ExecutableElement execElem = (ExecutableElement) methodElement;
-            MethodArgumentsMapping methodArgMapping = new MethodArgumentsMapping(methodName);
+            MethodArgumentsMapping methodArgMapping = new MethodArgumentsMapping(methodName, returnTypeName);
             Observable.from(execElem.getParameters())
                     .map(this::handleFromAnnotation)
                     .subscribe(methodArgMapping::addArgumentMapping);
@@ -202,6 +204,7 @@ public class RestfulHandler extends AnnotationsHandler {
             final IBuilderContext builderCtx
     ) {
         Template tempGetArgs = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_ARGUMENTS_INFO);
+        Template tempGetRtnType = builderCtx.loadTemplate(TEMPLATE_GET_RETURN_TYPE_NAME);
         Template tempInvoke = builderCtx.loadTemplate(TEMPLATE_INVOKE);
         IServiceHandlerHelper svcHelper = (IServiceHandlerHelper) builderCtx.getHelper(IServiceHandlerHelper.name);
         if (svcHelper == null) {
@@ -253,7 +256,18 @@ public class RestfulHandler extends AnnotationsHandler {
                                             .setType("java.util.List<Object>"))
                                     .addCodeBuilder(CodeMeta.builder()
                                             .setModel(model)
-                                            .setTemplate(tempInvoke)));
+                                            .setTemplate(tempInvoke)))
+                            .addMethodBuilder(MethodMeta.builder()
+                                    .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                    .addModifier(Modifier.PUBLIC)
+                                    .setName("getReturnTypeName")
+                                    .setReturnTypeName(String.class.getCanonicalName())
+                                    .addParameterBuilder(ParameterMeta.builder()
+                                            .setName("method")
+                                            .setType(HttpMethod.class.getCanonicalName()))
+                                    .addCodeBuilder(CodeMeta.builder()
+                                            .setModel(model)
+                                            .setTemplate(tempGetRtnType)));
 
                     // Check whether there are interface need to exposed
                     TripleMap<String, MethodInfo, MethodArgumentsMapping> intfMethodMap =

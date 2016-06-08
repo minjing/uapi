@@ -9,8 +9,12 @@
 
 package uapi.web.internal;
 
+import rx.*;
+import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
 import uapi.service.web.ArgumentMapping;
+import uapi.service.web.IndexedArgumentMapping;
 
 import java.util.*;
 
@@ -20,13 +24,17 @@ import java.util.*;
 public final class MethodArgumentsMapping {
 
     private final String _name;
+    private final String _rtnTypeName;
     private final List<ArgumentMapping> _argMappings;
 
     MethodArgumentsMapping(
-            final String name
+            final String name,
+            final String returnTypeName
     ) {
         ArgumentChecker.required(name, "name");
+        ArgumentChecker.required(returnTypeName, "returnTypeName");
         this._name = name;
+        this._rtnTypeName = returnTypeName;
         this._argMappings = new ArrayList<>();
     }
 
@@ -41,12 +49,49 @@ public final class MethodArgumentsMapping {
         return this._name;
     }
 
+    public String getReturnTypeName() {
+        return this._rtnTypeName;
+    }
+
+//    public String getPath() {
+//        StringBuilder buffer = new StringBuilder();
+//        List<IndexedArgumentMapping> uriArgs = new ArrayList<>();
+//        rx.Observable.from(this._argMappings)
+//                .filter(argMapping -> argMapping instanceof IndexedArgumentMapping)
+//                .map(argMapping -> (IndexedArgumentMapping) argMapping)
+//                .subscribe(uriArgs::add);
+//        if (uriArgs.size() == 0) {
+//            return StringHelper.EMPTY;
+//        }
+//        Collections.sort(uriArgs, (arg1, arg2) -> {
+//            int idx1 = arg1.getIndex();
+//            int idx2 = arg2.getIndex();
+//            if (idx1 == idx2) {
+//                throw new KernelException("Do not allow both uri argument are same index {} and {}", arg1, arg2);
+//            }
+//            if (idx1 < idx2) {
+//                return -1;
+//            } else {
+//                return 1;
+//            }
+//        });
+//        for (int i = 0; i < uriArgs.size(); i++) {
+//            IndexedArgumentMapping uriArg = uriArgs.get(i);
+//            if (uriArg.getIndex() != i) {
+//                throw new KernelException("Expect uri index {} but found {} - {}", i,uriArg.getIndex(), uriArg);
+//            }
+//            buffer.append(uriArg.)
+//        }
+//        return buffer.toString();
+//    }
+
     public List<ArgumentMapping> getArgumentMappings() {
         return this._argMappings;
     }
 
     @Override
     public String toString() {
-        return "MethodArgumentsMapping[name=" + this._name + ", argMapping=" + this._argMappings + "]";
+        return StringHelper.makeString("MethodArgumentsMapping[name={},returnTypeName={},argMapping={}]",
+                this._name, this._rtnTypeName, this._argMappings);
     }
 }

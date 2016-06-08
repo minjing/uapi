@@ -17,6 +17,7 @@ import uapi.config.annotation.Config;
 import uapi.helper.CollectionHelper;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
+import uapi.service.TypeMapper;
 import uapi.service.annotation.*;
 import uapi.service.web.*;
 import uapi.web.*;
@@ -58,6 +59,12 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     @Inject
     @Optional
     Map<String, IRestfulInterface> _restIntfs = new HashMap<>();
+
+    @Inject
+    Map<String, IStringCodec> _codecs = new HashMap<>();
+
+    @Inject
+    TypeMapper _typeMapper;
 
     @Inject
     IRegistry _registry;
@@ -176,12 +183,23 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                     argValues.add(parseValue(value, argMeta.getType()));
                 }, this._logger::error);
         Object result = matchedWebSvc.invoke(method, argValues);
-
-        IResponseWriter encoder = this._responseWriters.get(this._codecName);
-        if (encoder == null) {
-            throw new KernelException("The response encode was not found - {}", this._codecName);
+        IStringCodec codec = this._codecs.get(this._codecName);
+        if (codec == null) {
+            throw new KernelException("The response codec was not found - {}", this._codecName);
         }
-        encoder.write(result, response);
+        Class<?> type = this._typeMapper.getType(matchedWebSvc.getReturnTypeName(method));
+        if (type == null) {
+            throw new KernelException("Unsupported typ - {}", matchedWebSvc.getReturnTypeName(method));
+        }
+        response.getWriter().print(codec.decode(result, type));
+        response.flushBuffer();
+//        String responseText = codec.decode(request, )
+
+//        IResponseWriter encoder = this._responseWriters.get(this._codecName);
+//        if (encoder == null) {
+//            throw new KernelException("The response encode was not found - {}", this._codecName);
+//        }
+//        encoder.write(result, response);
     }
 
     private Object parseValue(String value, String type) {
