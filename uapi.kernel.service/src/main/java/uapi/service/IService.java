@@ -9,7 +9,7 @@
 
 package uapi.service;
 
-import uapi.annotation.Type;
+import uapi.Type;
 
 /**
  * Implement this interface will indicate the object is managed by framework

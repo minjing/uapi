@@ -15,6 +15,7 @@ import rx.Observable;
 import uapi.IIdentifiable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;

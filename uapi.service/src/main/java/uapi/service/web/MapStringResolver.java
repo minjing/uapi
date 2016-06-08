@@ -14,7 +14,7 @@ import java.util.Map;
 public class MapStringResolver implements IStringResolver<Map> {
 
     @Inject
-    Map<String, IStringFormatter> _formatters = new HashMap<>();
+    Map<String, IStringCodec> _formatters = new HashMap<>();
 
     @Override
     public String getId() {
@@ -22,19 +22,19 @@ public class MapStringResolver implements IStringResolver<Map> {
     }
 
     @Override
-    public String encode(Map value, String formatterName) {
+    public String decode(Map value, String formatterName) {
         ArgumentChecker.required(value, "value");
         ArgumentChecker.required(formatterName, "formatterName");
-        IStringFormatter formatter = this._formatters.get(formatterName);
-        return formatter.format(value, Map.class);
+        IStringCodec formatter = this._formatters.get(formatterName);
+        return formatter.decode(value, Map.class);
     }
 
     @Override
-    public Map decode(String value, String formatterName) {
+    public Map encode(String value, String formatterName) {
         ArgumentChecker.required(value, "value");
         ArgumentChecker.required(formatterName, "formatterName");
-        IStringFormatter formatter = this._formatters.get(formatterName);
-        return (Map) formatter.unformat(value, Map.class);
+        IStringCodec formatter = this._formatters.get(formatterName);
+        return (Map) formatter.encode(value, Map.class);
     }
 
 

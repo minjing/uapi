@@ -60,7 +60,7 @@ public class RestfulServiceMeta extends ServiceMeta {
 
     @Override
     public String toString() {
-        return StringHelper.makeString("RestfulServiceMeta[{},uri={},method={},format{}]",
+        return StringHelper.makeString("RestfulServiceMeta[{},uri={},method={},encode{}]",
                 super.toString(), this._uri, this._method, this._format);
     }
 }

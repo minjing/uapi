@@ -37,7 +37,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
 //    private static final String RTN_TYPE_NAME   = "return-type-name";
 //    private static final String URI             = "uri";
 //    private static final String METHOD          = "method";
-//    private static final String FORMAT          = "format";
+//    private static final String FORMAT          = "encode";
 //    private static final String COMM_TYPE       = "communication-type";
 //    private static final String ARG_METAS       = "argument-metas";
 //    private static final String TYPE_NAME       = "type-name";
@@ -80,7 +80,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
         //         return-type-name: 'xxx',
         //         uri: 'xxx',
         //         method: 'GET',
-        //         format: 'JSON',
+        //         encode: 'JSON',
         //         communication-type: 'RESTful',
         //         argument-metas: [{
         //             type-name: 'xxx',
@@ -101,7 +101,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
                     Map.class.getCanonicalName(),
                     new ArrayList<>(), url,
                     HttpMethod.GET,
-                    JsonStringFormatter.NAME);
+                    JsonStringCodec.NAME);
             Map response = (Map) communicator.request(svcMeta);
             if (response == null) {
                 throw new KernelException("No response when request service - {}", svcMeta);

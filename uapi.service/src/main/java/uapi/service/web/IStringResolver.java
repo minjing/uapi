@@ -23,7 +23,7 @@ public interface IStringResolver<T> extends IIdentifiable<String> {
      *          The instance of IT
      * @return  The instance of OT
      */
-    String encode(T value, String formatterName);
+    String decode(T value, String formatterName);
 
     /**
      * Decode value from type OT to IT
@@ -32,5 +32,5 @@ public interface IStringResolver<T> extends IIdentifiable<String> {
      *          The instance of OT
      * @return  The instance of IT
      */
-    T decode(String value, String formatterName);
+    T encode(String value, String formatterName);
 }

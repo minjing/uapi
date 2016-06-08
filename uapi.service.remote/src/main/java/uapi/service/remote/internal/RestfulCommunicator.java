@@ -16,6 +16,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.Triple;
 import uapi.log.ILogger;
+import uapi.service.TypeMapper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The driver use restful and json format to invoke remote service
+ * The driver use restful and json encode to invoke remote service
  */
 @Service(ICommunicator.class)
 public class RestfulCommunicator implements ICommunicator {
@@ -41,6 +42,12 @@ public class RestfulCommunicator implements ICommunicator {
 
     @Inject
     Map<String, IStringResolver> _resolvers = new HashMap<>();
+
+    @Inject
+    Map<String, IStringCodec> _codecs = new HashMap<>();
+
+    @Inject
+    TypeMapper _typeMapper;
 
     private final OkHttpClient httpClient = new OkHttpClient();
 
@@ -99,19 +106,19 @@ public class RestfulCommunicator implements ICommunicator {
         // Construct request uri from uriArgs
         Request.Builder reqBuild = new Request.Builder();
         HttpUrl.Builder urlBuilder = HttpUrl.parse(restfulSvcMeta.getUri()).newBuilder();
-        Observable.from(uriArgs).subscribe(uriArg -> urlBuilder.addPathSegment(encodeValue(uriArg)));
+        Observable.from(uriArgs).subscribe(uriArg -> urlBuilder.addPathSegment(decodeValue(uriArg)));
 
         // Construct request parameters
         if (headerArgs.size() > 0) {
             Observable.from(headerArgs.entrySet())
                     .subscribe(entry -> reqBuild.addHeader(
-                            entry.getKey(), encodeValue(entry.getValue())));
+                            entry.getKey(), decodeValue(entry.getValue())));
         }
         if (reqMethod == HttpMethod.GET) {
             if (paramArgs.size() > 0) {
                 Observable.from(paramArgs.entrySet())
                         .subscribe(entry -> urlBuilder.addQueryParameter(
-                                entry.getKey(), encodeValue(entry.getValue())));
+                                entry.getKey(), decodeValue(entry.getValue())));
             }
             reqBuild.url(urlBuilder.build());
         } else if (reqMethod == HttpMethod.POST) {
@@ -120,7 +127,7 @@ public class RestfulCommunicator implements ICommunicator {
                 FormBody.Builder formBody = new FormBody.Builder();
                 Observable.from(paramArgs.entrySet())
                         .subscribe(entry -> formBody.add(
-                                entry.getKey(), encodeValue(entry.getValue())));
+                                entry.getKey(), decodeValue(entry.getValue())));
                 reqBuild.post(formBody.build());
             }
         } else {
@@ -142,16 +149,27 @@ public class RestfulCommunicator implements ICommunicator {
      *
      * @param   valueInfo
      *          The value is a Triple instance which is composed with argument mapping information,
-     *          format name and argument value
+     *          encode name and argument value
      * @return  Formatted string
      */
-    private String encodeValue(Triple<ArgumentMapping, String, Object> valueInfo) {
-        String typeName = valueInfo.getLeftValue().getType();
-        IStringResolver resolver = this._resolvers.get(typeName);
-        if (resolver == null) {
-            throw new KernelException("No resolver was mapped to name {}", typeName);
+    private String decodeValue(Triple<ArgumentMapping, String, Object> valueInfo) {
+        String codecName = valueInfo.getCenterValue();
+        IStringCodec codec = this._codecs.get(codecName);
+        if (codec == null) {
+            throw new KernelException("No codec was mapped to name {}", codecName);
         }
-        return resolver.encode(valueInfo.getRightValue(), valueInfo.getCenterValue());
+        String typeName = valueInfo.getLeftValue().getType();
+        Class<?> type = this._typeMapper.getType(typeName);
+        if (type == null) {
+            throw new KernelException("No type was mapped to name {}", typeName);
+        }
+        return codec.decode(valueInfo.getRightValue(), type);
+//        IStringResolver resolver = this._resolvers.get(typeName);
+//        if (resolver == null) {
+//            throw new KernelException("No resolver was mapped to name {}", typeName);
+//        }
+//        return resolver.decode(valueInfo.getRightValue(), valueInfo.getCenterValue());
+
     }
 
     /**
@@ -159,7 +177,7 @@ public class RestfulCommunicator implements ICommunicator {
      *
      * @param   responseInfo
      *          The responseIfo is a Tuple instance which is composed with return type name,
-     *          format name and response text
+     *          encode name and response text
      * @return  The decoded object
      */
     private Object decodeResponse(Triple<String, String, String> responseInfo) {
@@ -171,6 +189,6 @@ public class RestfulCommunicator implements ICommunicator {
         if (resolver ==  null) {
             throw new KernelException("No resolver was mapped to name {}", rtnTypeName);
         }
-        return resolver.decode(respText, format);
+        return resolver.encode(respText, format);
     }
 }

@@ -14,6 +14,7 @@ import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.annotation.*;
 import uapi.config.IConfigValueParser;
 import uapi.config.IConfigurable;

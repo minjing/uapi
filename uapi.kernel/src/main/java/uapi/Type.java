@@ -7,14 +7,14 @@
  * use the project into a commercial product
  */
 
-package uapi.annotation;
+package uapi;
 
 /**
  * Created by min on 16/2/25.
  */
 public final class Type {
 
-    private Type () { }
+    private Type() { }
 
     public static final String VOID             = "void";
     public static final String BOOLEAN          = "boolean";
@@ -38,4 +38,11 @@ public final class Type {
     public static final String Q_OBJECT         = Object.class.getCanonicalName();
     public static final String Q_STRING         = String.class.getCanonicalName();
     public static final String Q_STRING_ARRAY   = String[].class.getCanonicalName();
+
+    public static final Class<Boolean> T_BOOLEAN    = Boolean.class;
+    public static final Class<Integer> T_INTEGER    = Integer.class;
+    public static final Class<Long> T_LONG          = Long.class;
+    public static final Class<Short> T_SHORT        = Short.class;
+    public static final Class<Float> T_FLOAT        = Float.class;
+    public static final Class<Double> T_DOUBLE      = Double.class;
 }

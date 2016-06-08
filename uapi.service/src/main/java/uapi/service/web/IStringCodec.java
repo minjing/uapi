@@ -15,9 +15,9 @@ import uapi.KernelException;
 /**
  * Created by xquan on 5/25/2016.
  */
-public interface IStringFormatter<T> extends IIdentifiable<String> {
+public interface IStringCodec<T> extends IIdentifiable<String> {
 
-    String format(T value, Class<T> type) throws KernelException;
+    String decode(T value, Class<T> type) throws KernelException;
 
-    T unformat(String value, Class<T> type) throws KernelException;
+    T encode(String value, Class<T> type) throws KernelException;
 }

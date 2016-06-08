@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Output object to JSON format to the http response
+ * Output object to JSON encode to the http response
  */
 @Service(IResponseWriter.class)
 public class JasonResponseWriter implements IResponseWriter<Object> {

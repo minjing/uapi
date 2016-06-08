@@ -23,12 +23,12 @@ public class StringStringResolver implements IStringResolver<String> {
     }
 
     @Override
-    public String encode(String value, String formatterName) {
+    public String decode(String value, String formatterName) {
         return value;
     }
 
     @Override
-    public String decode(String value, String formatterName) {
+    public String encode(String value, String formatterName) {
         return value;
     }
 }

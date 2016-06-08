@@ -12,6 +12,7 @@ package uapi.service.internal;
 import freemarker.template.Template;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.annotation.*;
 import uapi.service.SetterMeta;
 import uapi.service.annotation.Optional;

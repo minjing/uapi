@@ -12,14 +12,12 @@ package uapi.web.internal;
 import com.google.common.base.Strings;
 import rx.Observable;
 import uapi.KernelException;
-import uapi.annotation.Type;
+import uapi.Type;
 import uapi.config.annotation.Config;
 import uapi.helper.CollectionHelper;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
-import uapi.service.annotation.Init;
-import uapi.service.annotation.Inject;
-import uapi.service.annotation.Service;
+import uapi.service.annotation.*;
 import uapi.service.web.*;
 import uapi.web.*;
 
@@ -27,7 +25,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generic web service url mapping: /[prefix]/[web service name]/[uri params]?[query strings]
@@ -42,8 +43,8 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     @Config(path=IWebConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
     String _uriPrefix = Constant.DEF_RESTFUL_URI_PREFIX;
 
-    @Config(path=IWebConfigurableKey.RESTFUL_ENCODER)
-    String _encoderName;
+    @Config(path=IWebConfigurableKey.RESTFUL_CODEC)
+    String _codecName;
 
     @Inject
     ILogger _logger;
@@ -55,6 +56,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     Map<String, IRestfulService> _restSvcs = new HashMap<>();
 
     @Inject
+    @Optional
     Map<String, IRestfulInterface> _restIntfs = new HashMap<>();
 
     @Inject
@@ -78,7 +80,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
      *          return-type-name: 'xxx',
      *          uri: 'xxx',
      *          method: 'GET',
-     *          format: 'JSON',
+     *          encode: 'JSON',
      *          communication-type: 'RESTful',
      *          argument-metas: [{
      *              type-name: 'xxx',
@@ -175,9 +177,9 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                 }, this._logger::error);
         Object result = matchedWebSvc.invoke(method, argValues);
 
-        IResponseWriter encoder = this._responseWriters.get(this._encoderName);
+        IResponseWriter encoder = this._responseWriters.get(this._codecName);
         if (encoder == null) {
-            throw new KernelException("The response encode was not found - {}", this._encoderName);
+            throw new KernelException("The response encode was not found - {}", this._codecName);
         }
         encoder.write(result, response);
     }

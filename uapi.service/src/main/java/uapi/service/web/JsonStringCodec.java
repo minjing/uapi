@@ -10,7 +10,6 @@
 package uapi.service.web;
 
 import com.fasterxml.jackson.jr.ob.JSON;
-import uapi.IIdentifiable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Service;
@@ -21,8 +20,8 @@ import java.util.Map;
 /**
  * A string formatter for JSON
  */
-@Service(IStringFormatter.class)
-public class JsonStringFormatter implements IStringFormatter {
+@Service(IStringCodec.class)
+public class JsonStringCodec implements IStringCodec {
 
     public static final String NAME = "JSON";
 
@@ -32,7 +31,7 @@ public class JsonStringFormatter implements IStringFormatter {
     }
 
     @Override
-    public String format(
+    public String decode(
             final Object value,
             final Class type
     ) throws KernelException {
@@ -46,7 +45,7 @@ public class JsonStringFormatter implements IStringFormatter {
     }
 
     @Override
-    public Object unformat(
+    public Object encode(
             final String value,
             final Class type
     ) throws KernelException {
