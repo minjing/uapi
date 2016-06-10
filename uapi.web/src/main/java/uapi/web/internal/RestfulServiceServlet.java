@@ -193,13 +193,6 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         }
         response.getWriter().print(codec.decode(result, type));
         response.flushBuffer();
-//        String responseText = codec.decode(request, )
-
-//        IResponseWriter encoder = this._responseWriters.get(this._codecName);
-//        if (encoder == null) {
-//            throw new KernelException("The response encode was not found - {}", this._codecName);
-//        }
-//        encoder.write(result, response);
     }
 
     private Object parseValue(String value, String type) {

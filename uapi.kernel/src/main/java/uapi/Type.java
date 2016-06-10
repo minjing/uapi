@@ -45,4 +45,6 @@ public final class Type {
     public static final Class<Short> T_SHORT        = Short.class;
     public static final Class<Float> T_FLOAT        = Float.class;
     public static final Class<Double> T_DOUBLE      = Double.class;
+
+    public static final Class<String> T_STRING      = String.class;
 }

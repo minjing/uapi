@@ -27,6 +27,9 @@ public class TypeMapper {
         this._typeMapping.put(Type.Q_LONG, Type.T_LONG);
         this._typeMapping.put(Type.Q_FLOAT, Type.T_FLOAT);
         this._typeMapping.put(Type.Q_DOUBLE, Type.T_DOUBLE);
+
+        this._typeMapping.put(Type.STRING, Type.T_STRING);
+        this._typeMapping.put(Type.Q_STRING, Type.T_STRING);
     }
 
     public Class<?> getType(String typeName) {
