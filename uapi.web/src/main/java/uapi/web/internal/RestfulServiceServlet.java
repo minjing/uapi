@@ -51,9 +51,6 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     ILogger _logger;
 
     @Inject
-    Map<String, IResponseWriter> _responseWriters = new HashMap<>();
-
-    @Inject
     Map<String, IRestfulService> _restSvcs = new HashMap<>();
 
     @Inject
