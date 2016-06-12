@@ -77,6 +77,11 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     /**
      * The response of restful interface query is:
      *  {
+     *      response-type: [success or fail]
+     *      response-message: [message]
+     *      data: {...}
+     *  }
+     *  {
      *      interface-id: 'xxx',
      *      communicator-name: 'xxx',
      *      service-metas: [{

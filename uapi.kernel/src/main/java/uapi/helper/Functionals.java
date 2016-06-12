@@ -25,4 +25,19 @@ public class Functionals {
     public interface Creator<T> {
         T accept();
     }
+
+    @FunctionalInterface
+    public interface Convert<I, O> {
+        O accept(I in);
+    }
+
+    @FunctionalInterface
+    public interface Action<I> {
+        void accept(I in);
+    }
+
+    @FunctionalInterface
+    public interface Filter<T> {
+        boolean accept(T in);
+    }
 }
