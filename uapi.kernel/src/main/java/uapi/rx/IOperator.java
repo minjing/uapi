@@ -11,14 +11,60 @@ package uapi.rx;
 
 import uapi.helper.Functionals;
 
+import java.util.List;
+
 /**
- * Created by min on 16/6/12.
+ * All rx operator need to implement this interface
  */
 public interface IOperator<T> {
 
+    /**
+     * Return a operator which can map input data to output data by specific logic
+     *
+     * @param   operator
+     *          The logic used for map input data to output data
+     * @param   <O>
+     *          The output data type
+     * @return  The map operator
+     */
     <O> IOperator<O> map(Functionals.Convert<T, O> operator);
 
+    /**
+     * Return a operator which can filter out input data by specific logic
+     *
+     * @param   operator
+     *          The filter logic
+     * @return  The filter operator instance
+     */
     IOperator<T> filter(Functionals.Filter<T> operator);
 
+    /**
+     * Construct an operator which can limit data size by specified count
+     *
+     * @param   count
+     *          Limited count
+     * @return  The limitation operator
+     */
+    IOperator<T> limit(int count);
+
+    /**
+     * Iterate all of input data by specific logic
+     * @param   action
+     *          The iteration logic
+     */
     void foreach(Functionals.Action<T> action);
+
+    /**
+     * Return first element of data
+     *
+     * @return  The first element
+     */
+    T first();
+
+    /**
+     * Return all element to a list
+     *
+     * @return  A list contains all element
+     */
+    List<T> toList();
 }

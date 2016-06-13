@@ -12,24 +12,25 @@ package uapi.rx;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Functionals;
 
+import java.util.List;
+
 /**
- * Created by min on 16/6/12.
+ * Generic Operator
  */
 abstract class Operator<T> implements IOperator<T> {
 
-    private final Operator<T> _previously;
-    private boolean _done = false;
+    private final Operator<?> _previously;
 
     Operator() {
         this._previously = null;
     }
 
-    Operator(Operator previously) {
+    Operator(Operator<?> previously) {
         ArgumentChecker.required(previously, "previously");
         this._previously = previously;
     }
 
-    Operator<T> getPreviously() {
+    Operator<?> getPreviously() {
         return this._previously;
     }
 
@@ -40,10 +41,10 @@ abstract class Operator<T> implements IOperator<T> {
         return false;
     }
 
-    abstract  T getItem();
+    abstract T getItem();
 
     void done() {
-        this._done = true;
+        getPreviously().done();
     }
 
     @Override
@@ -57,8 +58,30 @@ abstract class Operator<T> implements IOperator<T> {
     }
 
     @Override
+    public IOperator<T> limit(int count) {
+        return new LimitOperator<>(this, count);
+    }
+
+    @Override
     public void foreach(Functionals.Action<T> action) {
-        Operator operator = new ForeachOperator(this, action);
+        ForeachOperator operator = new ForeachOperator(this, action);
         operator.getItem();
+        operator.done();
+    }
+
+    @Override
+    public T first() {
+        FirstOperator<T> operator = new FirstOperator<>(this);
+        T result = operator.getItem();
+        operator.done();
+        return result;
+    }
+
+    @Override
+    public List<T> toList() {
+        ToListOperator<T> operator = new ToListOperator<>(this);
+        List<T> result = operator.getItem();
+        operator.done();
+        return result;
     }
 }

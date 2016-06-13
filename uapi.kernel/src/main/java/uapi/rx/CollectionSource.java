@@ -8,10 +8,10 @@ import java.util.*;
  * A CollectionSource hold data source locally, unlike OrderedSource, it does not guarantee the items are ordered
  * which is depends on underlay implementation
  */
-public class CollectionSource<T> extends Operator<T> {
+class CollectionSource<T> extends Operator<T> {
 
     private final Collection<T> _items;
-    private final java.util.Iterator<T> _itemsIte;
+    private java.util.Iterator<T> _itemsIte;
 
     CollectionSource(Collection<T> items) {
         ArgumentChecker.required(items, "items");
@@ -30,5 +30,10 @@ public class CollectionSource<T> extends Operator<T> {
             return this._itemsIte.next();
         }
         return null;
+    }
+
+    @Override
+    void done() {
+        this._itemsIte = this._items.iterator();
     }
 }

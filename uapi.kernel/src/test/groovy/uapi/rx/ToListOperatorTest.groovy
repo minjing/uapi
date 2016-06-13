@@ -12,24 +12,20 @@ package uapi.rx
 import spock.lang.Specification
 
 /**
- * Test for
+ * Test case for ToListOperator
  */
-class ForeachOperatorTest extends Specification {
+class ToListOperatorTest extends Specification {
 
     def 'Test get item'() {
         def Operator<String> preOpt = Mock(Operator) {
-            hasItem() >>> [true, true, false]
-            getItem() >>> ["1", "2", null]
+            hasItem() >>> [true, true, true, true, false]
+            getItem() >>> ["1", null, "2", null]
         }
 
         given:
-        List<String> list = new ArrayList<>()
-        ForeachOperator opt = new ForeachOperator(preOpt, {item -> list.add(item)});
+        ToListOperator opt = new ToListOperator(preOpt)
 
         expect:
-        opt.getItem() == null
-        list.size() == 2
-        list.get(0) == "1"
-        list.get(1) == "2"
+        opt.getItem() == ["1", null, "2", null]
     }
 }

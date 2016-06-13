@@ -32,6 +32,11 @@ abstract class TerminatedOperator<T> extends Operator<T> {
     }
 
     @Override
+    public IOperator<T> limit(int count) {
+        throw new KernelException("The terminated operator can't wire to other operator");
+    }
+
+    @Override
     public void foreach(Functionals.Action<T> action) {
         throw new KernelException("The terminated operator can't wire to other operator");
     }

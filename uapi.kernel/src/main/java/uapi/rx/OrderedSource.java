@@ -45,4 +45,9 @@ class OrderedSource<T> extends Operator<T> {
         }
         return null;
     }
+
+    @Override
+    void done() {
+        this._pos = -1;
+    }
 }

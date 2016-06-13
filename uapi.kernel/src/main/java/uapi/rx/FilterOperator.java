@@ -13,7 +13,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.Functionals;
 
 /**
- * Created by min on 16/6/12.
+ * The FilterOperator will filter out specific value which are not match specified logic
  */
 class FilterOperator<T> extends Operator<T>{
 
@@ -27,17 +27,26 @@ class FilterOperator<T> extends Operator<T>{
 
     @Override
     T getItem() {
-        if (hasItem()) {
-            T item = getPreviously().getItem();
-            while (item != null) {
-                boolean filtered = this._filter.accept(item);
-                if (! filtered) {
-                    break;
-                }
-                item = getPreviously().getItem();
-            }
-            return item;
+        if (! hasItem()) {
+            return null;
         }
-        return null;
+        T item = (T) getPreviously().getItem();
+        while (true) {
+            boolean matched = this._filter.accept(item);
+            if (matched) {
+                break;
+            } else {
+                if (! hasItem()) {
+                    return null;
+                }
+                item = (T) getPreviously().getItem();
+            }
+        }
+        return item;
+    }
+
+    @Override
+    void done() {
+        // do nothing
     }
 }
