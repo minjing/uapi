@@ -45,18 +45,14 @@ class FlatMapOperator<I, T> extends Operator<T> {
         if (this._currently != null && this._currently.hasItem()) {
             return this._currently.getItem();
         }
-        if (super.hasItem()) {
+        while (super.hasItem()) {
             I item = (I) getPreviously().getItem();
-            this._currently = this._converter.accept(item);
-            return this._currently.getItem();
+            this._currently = (Operator<T>) this._converter.accept(item);
+            if (this._currently.hasItem()) {
+                return this._currently.getItem();
+            }
         }
 
         return null;
     }
-
-    @FunctionalInterface
-    public interface ConvertMore<I, O> {
-        Operator<O> accept(I in);
-    }
-
 }

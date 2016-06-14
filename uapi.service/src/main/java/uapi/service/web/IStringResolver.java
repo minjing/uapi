@@ -14,6 +14,7 @@ import uapi.IIdentifiable;
 /**
  * The String resolve
  */
+@Deprecated
 public interface IStringResolver<T> extends IIdentifiable<String> {
 
     /**

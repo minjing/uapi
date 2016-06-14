@@ -14,6 +14,7 @@ import uapi.service.annotation.Service;
 /**
  * A String to String resolver
  */
+@Deprecated
 @Service(IStringResolver.class)
 public class StringStringResolver implements IStringResolver<String> {
 

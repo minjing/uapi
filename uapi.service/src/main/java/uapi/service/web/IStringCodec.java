@@ -13,11 +13,31 @@ import uapi.IIdentifiable;
 import uapi.KernelException;
 
 /**
- * Created by xquan on 5/25/2016.
+ * Encode a type to string and decode a type to string
  */
 public interface IStringCodec<T> extends IIdentifiable<String> {
 
+    /**
+     * Decode specific type instance to string
+     *
+     * @param   value
+     *          The specific type instance
+     * @param   type
+     *          The specific type
+     * @return  The encoded string
+     * @throws  KernelException
+     */
     String decode(T value, Class<T> type) throws KernelException;
 
+    /**
+     * Encode string to a specific type instance
+     *
+     * @param   value
+     *          The string need to encode
+     * @param   type
+     *          The specific type
+     * @return  The encoded type instance
+     * @throws  KernelException
+     */
     T encode(String value, Class<T> type) throws KernelException;
 }

@@ -31,19 +31,6 @@ import java.util.Map;
 @Service(IServiceDiscover.class)
 public class DirectServiceDiscover implements IServiceDiscover {
 
-//    private static final String INTF_ID         = "interface-id";
-//    private static final String SVC_METAS       = "service-metas";
-//    private static final String NAME            = "name";
-//    private static final String RTN_TYPE_NAME   = "return-type-name";
-//    private static final String URI             = "uri";
-//    private static final String METHOD          = "method";
-//    private static final String FORMAT          = "encode";
-//    private static final String COMM_TYPE       = "communication-type";
-//    private static final String ARG_METAS       = "argument-metas";
-//    private static final String TYPE_NAME       = "type-name";
-//    private static final String FROM            = "from";
-//    private static final String INDEX           = "index";
-
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_COMM)
     String _communicatorName;
 

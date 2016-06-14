@@ -10,6 +10,7 @@ import java.util.Map;
 /**
  * A Map to String resolver
  */
+@Deprecated
 @Service(IStringResolver.class)
 public class MapStringResolver implements IStringResolver<Map> {
 

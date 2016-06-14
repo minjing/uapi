@@ -89,7 +89,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
      *          return-type-name: 'xxx',
      *          uri: 'xxx',
      *          method: 'GET',
-     *          encode: 'JSON',
+     *          codec: 'JSON',
      *          communication-type: 'RESTful',
      *          argument-metas: [{
      *              type-name: 'xxx',

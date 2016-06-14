@@ -40,7 +40,7 @@ public class RestfulCommunicator implements ICommunicator {
     @Inject
     ILogger _logger;
 
-    @Inject
+//    @Inject
     Map<String, IStringResolver> _resolvers = new HashMap<>();
 
     @Inject
@@ -185,10 +185,16 @@ public class RestfulCommunicator implements ICommunicator {
         String rtnTypeName = responseInfo.getLeftValue();
         String format = responseInfo.getCenterValue();
         String respText = responseInfo.getRightValue();
-        IStringResolver resolver = this._resolvers.get(rtnTypeName);
-        if (resolver ==  null) {
-            throw new KernelException("No resolver was mapped to name {}", rtnTypeName);
+        IStringCodec codec = this._codecs.get(rtnTypeName);
+        if (codec == null) {
+            throw new KernelException("Not type was mapped to name {}", rtnTypeName);
         }
-        return resolver.encode(respText, format);
+        Class<?> type = this._typeMapper.getType(rtnTypeName);
+        return codec.encode(respText, type);
+//        IStringResolver resolver = this._resolvers.get(rtnTypeName);
+//        if (resolver ==  null) {
+//            throw new KernelException("No resolver was mapped to name {}", rtnTypeName);
+//        }
+//        return resolver.encode(respText, format);
     }
 }

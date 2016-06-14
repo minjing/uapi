@@ -14,6 +14,7 @@ import uapi.service.annotation.Service;
 /**
  * A resolver used to encode integer to String and encode string to integer
  */
+@Deprecated
 @Service(IStringResolver.class)
 public class IntegerStringResolver implements IStringResolver<Integer> {
 
