@@ -10,6 +10,8 @@
 package uapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import uapi.service.web.ArgumentFrom;
+import uapi.service.web.HttpMethod;
 
 /**
  * Created by xquan on 6/14/2016.
@@ -23,11 +25,11 @@ public class ServiceDiscoveryResponse extends Response {
         @JsonProperty("interface-id")
         public String interfaceId;
 
-        @JsonProperty("communicator-name")
-        public String communicatorName;
+        @JsonProperty("communication")
+        public String communication;
 
         @JsonProperty("service-meta")
-        public ServiceMeta[] serviceMeta;
+        public ServiceMeta[] serviceMetas;
     }
 
     public static final class ServiceMeta {
@@ -41,13 +43,10 @@ public class ServiceDiscoveryResponse extends Response {
         public String uri;
 
         @JsonProperty("method")
-        public String method;
+        public HttpMethod[] methods;
 
         @JsonProperty("codec")
         public String codec;
-
-        @JsonProperty("communication-name")
-        public String communicatorName;
 
         @JsonProperty("argument-metas")
         public ArgumentMeta[] argumentMetas;
@@ -59,7 +58,7 @@ public class ServiceDiscoveryResponse extends Response {
         public String typeName;
 
         @JsonProperty("from")
-        public String from;
+        public ArgumentFrom from;
 
         @JsonProperty("index")
         public int index;

@@ -9,6 +9,7 @@
 
 package uapi.service.web;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import uapi.InvalidArgumentException;
 
 import java.util.ArrayList;

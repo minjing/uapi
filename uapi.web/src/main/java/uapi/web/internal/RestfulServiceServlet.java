@@ -16,8 +16,8 @@ import uapi.Type;
 import uapi.config.annotation.Config;
 import uapi.helper.CollectionHelper;
 import uapi.log.ILogger;
-import uapi.service.IRegistry;
-import uapi.service.TypeMapper;
+import uapi.rx.Looper;
+import uapi.service.*;
 import uapi.service.annotation.*;
 import uapi.service.web.*;
 import uapi.web.*;
@@ -77,11 +77,11 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     /**
      * The response of restful interface query is:
      *  {
-     *      response-type: [success or fail]
+     *      response-code: [success or fail]
      *      response-message: [message]
      *      data: {...}
      *  }
-     *  {
+     *  data -> {
      *      interface-id: 'xxx',
      *      communicator-name: 'xxx',
      *      service-metas: [{
@@ -89,8 +89,8 @@ public class RestfulServiceServlet extends MappableHttpServlet {
      *          return-type-name: 'xxx',
      *          uri: 'xxx',
      *          method: 'GET',
-     *          codec: 'JSON',
-     *          communication-type: 'RESTful',
+     *          codec-name: 'JSON',
+     *          communication: 'RESTful',
      *          argument-metas: [{
      *              type-name: 'xxx',
      *              from: 'xxx',
@@ -112,20 +112,9 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         UriInfo uriInfo = parseUri(request);
         if (Strings.isNullOrEmpty(uriInfo.serviceName)) {
             // Handle restful interface query
-            String[] intfNames = uriInfo.queryParams.get(PARAM_INTERFACE);
-            if (intfNames == null || intfNames.length != 1) {
-                throw new KernelException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
-            }
-            String intfName = intfNames[0];
-            if (Strings.isNullOrEmpty(intfName)) {
-                throw new KernelException("The queried restful service type can't be empty");
-            }
-            IRestfulInterface restfulIntf = this._restIntfs.get(intfName);
-            if (restfulIntf == null) {
-                // TODO:
-            }
+            handleDescoverRequest(request, response, uriInfo);
         } else {
-            handlRequest(request, response, HttpMethod.GET, uriInfo);
+            handleRequest(request, response, HttpMethod.GET, uriInfo);
         }
     }
 
@@ -135,7 +124,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletResponse response
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
-        handlRequest(request, response, HttpMethod.POST, uriInfo);
+        handleRequest(request, response, HttpMethod.POST, uriInfo);
     }
 
     @Override
@@ -144,7 +133,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletResponse response
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
-        handlRequest(request, response, HttpMethod.PUT, uriInfo);
+        handleRequest(request, response, HttpMethod.PUT, uriInfo);
     }
 
     @Override
@@ -153,10 +142,69 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             final HttpServletResponse response
     ) throws ServletException, IOException {
         UriInfo uriInfo = parseUri(request);
-        handlRequest(request, response, HttpMethod.DELETE, uriInfo);
+        handleRequest(request, response, HttpMethod.DELETE, uriInfo);
     }
 
-    private void handlRequest(
+    private void handleDescoverRequest(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final UriInfo uriInfo
+    ) throws ServletException, IOException {
+        String[] intfNames = uriInfo.queryParams.get(PARAM_INTERFACE);
+        if (intfNames == null || intfNames.length != 1) {
+            throw new KernelException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
+        }
+        String intfName = intfNames[0];
+        if (Strings.isNullOrEmpty(intfName)) {
+            throw new KernelException("The queried restful service type can't be empty");
+        }
+        IRestfulInterface restfulIntf = this._restIntfs.get(intfName);
+        ServiceDiscoveryResponse resp = new ServiceDiscoveryResponse();
+        if (restfulIntf == null) {
+            resp.code = CommonResponseCode.FAILURE;
+        } else {
+            resp.data = new ServiceDiscoveryResponse.Data();
+            resp.data.communication = Constants.COMMUNICATION_RESTFUL;
+            resp.data.interfaceId = restfulIntf.getId();
+            Map<MethodInfo, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
+            resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodArgMappings.size()];
+            Looper.from(methodArgMappings.entrySet())
+                    .foreachWithIndex((index, entry) -> {
+                        MethodInfo methodInfo = entry.getKey();
+                        ServiceDiscoveryResponse.ServiceMeta svcMeta = new ServiceDiscoveryResponse.ServiceMeta();
+                        svcMeta.name = methodInfo.getName();
+                        svcMeta.returnTypeName = methodInfo.getReturnType();
+                        svcMeta.codec = this._codecName;
+                        svcMeta.uri = this._uriPrefix;
+                        svcMeta.methods = restfulIntf.getMethodHttpMethodInfos().get(entry.getKey());
+                        ArgumentMapping[] argMappings = entry.getValue();
+                        svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.length];
+                        Looper.from(argMappings)
+                                .foreachWithIndex((argIdx, argMapping) -> {
+                                    ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
+                                    if (argMapping instanceof NamedArgumentMapping) {
+                                        NamedArgumentMapping nArgMapping = (NamedArgumentMapping) argMapping;
+                                        argMeta.name = nArgMapping.getName();
+                                    } else if (argMapping instanceof IndexedArgumentMapping) {
+                                        IndexedArgumentMapping iArgMapping = (IndexedArgumentMapping) argMapping;
+                                        argMeta.index = iArgMapping.getIndex();
+                                    }
+                                    argMeta.from = argMapping.getFrom();
+                                    argMeta.typeName = argMapping.getType();
+                                    svcMeta.argumentMetas[argIdx] = argMeta;
+                                });
+                        resp.data.serviceMetas[index] = svcMeta;
+                    });
+        }
+        IStringCodec codec = this._codecs.get(this._codecName);
+        if (codec == null) {
+            throw new KernelException("The response codec was not found - {}", this._codecName);
+        }
+        response.getWriter().print(codec.decode(resp, ServiceDiscoveryResponse.class));
+        response.flushBuffer();
+    }
+
+    private void handleRequest(
             final HttpServletRequest request,
             final HttpServletResponse response,
             final HttpMethod method,

@@ -70,6 +70,13 @@ abstract class Operator<T> implements IOperator<T> {
     }
 
     @Override
+    public void foreachWithIndex(IndexedForeachOperator.IndexedForeach<T> action) {
+        IndexedForeachOperator operator = new IndexedForeachOperator(this, action);
+        operator.getItem();
+        operator.done();
+    }
+
+    @Override
     public T first() {
         FirstOperator<T> operator = new FirstOperator<>(this);
         T result = operator.getItem();

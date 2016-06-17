@@ -14,7 +14,8 @@ import uapi.KernelException;
 import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
-import uapi.service.IRegistry;
+import uapi.rx.Looper;
+import uapi.service.*;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.*;
@@ -49,6 +50,9 @@ public class DirectServiceDiscover implements IServiceDiscover {
     @Inject
     Map<String, ICommunicator> _communicators = new HashMap<>();
 
+    @Inject
+    MessageLoader _msgLoader;
+
     @Override
     public ServiceInterfaceMeta discover(ServiceInterfaceMeta serviceInterfaceMeta) {
         ArgumentChecker.required(serviceInterfaceMeta, "serviceInterfaceMeta");
@@ -61,14 +65,13 @@ public class DirectServiceDiscover implements IServiceDiscover {
         // The response JSON should be:
         // {
         //     interface-id: 'xxx',
-        //     communicator-name: 'xxx',
+        //     communication: 'RESTful',
         //     service-metas: [{
         //         name: 'xxx',
         //         return-type-name: 'xxx',
         //         uri: 'xxx',
         //         method: 'GET',
         //         encode: 'JSON',
-        //         communication-type: 'RESTful',
         //         argument-metas: [{
         //             type-name: 'xxx',
         //             from: 'xxx',
@@ -85,11 +88,11 @@ public class DirectServiceDiscover implements IServiceDiscover {
 
             RestfulServiceMeta svcMeta = new RestfulServiceMeta(
                     "DiscoverService",
-                    Map.class.getCanonicalName(),
+                    ServiceDiscoveryResponse.class.getCanonicalName(),
                     new ArrayList<>(), url,
-                    HttpMethod.GET,
+                    new HttpMethod[] { HttpMethod.GET },
                     JsonStringCodec.NAME);
-            Map response = (Map) communicator.request(svcMeta);
+            ServiceDiscoveryResponse response = (ServiceDiscoveryResponse) communicator.request(svcMeta);
             if (response == null) {
                 throw new KernelException("No response when request service - {}", svcMeta);
             }
@@ -102,43 +105,75 @@ public class DirectServiceDiscover implements IServiceDiscover {
         }
     }
 
-    private List<ServiceMeta> parseResponse(Map response) {
+    private List<ServiceMeta> parseResponse(ServiceDiscoveryResponse response) {
+        if (! CommonResponseCode.SUCCESS.equals(response.code)) {
+            String msg = this._msgLoader.load(response.code);
+            throw new KernelException("Discover service failed, reason is {}", msg);
+        }
+        if (response.data == null) {
+            throw new KernelException("Discover service failed, no data was returned");
+        }
+
         List<ServiceMeta> svcMetas = new ArrayList<>();
-        List<Map> svcList = (List<Map>) response.get(Constant.SVC_METAS);
-        if (svcList == null || svcList.size() == 0) {
-            throw new KernelException("No service meta is defined in service interface - {}", response.get(Constant.INTF_ID));
-        }
-        for (Map svc : svcList) {
-            String commType = (String) svc.get(Constant.COMM_TYPE);
-            if (RestfulCommunicator.id.equals(commType)) {
-                String svcName = (String) svc.get(Constant.NAME);
-                String rtnType = (String) svc.get(Constant.RTN_TYPE_NAME);
-                String uri = (String) svc.get(Constant.URI);
-                HttpMethod method = HttpMethod.parse((String) svc.get(Constant.METHOD));
-                String format = (String) svc.get(Constant.FORMAT);
-                List<Map> argList = (List<Map>) svc.get(Constant.ARG_METAS);
-                List<ArgumentMapping> args = new ArrayList<>();
-                if (argList != null || argList.size() > 0) {
-                    for (Map arg : argList) {
-                        ArgumentMapping argMapping;
-                        String argName = (String) arg.get(Constant.NAME);
-                        String argType = (String) arg.get(Constant.TYPE_NAME);
-                        ArgumentFrom argFrom = ArgumentFrom.parse((String) arg.get(Constant.FROM));
-                        if (! Strings.isNullOrEmpty(argName)) {
-                            argMapping = new NamedArgumentMapping(argFrom, argType, argName);
-                        } else {
-                            int index = Integer.parseInt((String) arg.get(Constant.INDEX));
-                            argMapping = new IndexedArgumentMapping(argFrom, argType, index);
+        String comm = response.data.communication;
+        Looper.from(response.data.serviceMetas)
+                .map(svcMeta -> {
+                    if (RestfulCommunicator.id.equals(comm)) {
+                        List<ArgumentMapping> args = new ArrayList<>();
+                        if (svcMeta.argumentMetas != null && svcMeta.argumentMetas.length > 0) {
+                            Looper.from(svcMeta.argumentMetas)
+                                    .map(argMeta -> {
+                                        if (Strings.isNullOrEmpty(argMeta.name)) {
+                                            return new NamedArgumentMapping(argMeta.from, argMeta.typeName, argMeta.name);
+                                        } else {
+                                            return new IndexedArgumentMapping(argMeta.from, argMeta.typeName, argMeta.index);
+                                        }
+                                    }).foreach(args::add);
                         }
-                        args.add(argMapping);
+                        return new RestfulServiceMeta(
+                                svcMeta.name, svcMeta.returnTypeName, args, svcMeta.uri, svcMeta.methods, svcMeta.codec);
+                    } else {
+                        throw new KernelException("Unsupported communication type - ", comm);
                     }
-                }
-                RestfulServiceMeta svcMeta = new RestfulServiceMeta(svcName, rtnType, args, uri, method, format);
-                svcMetas.add(svcMeta);
-            } else {
-                throw new KernelException("Unsupported communication type - ", commType);
-            }
-        }
+                }).foreach(svcMetas::add);
         return svcMetas;
+
+
+//        List<Map> svcList = (List<Map>) response.get(Constant.SVC_METAS);
+//        if (svcList == null || svcList.size() == 0) {
+//            throw new KernelException("No service meta is defined in service interface - {}", response.get(Constant.INTF_ID));
+//        }
+//        for (Map svc : svcList) {
+//            String commType = (String) svc.get(Constant.COMM_TYPE);
+//            if (RestfulCommunicator.id.equals(commType)) {
+//                String svcName = (String) svc.get(Constant.NAME);
+//                String rtnType = (String) svc.get(Constant.RTN_TYPE_NAME);
+//                String uri = (String) svc.get(Constant.URI);
+//                HttpMethod method = HttpMethod.parse((String) svc.get(Constant.METHOD));
+//                String format = (String) svc.get(Constant.FORMAT);
+//                List<Map> argList = (List<Map>) svc.get(Constant.ARG_METAS);
+//                List<ArgumentMapping> args = new ArrayList<>();
+//                if (argList != null || argList.size() > 0) {
+//                    for (Map arg : argList) {
+//                        ArgumentMapping argMapping;
+//                        String argName = (String) arg.get(Constant.NAME);
+//                        String argType = (String) arg.get(Constant.TYPE_NAME);
+//                        ArgumentFrom argFrom = ArgumentFrom.parse((String) arg.get(Constant.FROM));
+//                        if (! Strings.isNullOrEmpty(argName)) {
+//                            argMapping = new NamedArgumentMapping(argFrom, argType, argName);
+//                        } else {
+//                            int index = Integer.parseInt((String) arg.get(Constant.INDEX));
+//                            argMapping = new IndexedArgumentMapping(argFrom, argType, index);
+//                        }
+//                        args.add(argMapping);
+//                    }
+//                }
+//                RestfulServiceMeta svcMeta = new RestfulServiceMeta(svcName, rtnType, args, uri, method, format);
+//                svcMetas.add(svcMeta);
+//            } else {
+//                throw new KernelException("Unsupported communication type - ", commType);
+//            }
+//        }
+//        return svcMetas;
     }
 }

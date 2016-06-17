@@ -9,16 +9,10 @@
 
 package uapi.service;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
- * The base type of all service response
+ * Created by xquan on 6/17/2016.
  */
-public abstract class Response {
+public class Constants {
 
-    @JsonProperty("response-code")
-    public String code;
-
-    @JsonProperty("response-message")
-    public String message;
+    public static String COMMUNICATION_RESTFUL  = "Restful";
 }

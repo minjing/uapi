@@ -54,6 +54,8 @@ public interface IOperator<T> {
      */
     void foreach(Functionals.Action<T> action);
 
+    void foreachWithIndex(IndexedForeachOperator.IndexedForeach<T> action);
+
     /**
      * Return first element of data
      *

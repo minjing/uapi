@@ -10,6 +10,7 @@
 package uapi.service.remote.internal;
 
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
 import uapi.service.remote.ServiceMeta;
 import uapi.service.web.ArgumentMapping;
@@ -23,35 +24,36 @@ import java.util.List;
 public class RestfulServiceMeta extends ServiceMeta {
 
     private String _uri;
-    private HttpMethod _method;
-    private String _format;
+    private HttpMethod[] _methods;
+    private String _codec;
 
     public RestfulServiceMeta(
             final String name,
             final String returnTypeName,
             final List<ArgumentMapping> argMappings,
             final String uri,
-            final HttpMethod httpMethod,
-            final String format
+            final HttpMethod[] httpMethods,
+            final String codec
     ) {
         super(name, returnTypeName, argMappings);
         ArgumentChecker.required(uri, "uri");
-        ArgumentChecker.required(httpMethod, "httpMethod");
-        ArgumentChecker.required(format, "format");
+        ArgumentChecker.required(httpMethods, "httpMethods");
+        ArgumentChecker.required(codec, "codec");
         this._uri = uri;
-        this._method = httpMethod;
+        this._methods = httpMethods;
+        this._codec = codec;
     }
 
     public String getUri() {
         return this._uri;
     }
 
-    public HttpMethod getMethod() {
-        return this._method;
+    public HttpMethod[] getMethods() {
+        return this._methods;
     }
 
-    public String getFormat() {
-        return this._format;
+    public String getCodec() {
+        return this._codec;
     }
 
     public String getCommunicatorName() {
@@ -60,7 +62,7 @@ public class RestfulServiceMeta extends ServiceMeta {
 
     @Override
     public String toString() {
-        return StringHelper.makeString("RestfulServiceMeta[{},uri={},method={},encode{}]",
-                super.toString(), this._uri, this._method, this._format);
+        return StringHelper.makeString("RestfulServiceMeta[{},uri={},methods={},codec{}]",
+                super.toString(), this._uri, CollectionHelper.asString(this._methods), this._codec);
     }
 }

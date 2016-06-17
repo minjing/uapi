@@ -14,14 +14,14 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
- * Test case for Iterator
+ * Test case for Looper
  */
-class IteratorTest extends Specification {
+class LooperTest extends Specification {
 
     def 'test iterator from array'() {
         when:
         List<Integer> list = new ArrayList<>();
-        Iterator.from("1", "2", "3").map({item -> Integer.parseInt(item)}).foreach({item -> list.add(item)})
+        Looper.from("1", "2", "3").map({ item -> Integer.parseInt(item)}).foreach({item -> list.add(item)})
 
         then:
         list.size() == size
@@ -50,7 +50,7 @@ class IteratorTest extends Specification {
 
         List<String> strList1 = new ArrayList<>()
         long start1 = System.currentTimeMillis()
-        Iterator.from(list).map({item -> String.valueOf(item)}).foreach({item -> strList1.add(item)})
+        Looper.from(list).map({ item -> String.valueOf(item)}).foreach({ item -> strList1.add(item)})
         long end1 = System.currentTimeMillis()
         System.out.println(end1 - start1)
 

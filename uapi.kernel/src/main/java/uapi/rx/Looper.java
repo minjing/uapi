@@ -14,10 +14,10 @@ import uapi.helper.ArgumentChecker;
 import java.util.Collection;
 
 /**
- * An Iterator will generate IOperator from specified data source.
+ * An Looper will generate IOperator from specified data source.
  * IOperator is a abstract handler for input data, more then one operator can be combined.
  */
-public class Iterator {
+public class Looper {
 
     /**
      * Construct IOperator from data array.

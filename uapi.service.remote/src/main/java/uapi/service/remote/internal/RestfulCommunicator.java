@@ -40,9 +40,6 @@ public class RestfulCommunicator implements ICommunicator {
     @Inject
     ILogger _logger;
 
-//    @Inject
-    Map<String, IStringResolver> _resolvers = new HashMap<>();
-
     @Inject
     Map<String, IStringCodec> _codecs = new HashMap<>();
 
@@ -71,8 +68,8 @@ public class RestfulCommunicator implements ICommunicator {
                     serviceMeta.getName(), argMappings.size(), args.length);
         }
 
-        String format = restfulSvcMeta.getFormat();
-        HttpMethod reqMethod = restfulSvcMeta.getMethod();
+        String format = restfulSvcMeta.getCodec();
+        HttpMethod reqMethod = restfulSvcMeta.getMethods()[0];
         List<Triple<ArgumentMapping, String, Object>> uriArgs = new ArrayList<>();
         Map<String, Triple<ArgumentMapping, String, Object>> paramArgs = new HashMap<>();
         Map<String, Triple<ArgumentMapping, String, Object>> headerArgs = new HashMap<>();
@@ -138,7 +135,7 @@ public class RestfulCommunicator implements ICommunicator {
         try {
             Response response = httpClient.newCall(request).execute();
             return decodeResponse(new Triple<>(
-                    restfulSvcMeta.getReturnTypeName(), restfulSvcMeta.getFormat(), response.body().string()));
+                    restfulSvcMeta.getReturnTypeName(), restfulSvcMeta.getCodec(), response.body().string()));
         } catch (IOException ex) {
             throw new KernelException(ex, "Encounter an error when invoke service {}", restfulSvcMeta.toString());
         }
