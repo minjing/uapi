@@ -10,9 +10,7 @@
 package uapi.service.remote;
 
 import uapi.IIdentifiable;
-import uapi.helper.Pair;
-
-import java.util.List;
+import uapi.service.ServiceMeta;
 
 /**
  * The service invocation driver is used to invoke service

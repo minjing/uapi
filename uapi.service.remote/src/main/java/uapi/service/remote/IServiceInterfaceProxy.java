@@ -9,6 +9,8 @@
 
 package uapi.service.remote;
 
+import uapi.service.ServiceInterfaceMeta;
+
 import java.util.List;
 
 /**

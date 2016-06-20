@@ -19,7 +19,7 @@ import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IRemoteServiceConfigurableKey;
 import uapi.service.remote.IServiceDiscover;
-import uapi.service.remote.ServiceInterfaceMeta;
+import uapi.service.ServiceInterfaceMeta;
 
 import java.util.HashMap;
 import java.util.Map;

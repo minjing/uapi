@@ -9,12 +9,9 @@
 
 package uapi.web.internal;
 
-import rx.*;
-import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.service.web.ArgumentMapping;
-import uapi.service.web.IndexedArgumentMapping;
 
 import java.util.*;
 

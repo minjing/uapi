@@ -10,7 +10,7 @@
 package uapi.service.remote.internal;
 
 import uapi.service.remote.IServiceInterfaceProxy;
-import uapi.service.remote.ServiceInterfaceMeta;
+import uapi.service.ServiceInterfaceMeta;
 
 /**
  * Build service proxy based on service interface meta

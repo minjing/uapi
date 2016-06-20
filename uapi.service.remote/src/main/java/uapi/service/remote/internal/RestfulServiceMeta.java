@@ -12,7 +12,7 @@ package uapi.service.remote.internal;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
-import uapi.service.remote.ServiceMeta;
+import uapi.service.ServiceMeta;
 import uapi.service.web.ArgumentMapping;
 import uapi.service.web.HttpMethod;
 

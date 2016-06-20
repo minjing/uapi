@@ -12,13 +12,12 @@ package uapi.service.remote.internal;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
-import uapi.service.remote.ServiceInterfaceMeta;
-import uapi.service.remote.ServiceMeta;
+import uapi.service.ServiceInterfaceMeta;
+import uapi.service.ServiceMeta;
 import uapi.service.web.ArgumentMapping;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

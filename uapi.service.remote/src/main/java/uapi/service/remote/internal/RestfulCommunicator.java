@@ -20,7 +20,7 @@ import uapi.service.TypeMapper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
-import uapi.service.remote.ServiceMeta;
+import uapi.service.ServiceMeta;
 import uapi.service.web.*;
 
 import java.io.IOException;

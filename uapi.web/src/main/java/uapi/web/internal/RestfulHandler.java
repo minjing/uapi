@@ -130,17 +130,6 @@ public class RestfulHandler extends AnnotationsHandler {
                             List<MethodInfo> methods = getInterfaceMethods(dType, builderContext);
                             intfMethodMap.put(intfName, methods);
                         });
-
-//            } else if (intfs.size() == 1) {
-//                DeclaredType dType = (DeclaredType) intfs.get(0);
-//                List<Element> elements = (List<Element>) dType.asElement().getEnclosedElements();
-//                Observable.from(elements)
-//                        .filter(element -> element.getKind() == ElementKind.METHOD)
-//                        .map(this::fetchMethodInfo)
-//                        //.doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
-//                        .subscribe(methodInfo -> intfMethodMappings.put(methodInfo, null), t -> builderContext.getLogger().error(t));
-//            } else if (intfs.size() > 1) {
-//                // Found more then 1 interface so we need indicate which one should be exposed
             } else {
                 throw new KernelException(
                         "Invalid interface implementation for class - {}",

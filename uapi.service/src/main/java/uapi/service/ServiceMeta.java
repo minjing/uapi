@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -7,9 +7,8 @@
  * use the project into a commercial product
  */
 
-package uapi.service.remote;
+package uapi.service;
 
-import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;

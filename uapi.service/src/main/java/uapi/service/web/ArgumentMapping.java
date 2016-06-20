@@ -11,46 +11,40 @@ package uapi.service.web;
 
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
+import uapi.service.ArgumentMeta;
 
 /**
  * Created by xquan on 5/3/2016.
  */
-public class ArgumentMapping {
+public class ArgumentMapping extends ArgumentMeta {
 
     private ArgumentFrom _from;
-    private String _type;
 
     public ArgumentFrom getFrom() {
         return this._from;
     }
 
-    public String getType() {
-        return this._type;
-    }
-
     public ArgumentMapping(
             final String type) {
-        ArgumentChecker.required(type, "type");
-        this._type = type;
+        super(type);
     }
 
     public ArgumentMapping(
             final ArgumentFrom from,
             final String type
     ) throws InvalidArgumentException {
+        super(type);
         ArgumentChecker.required(from, "from");
-        ArgumentChecker.required(type, "type");
         this._from = from;
-        this._type = type;
     }
 
-    public boolean isSameType(ArgumentMapping argumentMapping) {
-        ArgumentChecker.required(argumentMapping, "argumentMapping");
-        return this._type.equals(argumentMapping._type);
-    }
+//    public boolean isSameType(ArgumentMapping argumentMapping) {
+//        ArgumentChecker.required(argumentMapping, "argumentMapping");
+//        return this._type.equals(argumentMapping._type);
+//    }
 
     @Override
     public String toString() {
-        return "ArgumentMapping[from=" + this._from + ", type=" + this._type + "]";
+        return "ArgumentMapping[from=" + this._from + ", type=" + getType() + "]";
     }
 }

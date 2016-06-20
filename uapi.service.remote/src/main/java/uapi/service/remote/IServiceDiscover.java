@@ -9,6 +9,8 @@
 
 package uapi.service.remote;
 
+import uapi.service.ServiceInterfaceMeta;
+
 /**
  * The service discover is used to discover service from somewhere.
  */
