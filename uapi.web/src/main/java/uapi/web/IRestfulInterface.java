@@ -1,9 +1,9 @@
 package uapi.web;
 
 import uapi.IIdentifiable;
+import uapi.service.MethodMeta;
 import uapi.service.web.ArgumentMapping;
 import uapi.service.web.HttpMethod;
-import uapi.web.internal.MethodInfo;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public interface IRestfulInterface extends IIdentifiable<String> {
 
-    Map<MethodInfo, ArgumentMapping[]> getMethodArgumentsInfos();
+    Map<MethodMeta, ArgumentMapping[]> getMethodArgumentsInfos();
 
-    Map<MethodInfo, HttpMethod[]> getMethodHttpMethodInfos();
+    Map<MethodMeta, HttpMethod[]> getMethodHttpMethodInfos();
 }

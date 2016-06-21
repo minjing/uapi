@@ -12,6 +12,7 @@ package uapi.service.remote.internal;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
+import uapi.service.ArgumentMeta;
 import uapi.service.ServiceMeta;
 import uapi.service.web.ArgumentMapping;
 import uapi.service.web.HttpMethod;
@@ -30,7 +31,7 @@ public class RestfulServiceMeta extends ServiceMeta {
     public RestfulServiceMeta(
             final String name,
             final String returnTypeName,
-            final List<ArgumentMapping> argMappings,
+            final List<ArgumentMeta> argMappings,
             final String uri,
             final HttpMethod[] httpMethods,
             final String codec

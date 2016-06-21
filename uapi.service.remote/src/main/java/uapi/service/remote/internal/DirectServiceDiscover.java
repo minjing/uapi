@@ -119,7 +119,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
         Looper.from(response.data.serviceMetas)
                 .map(svcMeta -> {
                     if (RestfulCommunicator.id.equals(comm)) {
-                        List<ArgumentMapping> args = new ArrayList<>();
+                        List<ArgumentMeta> args = new ArrayList<>();
                         if (svcMeta.argumentMetas != null && svcMeta.argumentMetas.length > 0) {
                             Looper.from(svcMeta.argumentMetas)
                                     .map(argMeta -> {

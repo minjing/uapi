@@ -16,6 +16,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.Triple;
 import uapi.log.ILogger;
+import uapi.service.ArgumentMeta;
 import uapi.service.TypeMapper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -62,7 +63,7 @@ public class RestfulCommunicator implements ICommunicator {
             throw new KernelException("The {} can't handle : {}", this.getClass().getName(), serviceMeta.getClass().getName());
         }
         RestfulServiceMeta restfulSvcMeta = (RestfulServiceMeta) serviceMeta;
-        List<ArgumentMapping> argMappings = restfulSvcMeta.getArgumentMappings();
+        List<ArgumentMeta> argMappings = restfulSvcMeta.getArgumentMappings();
         if (argMappings.size() != args.length) {
             throw new KernelException("Found unmatched service {} argument size {}, expect {}",
                     serviceMeta.getName(), argMappings.size(), args.length);
@@ -74,7 +75,7 @@ public class RestfulCommunicator implements ICommunicator {
         Map<String, Triple<ArgumentMapping, String, Object>> paramArgs = new HashMap<>();
         Map<String, Triple<ArgumentMapping, String, Object>> headerArgs = new HashMap<>();
         for (int i = 0; i < argMappings.size(); i++) {
-            ArgumentMapping argMapping = argMappings.get(i);
+            ArgumentMapping argMapping = (ArgumentMapping) argMappings.get(i);
             if (argMapping instanceof IndexedArgumentMapping) {
                 int index = ((IndexedArgumentMapping) argMapping).getIndex();
                 if (index >= args.length) {

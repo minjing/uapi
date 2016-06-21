@@ -71,7 +71,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     @Override
     public String getPathPattern() {
-        return this._uriPrefix + "*";
+        return this._uriPrefix + "/*";
     }
 
     /**
@@ -166,14 +166,14 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             resp.data = new ServiceDiscoveryResponse.Data();
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
             resp.data.interfaceId = restfulIntf.getId();
-            Map<MethodInfo, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
+            Map<MethodMeta, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
             resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodArgMappings.size()];
             Looper.from(methodArgMappings.entrySet())
                     .foreachWithIndex((index, entry) -> {
-                        MethodInfo methodInfo = entry.getKey();
+                        MethodMeta methodInfo = entry.getKey();
                         ServiceDiscoveryResponse.ServiceMeta svcMeta = new ServiceDiscoveryResponse.ServiceMeta();
                         svcMeta.name = methodInfo.getName();
-                        svcMeta.returnTypeName = methodInfo.getReturnType();
+                        svcMeta.returnTypeName = methodInfo.getReturnTypeName();
                         svcMeta.codec = this._codecName;
                         svcMeta.uri = this._uriPrefix;
                         svcMeta.methods = restfulIntf.getMethodHttpMethodInfos().get(entry.getKey());
@@ -282,12 +282,14 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             char c = path.charAt(i);
             switch (c) {
                 case '/':
-                    if (uriInfo.serviceName == null) {
-                        uriInfo.serviceName = buffer.toString();
-                    } else {
-                        uriInfo.uriParams.add(buffer.toString());
+                    if (buffer.length() > 0) {
+                        if (uriInfo.serviceName == null) {
+                            uriInfo.serviceName = buffer.toString();
+                        } else {
+                            uriInfo.uriParams.add(buffer.toString());
+                        }
+                        buffer.delete(0, buffer.length());
                     }
-                    buffer.delete(0, buffer.length());
                     break;
                 default:
                     buffer.append(c);

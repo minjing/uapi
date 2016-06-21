@@ -10,14 +10,13 @@
 package uapi.web.internal;
 
 import com.google.auto.service.AutoService;
-import com.google.common.collect.ArrayTable;
-import com.google.common.collect.Table;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.annotation.*;
+import uapi.annotation.MethodMeta;
 import uapi.helper.*;
-import uapi.service.IServiceHandlerHelper;
+import uapi.service.*;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
 import uapi.service.web.*;
@@ -40,6 +39,7 @@ import java.util.*;
 public class RestfulHandler extends AnnotationsHandler {
 
     private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO  = "template/getMethodArgumentsInfo_method.ftl";
+    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFOS = "template/getMethodArgumentsInfos_method.ftl";
     private static final String TEMPLATE_GET_RETURN_TYPE_NAME       = "template/getReturnTypeName_method.ftl";
     private static final String TEMPLATE_INVOKE                     = "template/invoke_method.ftl";
     private static final String HTTP_TO_METHOD_ARGS_MAPPING         = "HttpToMethodArgumentsMapping";
@@ -88,7 +88,7 @@ public class RestfulHandler extends AnnotationsHandler {
             Restful restful = methodElement.getAnnotation(Restful.class);
             HttpMethod[] httpMethods = HttpMethod.parse(restful.value());
 
-            Map<String, MethodArgumentsMapping> httpMethodArgMappings =
+            Map<String, uapi.service.MethodMeta> httpMethodArgMappings =
                     clsBuilder.createTransienceIfAbsent(HTTP_TO_METHOD_ARGS_MAPPING, HashMap::new);
             HttpMethod found = MapHelper.findKey(httpMethodArgMappings, httpMethods);
             if (found != null) {
@@ -96,7 +96,7 @@ public class RestfulHandler extends AnnotationsHandler {
             }
 
             ExecutableElement execElem = (ExecutableElement) methodElement;
-            MethodArgumentsMapping methodArgMapping = new MethodArgumentsMapping(methodName, returnTypeName);
+            uapi.service.MethodMeta methodArgMapping = new uapi.service.MethodMeta(methodName, returnTypeName);
             Observable.from(execElem.getParameters())
                     .map(this::handleFromAnnotation)
                     .subscribe(methodArgMapping::addArgumentMapping);
@@ -111,10 +111,10 @@ public class RestfulHandler extends AnnotationsHandler {
 
     private void scanImplementation(
             final TypeElement classElement,
-            final MethodArgumentsMapping methodArgsMapping,
+            final uapi.service.MethodMeta methodArgsMapping,
             final ClassMeta.Builder clsBuilder,
             final IBuilderContext builderContext) {
-        TripleMap<String, MethodInfo, MethodArgumentsMapping> intfMethodMap =
+        TripleMap<String, uapi.service.MethodMeta, uapi.service.MethodMeta> intfMethodMap =
                 clsBuilder.createTransienceIfAbsent(INTERFACE_METHOD_MAPPING, TripleMap::new);
         if (intfMethodMap.size() == 0) {
             // Scan interface methods
@@ -127,7 +127,7 @@ public class RestfulHandler extends AnnotationsHandler {
                         .map(intf -> (DeclaredType) intf)
                         .subscribe(dType -> {
                             String intfName = dType.toString();
-                            List<MethodInfo> methods = getInterfaceMethods(dType, builderContext);
+                            List<uapi.service.MethodMeta> methods = getInterfaceMethods(dType, builderContext);
                             intfMethodMap.put(intfName, methods);
                         });
             } else {
@@ -140,14 +140,14 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(intfMethodMap.entrySet())
                 .subscribe(intfEntry -> {
                     Observable.from(intfEntry.getValue().entrySet())
-                            .filter(methodEntry -> isSameMethod(methodEntry.getKey(), methodArgsMapping))
+                            .filter(methodEntry -> methodEntry.getKey().isSame(methodArgsMapping))
                             .subscribe(methodEntry -> methodEntry.setValue(methodArgsMapping));
                 });
     }
 
-    private List<MethodInfo> getInterfaceMethods(DeclaredType intfType, IBuilderContext builderCtx) {
+    private List<uapi.service.MethodMeta> getInterfaceMethods(DeclaredType intfType, IBuilderContext builderCtx) {
         List<Element> elements = (List<Element>) intfType.asElement().getEnclosedElements();
-        List<MethodInfo> methods = new ArrayList<>();
+        List<uapi.service.MethodMeta> methods = new ArrayList<>();
         Observable.from(elements)
                 .filter(element -> element.getKind() == ElementKind.METHOD)
                 .map(this::fetchMethodInfo)
@@ -156,37 +156,37 @@ public class RestfulHandler extends AnnotationsHandler {
         return methods;
     }
 
-    private boolean isSameMethod(MethodInfo methodInfo, MethodArgumentsMapping methodArgsMapping) {
-        if (! methodInfo.getName().equals(methodArgsMapping.getName())) {
-            return false;
-        }
-        String[] argTypes = methodInfo.getArgumentTypes();
-        List<ArgumentMapping> argMappings = methodArgsMapping.getArgumentMappings();
-        if (argTypes.length != argMappings.size()) {
-            return false;
-        }
-        if (argTypes.length == 0 && argMappings.size() == 0) {
-            return true;
-        }
-        for (int i = 0; i < argTypes.length; i++) {
-            if (! argTypes[i].equals(argMappings.get(i).getType())) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean isSameMethod(uapi.service.MethodMeta methodInfo, MethodArgumentsMapping methodArgsMapping) {
+//        if (! methodInfo.getName().equals(methodArgsMapping.getName())) {
+//            return false;
+//        }
+//        String[] argTypes = methodInfo.getArgumentTypes();
+//        List<ArgumentMapping> argMappings = methodArgsMapping.getArgumentMappings();
+//        if (argTypes.length != argMappings.size()) {
+//            return false;
+//        }
+//        if (argTypes.length == 0 && argMappings.size() == 0) {
+//            return true;
+//        }
+//        for (int i = 0; i < argTypes.length; i++) {
+//            if (! argTypes[i].equals(argMappings.get(i).getType())) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
-    private MethodInfo fetchMethodInfo(Element methodElement) {
+    private uapi.service.MethodMeta fetchMethodInfo(Element methodElement) {
         String methodName = methodElement.getSimpleName().toString();
         ExecutableElement execMethod = (ExecutableElement) methodElement;
         List<VariableElement> argElements = (List<VariableElement>) execMethod.getParameters();
-        List<String> argTypes = new ArrayList<>();
+        List<uapi.service.ArgumentMeta> argTypes = new ArrayList<>();
         Observable.from(argElements)
                 .filter(argElement -> argElement.getKind() == ElementKind.PARAMETER)
-                .map(argElement -> argElement.asType().toString())
+                .map(argElement -> new uapi.service.ArgumentMeta(argElement.asType().toString()))
                 .subscribe(argTypes::add);
         String rtnType = execMethod.getReturnType().toString();
-        return new MethodInfo(methodName, argTypes, rtnType);
+        return new uapi.service.MethodMeta(methodName, rtnType, argTypes);
     }
 
     private void implementIRestfulService(
@@ -203,7 +203,7 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(builderCtx.getBuilders())
                 .filter(clsBuilder -> clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING) != null)
                 .subscribe(clsBuilder -> {
-                    Map<HttpMethod, MethodArgumentsMapping> httpMethodMappings = clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING);
+                    Map<HttpMethod, uapi.service.MethodMeta> httpMethodMappings = clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING);
                     String codeGetId = StringHelper.makeString("return \"{}\";", clsBuilder.getTransience(EXPOSED_NAME).toString());
                     Map<String, Object> model = new HashMap<>();
                     model.put("model", httpMethodMappings);
@@ -259,7 +259,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                             .setTemplate(tempGetRtnType)));
 
                     // Check whether there are interface need to exposed
-                    TripleMap<String, MethodInfo, MethodArgumentsMapping> intfMethodMap =
+                    TripleMap<String, uapi.service.MethodMeta, uapi.service.MethodMeta> intfMethodMap =
                             clsBuilder.getTransience(INTERFACE_METHOD_MAPPING);
                     if (intfMethodMap != null) {
                         Observable.from(intfMethodMap.entrySet())

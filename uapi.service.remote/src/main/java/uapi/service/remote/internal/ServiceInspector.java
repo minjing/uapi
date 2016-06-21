@@ -12,6 +12,7 @@ package uapi.service.remote.internal;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.service.ArgumentMeta;
 import uapi.service.ServiceInterfaceMeta;
 import uapi.service.ServiceMeta;
 import uapi.service.web.ArgumentMapping;
@@ -48,8 +49,8 @@ class ServiceInspector {
     private ServiceMeta parseServiceMeta(Method method) {
         String name = method.getName();
         String returnType = method.getReturnType().getCanonicalName();
-        List<ArgumentMapping> argMappings = Observable.from(method.getParameters())
-                .map(parameter -> parseArgumentMeta(parameter))
+        List<ArgumentMeta> argMappings = Observable.from(method.getParameters())
+                .map(parameter -> (ArgumentMeta) parseArgumentMeta(parameter))
                 .toList().toBlocking().first();
         return new ServiceMeta(name, returnType, argMappings);
     }
