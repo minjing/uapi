@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -12,7 +12,10 @@ package uapi.annotation.internal;
 import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
-import uapi.annotation.*;
+import uapi.annotation.AnnotationsHandler;
+import uapi.annotation.ClassMeta;
+import uapi.annotation.IAnnotationsHandler;
+import uapi.annotation.LogSupport;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;

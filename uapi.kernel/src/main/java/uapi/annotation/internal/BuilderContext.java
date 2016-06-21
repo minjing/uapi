@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -13,7 +13,10 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
-import uapi.annotation.*;
+import uapi.annotation.ClassMeta;
+import uapi.annotation.IBuilderContext;
+import uapi.annotation.IHandlerHelper;
+import uapi.annotation.LogSupport;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;

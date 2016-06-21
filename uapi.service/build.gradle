@@ -1,6 +1,5 @@
 dependencies {
     compile project(':uapi.kernel')
-    compile project(':uapi.kernel.annotation')
     compile project(':uapi.kernel.service')
 
     compile ("com.fasterxml.jackson.core:jackson-annotations:${jackson_version}")

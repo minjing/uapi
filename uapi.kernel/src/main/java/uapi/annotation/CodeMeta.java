@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -18,7 +18,6 @@ import uapi.helper.StringHelper;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by min on 16/2/20.
@@ -122,7 +121,7 @@ public class CodeMeta {
             if (obj == null) {
                 return false;
             }
-            CodeMeta.Builder other = (CodeMeta.Builder) obj;
+            Builder other = (Builder) obj;
             if (this._temp == null || other._temp == null) {
                 return false;
             }

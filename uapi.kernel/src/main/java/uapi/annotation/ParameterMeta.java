@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -101,7 +101,7 @@ public final class ParameterMeta {
             return this._type;
         }
 
-        public Builder addModifier(javax.lang.model.element.Modifier modifier) {
+        public Builder addModifier(Modifier modifier) {
             checkStatus();
             ArgumentChecker.notNull(modifier, "modifier");
             this._modifiers.add(modifier);
