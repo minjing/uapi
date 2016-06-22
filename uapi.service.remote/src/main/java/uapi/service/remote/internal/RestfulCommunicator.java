@@ -17,6 +17,7 @@ import uapi.helper.CollectionHelper;
 import uapi.helper.Triple;
 import uapi.log.ILogger;
 import uapi.service.ArgumentMeta;
+import uapi.service.RestfulServiceMeta;
 import uapi.service.TypeMapper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;

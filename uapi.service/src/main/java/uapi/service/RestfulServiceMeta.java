@@ -7,14 +7,11 @@
  * use the project into a commercial product
  */
 
-package uapi.service.remote.internal;
+package uapi.service;
 
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
-import uapi.service.ArgumentMeta;
-import uapi.service.ServiceMeta;
-import uapi.service.web.ArgumentMapping;
 import uapi.service.web.HttpMethod;
 
 import java.util.List;
@@ -57,9 +54,9 @@ public class RestfulServiceMeta extends ServiceMeta {
         return this._codec;
     }
 
-    public String getCommunicatorName() {
-        return RestfulCommunicator.id;
-    }
+//    public String getCommunicatorName() {
+//        return RestfulCommunicator.id;
+//    }
 
     @Override
     public String toString() {

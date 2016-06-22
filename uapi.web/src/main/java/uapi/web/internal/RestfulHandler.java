@@ -111,7 +111,7 @@ public class RestfulHandler extends AnnotationsHandler {
 
     private void scanImplementation(
             final TypeElement classElement,
-            final uapi.service.MethodMeta methodArgsMapping,
+            final uapi.service.MethodMeta methodMeta,
             final ClassMeta.Builder clsBuilder,
             final IBuilderContext builderContext) {
         TripleMap<String, uapi.service.MethodMeta, uapi.service.MethodMeta> intfMethodMap =
@@ -140,8 +140,8 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(intfMethodMap.entrySet())
                 .subscribe(intfEntry -> {
                     Observable.from(intfEntry.getValue().entrySet())
-                            .filter(methodEntry -> methodEntry.getKey().isSame(methodArgsMapping))
-                            .subscribe(methodEntry -> methodEntry.setValue(methodArgsMapping));
+                            .filter(methodEntry -> methodEntry.getKey().isSame(methodMeta))
+                            .subscribe(methodEntry -> methodEntry.setValue(methodMeta));
                 });
     }
 

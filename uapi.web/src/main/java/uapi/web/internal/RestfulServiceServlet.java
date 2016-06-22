@@ -166,9 +166,10 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             resp.data = new ServiceDiscoveryResponse.Data();
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
             resp.data.interfaceId = restfulIntf.getId();
-            Map<MethodMeta, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
-            resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodArgMappings.size()];
-            Looper.from(methodArgMappings.entrySet())
+//            Map<MethodMeta, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
+            Map<MethodMeta, HttpMethod[]> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
+            resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodHttpMethodMappings.size()];
+            Looper.from(methodHttpMethodMappings.entrySet())
                     .foreachWithIndex((index, entry) -> {
                         MethodMeta methodInfo = entry.getKey();
                         ServiceDiscoveryResponse.ServiceMeta svcMeta = new ServiceDiscoveryResponse.ServiceMeta();
@@ -176,10 +177,11 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                         svcMeta.returnTypeName = methodInfo.getReturnTypeName();
                         svcMeta.codec = this._codecName;
                         svcMeta.uri = this._uriPrefix;
-                        svcMeta.methods = restfulIntf.getMethodHttpMethodInfos().get(entry.getKey());
-                        ArgumentMapping[] argMappings = entry.getValue();
-                        svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.length];
+                        svcMeta.methods = entry.getValue();
+                        List<ArgumentMeta> argMappings = methodInfo.getArgumentMappings();
+                        svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
+                                .map(argMapping -> (ArgumentMapping) argMapping)
                                 .foreachWithIndex((argIdx, argMapping) -> {
                                     ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
                                     if (argMapping instanceof NamedArgumentMapping) {
