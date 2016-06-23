@@ -1,17 +1,22 @@
 package uapi.web;
 
-import uapi.IIdentifiable;
 import uapi.service.MethodMeta;
 import uapi.service.web.HttpMethod;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * A Restful interface combine multiple Restful service into a interface to exposed
  */
-public interface IRestfulInterface extends IIdentifiable<String> {
+public interface IRestfulInterface {
 
-//    Map<MethodMeta, ArgumentMapping[]> getMethodArgumentsInfos();
+    /**
+     * Retrieve interface id
+     *
+     * @return  The interface id
+     */
+    String getInterfaceId();
 
-    Map<MethodMeta, HttpMethod[]> getMethodHttpMethodInfos();
+    Map<MethodMeta, List<HttpMethod>> getMethodHttpMethodInfos();
 }

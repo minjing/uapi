@@ -31,6 +31,13 @@ public interface IRestfulService extends IIdentifiable<String> {
      */
     ArgumentMapping[] getMethodArgumentsInfo(HttpMethod method);
 
+    /**
+     * Get restful service return type name by http method
+     *
+     * @param   method
+     *          The http method
+     * @return  The type name or null
+     */
     String getReturnTypeName(HttpMethod method);
 
     /**

@@ -13,6 +13,7 @@ import com.google.auto.service.AutoService;
 import freemarker.template.Template;
 import rx.Observable;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.annotation.*;
 import uapi.annotation.MethodMeta;
 import uapi.helper.*;
@@ -38,13 +39,13 @@ import java.util.*;
 @AutoService(IAnnotationsHandler.class)
 public class RestfulHandler extends AnnotationsHandler {
 
-    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO  = "template/getMethodArgumentsInfo_method.ftl";
-    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFOS = "template/getMethodArgumentsInfos_method.ftl";
-    private static final String TEMPLATE_GET_RETURN_TYPE_NAME       = "template/getReturnTypeName_method.ftl";
-    private static final String TEMPLATE_INVOKE                     = "template/invoke_method.ftl";
-    private static final String HTTP_TO_METHOD_ARGS_MAPPING         = "HttpToMethodArgumentsMapping";
-    private static final String EXPOSED_NAME                        = "ExposedName";
-    private static final String INTERFACE_METHOD_MAPPING            = "InterfaceMethodMapping";
+    private static final String TEMPLATE_GET_METHOD_ARGUMENTS_INFO      = "template/getMethodArgumentsInfo_method.ftl";
+    private static final String TEMPLATE_GET_METHOD_HTTP_METHOD_INFOS   = "template/getMethodHttpMethodInfos_method.ftl";
+    private static final String TEMPLATE_GET_RETURN_TYPE_NAME           = "template/getReturnTypeName_method.ftl";
+    private static final String TEMPLATE_INVOKE                         = "template/invoke_method.ftl";
+    private static final String HTTP_TO_METHOD_ARGS_MAPPING             = "HttpToMethodArgumentsMapping";
+    private static final String EXPOSED_NAME                            = "ExposedName";
+    private static final String INTERFACE_METHOD_MAPPING                = "InterfaceMethodMapping";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations =
@@ -156,26 +157,6 @@ public class RestfulHandler extends AnnotationsHandler {
         return methods;
     }
 
-//    private boolean isSameMethod(uapi.service.MethodMeta methodInfo, MethodArgumentsMapping methodArgsMapping) {
-//        if (! methodInfo.getName().equals(methodArgsMapping.getName())) {
-//            return false;
-//        }
-//        String[] argTypes = methodInfo.getArgumentTypes();
-//        List<ArgumentMapping> argMappings = methodArgsMapping.getArgumentMappings();
-//        if (argTypes.length != argMappings.size()) {
-//            return false;
-//        }
-//        if (argTypes.length == 0 && argMappings.size() == 0) {
-//            return true;
-//        }
-//        for (int i = 0; i < argTypes.length; i++) {
-//            if (! argTypes[i].equals(argMappings.get(i).getType())) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-
     private uapi.service.MethodMeta fetchMethodInfo(Element methodElement) {
         String methodName = methodElement.getSimpleName().toString();
         ExecutableElement execMethod = (ExecutableElement) methodElement;
@@ -195,6 +176,7 @@ public class RestfulHandler extends AnnotationsHandler {
         Template tempGetArgs = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_ARGUMENTS_INFO);
         Template tempGetRtnType = builderCtx.loadTemplate(TEMPLATE_GET_RETURN_TYPE_NAME);
         Template tempInvoke = builderCtx.loadTemplate(TEMPLATE_INVOKE);
+        Template tempGetMethodHttpInfos = builderCtx.loadTemplate(TEMPLATE_GET_METHOD_HTTP_METHOD_INFOS);
         IServiceHandlerHelper svcHelper = (IServiceHandlerHelper) builderCtx.getHelper(IServiceHandlerHelper.name);
         if (svcHelper == null) {
             throw new KernelException("No service handler helper was found");
@@ -262,15 +244,55 @@ public class RestfulHandler extends AnnotationsHandler {
                     TripleMap<String, uapi.service.MethodMeta, uapi.service.MethodMeta> intfMethodMap =
                             clsBuilder.getTransience(INTERFACE_METHOD_MAPPING);
                     if (intfMethodMap != null) {
+                        List<String> satisfiedIntfs = new LinkedList<>();
                         Observable.from(intfMethodMap.entrySet())
                                 .filter(intfEntry -> ! intfMethodMap.hasEmptyValue(intfEntry.getKey()))
-                                .subscribe(intfEntry -> {
-                                    String intfName = intfEntry.getKey();
+                                .subscribe(intfEntry -> satisfiedIntfs.add(intfEntry.getKey()));
+                        if (satisfiedIntfs.size() > 1) {
+                            throw new KernelException("Found service {} implement multiple interfaces {}",
+                                    clsBuilder.getClassName(), CollectionHelper.asString(satisfiedIntfs));
+                        }
+                        if (satisfiedIntfs.size() == 1) {
+                            String intfId = satisfiedIntfs.get(0);
+                            Map<uapi.service.MethodMeta, List<HttpMethod>> methodToHttpModel = new HashMap<>();
+                            Map<uapi.service.MethodMeta, uapi.service.MethodMeta> methodMap = intfMethodMap.get(intfId);
+                            Observable.from(methodMap.values())
+                                    .subscribe(methodMeta -> methodToHttpModel.put(methodMeta, getHttpMethods(methodMeta, httpMethodMappings)));
 
-                                });
-
+                            svcHelper.addServiceId(clsBuilder, IRestfulInterface.class.getCanonicalName());
+                            String codeGetIntfId = StringHelper.makeString("return \"{}\"", intfId);
+                            clsBuilder.addImplement(IRestfulInterface.class.getCanonicalName())
+                                    // Implement getInterfaceId method
+                                    .addMethodBuilder(MethodMeta.builder()
+                                            .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                            .addModifier(Modifier.PUBLIC)
+                                            .setName("getInterfaceId")
+                                            .setReturnTypeName(Type.Q_STRING)
+                                            .addCodeBuilder(CodeMeta.builder()
+                                                    .addRawCode(codeGetIntfId)))
+                                    // Implement getMethodHttpMethodInfos method
+                                    .addMethodBuilder(MethodMeta.builder()
+                                            .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
+                                            .addModifier(Modifier.PUBLIC)
+                                            .setName("getMethodHttpMethodInfos")
+                                            .setReturnTypeName("java.util.Map<uapi.service.MethodMeta, uapi.service.web.HttpMethod[]>")
+                                            .addCodeBuilder(CodeMeta.builder()
+                                                    .setModel(methodToHttpModel)
+                                                    .setTemplate(tempGetMethodHttpInfos)));
+                        }
                     }
                 }, t -> builderCtx.getLogger().error(t));
+    }
+
+    private List<HttpMethod> getHttpMethods(
+            uapi.service.MethodMeta methodMeta, Map<HttpMethod, uapi.service.MethodMeta> httpMethodMapping) {
+        List<HttpMethod> httpMethods = new LinkedList<>();
+        Observable.from(httpMethodMapping.entrySet())
+                .filter(entry -> entry.getValue().isSame(methodMeta))
+                .map(Map.Entry::getKey)
+                .filter(httpMethod -> ! httpMethods.contains(httpMethod))
+                .subscribe(httpMethods::add);
+        return httpMethods;
     }
 
     private ArgumentMapping handleFromAnnotation(

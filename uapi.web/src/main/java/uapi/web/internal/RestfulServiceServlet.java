@@ -19,6 +19,7 @@ import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.service.*;
 import uapi.service.annotation.*;
+import uapi.service.annotation.Optional;
 import uapi.service.web.*;
 import uapi.web.*;
 
@@ -26,10 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Generic web service url mapping: /[prefix]/[web service name]/[uri params]?[query strings]
@@ -55,7 +53,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     @Inject
     @Optional
-    Map<String, IRestfulInterface> _restIntfs = new HashMap<>();
+    List<IRestfulInterface> _restIntfs = new LinkedList<>();
 
     @Inject
     Map<String, IStringCodec> _codecs = new HashMap<>();
@@ -158,16 +156,19 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         if (Strings.isNullOrEmpty(intfName)) {
             throw new KernelException("The queried restful service type can't be empty");
         }
-        IRestfulInterface restfulIntf = this._restIntfs.get(intfName);
+        List<IRestfulInterface> matchedIntfs = Looper.from(this._restIntfs)
+                .filter(restIntf -> restIntf.getInterfaceId().equals(intfName))
+                .toList();
         ServiceDiscoveryResponse resp = new ServiceDiscoveryResponse();
-        if (restfulIntf == null) {
+        if (matchedIntfs.size() != 0) {
             resp.code = CommonResponseCode.FAILURE;
         } else {
+            IRestfulInterface restfulIntf = matchedIntfs.get(0);
             resp.data = new ServiceDiscoveryResponse.Data();
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
-            resp.data.interfaceId = restfulIntf.getId();
+            resp.data.interfaceId = restfulIntf.getInterfaceId();
 //            Map<MethodMeta, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
-            Map<MethodMeta, HttpMethod[]> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
+            Map<MethodMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
             resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodHttpMethodMappings.size()];
             Looper.from(methodHttpMethodMappings.entrySet())
                     .foreachWithIndex((index, entry) -> {
@@ -177,7 +178,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                         svcMeta.returnTypeName = methodInfo.getReturnTypeName();
                         svcMeta.codec = this._codecName;
                         svcMeta.uri = this._uriPrefix;
-                        svcMeta.methods = entry.getValue();
+                        svcMeta.methods = entry.getValue().toArray(new HttpMethod[entry.getValue().size()]);
                         List<ArgumentMeta> argMappings = methodInfo.getArgumentMappings();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
