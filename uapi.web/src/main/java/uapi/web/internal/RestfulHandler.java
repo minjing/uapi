@@ -130,7 +130,10 @@ public class RestfulHandler extends AnnotationsHandler {
                             String intfName = dType.toString();
                             List<uapi.service.MethodMeta> methods = getInterfaceMethods(dType, builderContext);
                             intfMethodMap.put(intfName, methods);
+                            //builderContext.getLogger().info(StringHelper.makeString(">>> interface={}, methods={}", intfName, CollectionHelper.asString(methods)));
+                            //builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {} size = {},", intfMethodMap, intfMethodMap.get(intfName).size()));
                         });
+                builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {} size = {}", intfMethodMap, intfMethodMap.size()));
             } else {
                 throw new KernelException(
                         "Invalid interface implementation for class - {}",
@@ -141,9 +144,12 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(intfMethodMap.entrySet())
                 .subscribe(intfEntry -> {
                     Observable.from(intfEntry.getValue().entrySet())
+                            .doOnNext(meta -> builderContext.getLogger().info(StringHelper.makeString(">>> meta {} vs {} >>> {}", meta.getKey(), methodMeta, meta.getKey().isSame(methodMeta))))
                             .filter(methodEntry -> methodEntry.getKey().isSame(methodMeta))
+                            .doOnNext(filtered -> builderContext.getLogger().info("----------" + filtered.getKey().toString()))
                             .subscribe(methodEntry -> methodEntry.setValue(methodMeta));
                 });
+        builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {}", intfMethodMap));
     }
 
     private List<uapi.service.MethodMeta> getInterfaceMethods(DeclaredType intfType, IBuilderContext builderCtx) {
@@ -152,7 +158,7 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(elements)
                 .filter(element -> element.getKind() == ElementKind.METHOD)
                 .map(this::fetchMethodInfo)
-                //.doOnNext(methodInfo -> builderContext.getLogger().info(" -->> {}", methodInfo.toString()))
+                .doOnNext(methodInfo -> builderCtx.getLogger().info(" -->> {}", methodInfo.toString()))
                 .subscribe(methods::add, t -> builderCtx.getLogger().error(t));
         return methods;
     }
@@ -185,7 +191,7 @@ public class RestfulHandler extends AnnotationsHandler {
         Observable.from(builderCtx.getBuilders())
                 .filter(clsBuilder -> clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING) != null)
                 .subscribe(clsBuilder -> {
-                    Map<HttpMethod, uapi.service.MethodMeta> httpMethodMappings = clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING);
+                    Map<String, uapi.service.MethodMeta> httpMethodMappings = clsBuilder.getTransience(HTTP_TO_METHOD_ARGS_MAPPING);
                     String codeGetId = StringHelper.makeString("return \"{}\";", clsBuilder.getTransience(EXPOSED_NAME).toString());
                     Map<String, Object> model = new HashMap<>();
                     model.put("model", httpMethodMappings);
@@ -254,13 +260,15 @@ public class RestfulHandler extends AnnotationsHandler {
                         }
                         if (satisfiedIntfs.size() == 1) {
                             String intfId = satisfiedIntfs.get(0);
-                            Map<uapi.service.MethodMeta, List<HttpMethod>> methodToHttpModel = new HashMap<>();
+                            Map<uapi.service.MethodMeta, List<String>> methodToHttpMapping = new HashMap<>();
                             Map<uapi.service.MethodMeta, uapi.service.MethodMeta> methodMap = intfMethodMap.get(intfId);
                             Observable.from(methodMap.values())
-                                    .subscribe(methodMeta -> methodToHttpModel.put(methodMeta, getHttpMethods(methodMeta, httpMethodMappings)));
+                                    .subscribe(methodMeta -> methodToHttpMapping.put(methodMeta, getHttpMethods(methodMeta, httpMethodMappings)));
+                            Map<String, Map<uapi.service.MethodMeta, List<String>>> modelMethodToHttp = new HashMap<>();
+                            modelMethodToHttp.put("model", methodToHttpMapping);
 
                             svcHelper.addServiceId(clsBuilder, IRestfulInterface.class.getCanonicalName());
-                            String codeGetIntfId = StringHelper.makeString("return \"{}\"", intfId);
+                            String codeGetIntfId = StringHelper.makeString("return \"{}\";", intfId);
                             clsBuilder.addImplement(IRestfulInterface.class.getCanonicalName())
                                     // Implement getInterfaceId method
                                     .addMethodBuilder(MethodMeta.builder()
@@ -275,18 +283,18 @@ public class RestfulHandler extends AnnotationsHandler {
                                             .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                             .addModifier(Modifier.PUBLIC)
                                             .setName("getMethodHttpMethodInfos")
-                                            .setReturnTypeName("java.util.Map<uapi.service.MethodMeta, uapi.service.web.HttpMethod[]>")
+                                            .setReturnTypeName("java.util.Map<uapi.service.MethodMeta, java.util.List<uapi.service.web.HttpMethod>>")
                                             .addCodeBuilder(CodeMeta.builder()
-                                                    .setModel(methodToHttpModel)
+                                                    .setModel(modelMethodToHttp)
                                                     .setTemplate(tempGetMethodHttpInfos)));
                         }
                     }
                 }, t -> builderCtx.getLogger().error(t));
     }
 
-    private List<HttpMethod> getHttpMethods(
-            uapi.service.MethodMeta methodMeta, Map<HttpMethod, uapi.service.MethodMeta> httpMethodMapping) {
-        List<HttpMethod> httpMethods = new LinkedList<>();
+    private List<String> getHttpMethods(
+            uapi.service.MethodMeta methodMeta, Map<String, uapi.service.MethodMeta> httpMethodMapping) {
+        List<String> httpMethods = new LinkedList<>();
         Observable.from(httpMethodMapping.entrySet())
                 .filter(entry -> entry.getValue().isSame(methodMeta))
                 .map(Map.Entry::getKey)

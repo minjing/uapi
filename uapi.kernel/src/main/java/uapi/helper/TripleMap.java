@@ -28,6 +28,7 @@ public class TripleMap<PK, SK, V> {
         Map<SK, V> secondaryMap = this._store.get(primaryKey);
         if (secondaryMap == null) {
             secondaryMap = new HashMap<>();
+            this._store.put(primaryKey, secondaryMap);
         }
         secondaryMap.put(secondaryKey, value);
     }
@@ -73,5 +74,10 @@ public class TripleMap<PK, SK, V> {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("TripleMap{}", MapHelper.asString(this._store));
     }
 }

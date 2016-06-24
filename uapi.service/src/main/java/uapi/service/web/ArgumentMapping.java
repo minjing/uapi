@@ -11,6 +11,7 @@ package uapi.service.web;
 
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
 import uapi.service.ArgumentMeta;
 
 /**
@@ -38,13 +39,8 @@ public class ArgumentMapping extends ArgumentMeta {
         this._from = from;
     }
 
-//    public boolean isSameType(ArgumentMapping argumentMapping) {
-//        ArgumentChecker.required(argumentMapping, "argumentMapping");
-//        return this._type.equals(argumentMapping._type);
-//    }
-
     @Override
-    public String toString() {
-        return "ArgumentMapping[from=" + this._from + ", type=" + getType() + "]";
+    protected String propertiesString() {
+        return StringHelper.makeString("{},from={}", super.propertiesString(), this._from);
     }
 }

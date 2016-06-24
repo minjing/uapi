@@ -1,6 +1,8 @@
 package uapi.service;
 
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
+import uapi.helper.StringHelper;
 import uapi.service.web.ArgumentMapping;
 
 import java.util.Collections;
@@ -63,7 +65,7 @@ public class MethodMeta {
         if (! this._name.equals(other._name)) {
             return false;
         }
-        if (! this._returnTypeName.equals(other._name)) {
+        if (! this._returnTypeName.equals(other._returnTypeName)) {
             return false;
         }
         if (this._argMappings.size() != other._argMappings.size()) {
@@ -97,5 +99,15 @@ public class MethodMeta {
         result = 31 * result + (_returnTypeName != null ? _returnTypeName.hashCode() : 0);
         result = 31 * result + (_argMappings != null ? _argMappings.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("{}[{}]", this.getClass().getSimpleName(), propertiesString());
+    }
+
+    public String propertiesString() {
+        return StringHelper.makeString("name={},returnTypeName={},arguments={}",
+                this._name, this._returnTypeName, CollectionHelper.asString(this._argMappings));
     }
 }

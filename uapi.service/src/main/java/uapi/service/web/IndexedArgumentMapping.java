@@ -10,6 +10,7 @@
 package uapi.service.web;
 
 import uapi.InvalidArgumentException;
+import uapi.helper.StringHelper;
 
 /**
  * Created by xquan on 5/3/2016.
@@ -37,5 +38,10 @@ public class IndexedArgumentMapping extends ArgumentMapping {
     ) throws InvalidArgumentException {
         super(from, type);
         this._idx = index;
+    }
+
+    @Override
+    protected String propertiesString() {
+        return StringHelper.makeString("{},index={}", super.propertiesString(), this._idx);
     }
 }

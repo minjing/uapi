@@ -10,6 +10,7 @@
 package uapi.helper;
 
 import rx.Observable;
+import uapi.rx.Looper;
 
 import java.util.Map;
 
@@ -38,5 +39,23 @@ public final class MapHelper {
         return Observable.from(keys)
                 .filter(map::containsKey)
                 .toBlocking().firstOrDefault(null);
+    }
+
+    public static String asString(Map<?, ?> map) {
+        ArgumentChecker.required(map, "map");
+
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("{");
+        Looper.from(map.entrySet())
+                .foreach(entry -> {
+                    buffer.append(entry.getKey().toString()).append("=");
+                    if (entry.getValue() instanceof Map) {
+                        buffer.append(asString((Map) entry.getValue())).append(",");
+                    } else {
+                        buffer.append(entry.getValue()).append(",");
+                    }
+                });
+        buffer.append("}");
+        return buffer.toString();
     }
 }

@@ -10,6 +10,7 @@
 package uapi.service;
 
 import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
 
 /**
  * Created by xquan on 6/20/2016.
@@ -34,6 +35,10 @@ public class ArgumentMeta {
 
     @Override
     public String toString() {
-        return "ArgumentMeta[type=" + this._typeName + "]";
+        return StringHelper.makeString("ArgumentMeta[{}]", propertiesString());
+    }
+
+    protected String propertiesString() {
+        return StringHelper.makeString("type={}", this._typeName);
     }
 }
