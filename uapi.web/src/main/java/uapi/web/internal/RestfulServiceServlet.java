@@ -160,14 +160,14 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                 .filter(restIntf -> restIntf.getInterfaceId().equals(intfName))
                 .toList();
         ServiceDiscoveryResponse resp = new ServiceDiscoveryResponse();
-        if (matchedIntfs.size() != 0) {
+        if (matchedIntfs.size() != 1) {
             resp.code = CommonResponseCode.FAILURE;
         } else {
+            resp.code = CommonResponseCode.SUCCESS;
             IRestfulInterface restfulIntf = matchedIntfs.get(0);
             resp.data = new ServiceDiscoveryResponse.Data();
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
             resp.data.interfaceId = restfulIntf.getInterfaceId();
-//            Map<MethodMeta, ArgumentMapping[]> methodArgMappings = restfulIntf.getMethodArgumentsInfos();
             Map<MethodMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
             resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodHttpMethodMappings.size()];
             Looper.from(methodHttpMethodMappings.entrySet())

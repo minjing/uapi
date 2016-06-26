@@ -12,6 +12,7 @@ package uapi.rx;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Functionals;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -87,7 +88,7 @@ abstract class Operator<T> implements IOperator<T> {
     @Override
     public List<T> toList() {
         ToListOperator<T> operator = new ToListOperator<>(this);
-        List<T> result = operator.getItem();
+        List<T> result = new LinkedList<>(operator.getItem());
         operator.done();
         return result;
     }

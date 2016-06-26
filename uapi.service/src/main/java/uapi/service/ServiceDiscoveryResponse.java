@@ -20,6 +20,14 @@ public class ServiceDiscoveryResponse extends Response {
 
     public Data data;
 
+    public Data getData() {
+        return this.data;
+    }
+
+    public void setData(Data data) {
+        this.data = data;
+    }
+
     public static final class Data {
 
         @JsonProperty("interface-id")
@@ -30,6 +38,30 @@ public class ServiceDiscoveryResponse extends Response {
 
         @JsonProperty("service-meta")
         public ServiceMeta[] serviceMetas;
+
+        public void setInterfaceId(String interfaceId) {
+            this.interfaceId = interfaceId;
+        }
+
+        public void setCommunication(String communication) {
+            this.communication = communication;
+        }
+
+        public void setServiceMetas(ServiceMeta[] serviceMetas) {
+            this.serviceMetas = serviceMetas;
+        }
+
+        public String getInterfaceId() {
+            return interfaceId;
+        }
+
+        public String getCommunication() {
+            return communication;
+        }
+
+        public ServiceMeta[] getServiceMetas() {
+            return serviceMetas;
+        }
     }
 
     public static final class ServiceMeta {
@@ -50,6 +82,54 @@ public class ServiceDiscoveryResponse extends Response {
 
         @JsonProperty("argument-metas")
         public ArgumentMeta[] argumentMetas;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getReturnTypeName() {
+            return returnTypeName;
+        }
+
+        public void setReturnTypeName(String returnTypeName) {
+            this.returnTypeName = returnTypeName;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public void setUri(String uri) {
+            this.uri = uri;
+        }
+
+        public HttpMethod[] getMethods() {
+            return methods;
+        }
+
+        public void setMethods(HttpMethod[] methods) {
+            this.methods = methods;
+        }
+
+        public String getCodec() {
+            return codec;
+        }
+
+        public void setCodec(String codec) {
+            this.codec = codec;
+        }
+
+        public ArgumentMeta[] getArgumentMetas() {
+            return argumentMetas;
+        }
+
+        public void setArgumentMetas(ArgumentMeta[] argumentMetas) {
+            this.argumentMetas = argumentMetas;
+        }
     }
 
     public static final class ArgumentMeta {
@@ -65,5 +145,37 @@ public class ServiceDiscoveryResponse extends Response {
 
         @JsonProperty("name")
         public String name;
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public void setTypeName(String typeName) {
+            this.typeName = typeName;
+        }
+
+        public ArgumentFrom getFrom() {
+            return from;
+        }
+
+        public void setFrom(ArgumentFrom from) {
+            this.from = from;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }
