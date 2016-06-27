@@ -33,9 +33,4 @@ class MapOperator<I, T> extends Operator<T> {
         }
         return this._converter.accept(item);
     }
-
-    @Override
-    void done() {
-        // do nothing
-    }
 }

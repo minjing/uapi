@@ -42,7 +42,7 @@ abstract class Operator<T> implements IOperator<T> {
         return false;
     }
 
-    abstract T getItem();
+    abstract T getItem() throws NoItemException;
 
     void done() {
         getPreviously().done();
@@ -88,7 +88,7 @@ abstract class Operator<T> implements IOperator<T> {
     @Override
     public List<T> toList() {
         ToListOperator<T> operator = new ToListOperator<>(this);
-        List<T> result = new LinkedList<>(operator.getItem());
+        List<T> result = operator.getItem();
         operator.done();
         return result;
     }

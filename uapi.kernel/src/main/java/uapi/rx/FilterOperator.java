@@ -37,16 +37,11 @@ class FilterOperator<T> extends Operator<T>{
                 break;
             } else {
                 if (! hasItem()) {
-                    return null;
+                    throw new NoItemException();
                 }
                 item = (T) getPreviously().getItem();
             }
         }
         return item;
-    }
-
-    @Override
-    void done() {
-        // do nothing
     }
 }

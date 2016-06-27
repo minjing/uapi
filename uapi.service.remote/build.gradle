@@ -6,6 +6,7 @@ dependencies {
 
     compile ("com.fasterxml.jackson.core:jackson-annotations:${jackson_version}")
     compile ("com.squareup.okhttp3:okhttp:${okhttp_version}")
+    compile ("org.ow2.asm:asm:${asm_version}")
 }
 
 jar {

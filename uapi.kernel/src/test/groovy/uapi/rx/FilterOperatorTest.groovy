@@ -28,7 +28,23 @@ class FilterOperatorTest extends Specification {
         expect:
         opt.getItem() == "1"
         opt.getItem() == "2"
-        opt.getItem() == null
+        opt.hasItem()
+    }
+
+    def 'Test get item with exception'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >>> [true, true, true, true, false]
+            getItem() >>> ["1", null, "2", null]
+        }
+
+        when:
+        FilterOperator opt = new FilterOperator(preOpt, {item -> item != null})
+        opt.getItem()
+        opt.getItem()
+        opt.getItem()
+
+        then:
+        thrown(NoItemException)
         ! opt.hasItem()
     }
 }

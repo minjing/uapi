@@ -17,7 +17,7 @@ import java.util.List;
  */
 class ToListOperator<T> extends TerminatedOperator<List<T>> {
 
-    private final List<T> _list;
+    private List<T> _list;
 
     ToListOperator(Operator<T> previously) {
         super(previously);
@@ -26,16 +26,19 @@ class ToListOperator<T> extends TerminatedOperator<List<T>> {
 
     @Override
     List<T> getItem() {
-        while (hasItem()) {
-            T item = (T) getPreviously().getItem();
-            this._list.add(item);
+        if (this._list == null) {
+            this._list = new LinkedList<>();
         }
-        return this._list;
-    }
-
-    @Override
-    void done() {
-        this._list.clear();
-        super.done();
+        while (hasItem()) {
+            try {
+                T item = (T) getPreviously().getItem();
+                this._list.add(item);
+            } catch (NoItemException ex) {
+                // do nothing
+            }
+        }
+        List<T> result = this._list;
+        this._list = null;
+        return result;
     }
 }
