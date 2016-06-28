@@ -18,6 +18,7 @@ import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Guarder;
+import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 import uapi.service.*;
 
@@ -97,7 +98,7 @@ public class Registry implements IRegistry, IService, IInjectable {
     ) throws InvalidArgumentException {
         ArgumentChecker.notEmpty(serviceFrom, "serviceFrom");
         ArgumentChecker.notNull(service, "service");
-        registerService(serviceFrom, service, serviceIds, new String[0]);
+        registerService(serviceFrom, service, serviceIds, new Dependency[0]);
     }
 
     @Override
@@ -198,15 +199,15 @@ public class Registry implements IRegistry, IService, IInjectable {
     private void registerService(
             final IService svc) {
         final String[] svcIds = svc.getIds();
-        final String[] dependencyIds = svc instanceof IInjectable ? ((IInjectable) svc).getDependentIds() : new String[0];
-        registerService(QualifiedServiceId.FROM_LOCAL, svc, svcIds, dependencyIds);
+        final Dependency[] dependencies = svc instanceof IInjectable ? ((IInjectable) svc).getDependencies() : new Dependency[0];
+        registerService(QualifiedServiceId.FROM_LOCAL, svc, svcIds, dependencies);
     }
 
     private void registerService(
             final String svcFrom,
             final Object svc,
             final String[] svcIds,
-            final String[] dependencyIds) {
+            final Dependency[] dependencies) {
         ArgumentChecker.notEmpty(svcFrom, "svcFrom");
         ArgumentChecker.notNull(svc, "svc");
         if (svcIds == null || svcIds.length == 0) {
@@ -214,7 +215,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         }
 
         Observable.from(svcIds)
-                .map(svcId -> new ServiceHolder(svcFrom, svc, svcId, dependencyIds, this._satisfyDecider))
+                .map(svcId -> new ServiceHolder(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
                 .subscribe(svcHolder -> {
                     Guarder.by(this._unsatisfiedLock).run(() -> {
                         // Check whether the new register service depends on existing service
@@ -244,11 +245,20 @@ public class Registry implements IRegistry, IService, IInjectable {
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
     }
 
+//    @Override
+//    public String[] getDependentIds() {
+//        return new String[] {
+//                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(),
+//                        QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL)
+//        };
+//    }
+
     @Override
-    public String[] getDependentIds() {
-        return new String[] {
-                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(),
-                        QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL)
+    public Dependency[] getDependencies() {
+        return new Dependency[] {
+                new Dependency(
+                        StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
+                        ISatisfyHook.class)
         };
     }
 

@@ -10,6 +10,7 @@
 package uapi.service.internal
 
 import spock.lang.Specification
+import uapi.service.Dependency
 import uapi.service.IInjectable
 import uapi.service.IRegistry
 import uapi.service.ISatisfyHook
@@ -150,7 +151,7 @@ class RegistryTest extends Specification {
     def 'Test getUnresolvedServices method'() {
         def svc = Mock(IInjectableService) {
             getIds() >> ["1"]
-            getDependentIds() >> [dependQSvcId]
+            getDependencies() >> [dependQSvcId]
         }
         def svcLoader = Mock(IServiceLoader) {
             getName() >> "Test"
@@ -165,8 +166,8 @@ class RegistryTest extends Specification {
         1 * svcLoader.load(dependSvcId)
 
         where:
-        dependSvcId     | dependQSvcId  | dependSvc
-        'd1'            | 'd1@Test'     | 'abc'
-        'd2'            | 'd2@Any'      | 'abc'
+        dependSvcId | dependQSvcId                              | dependSvc
+        'd1'        | new Dependency('d1@Test', Object.class)   | 'abc'
+        'd2'        | new Dependency('d2@Any', Object.class)    | 'abc'
     }
 }

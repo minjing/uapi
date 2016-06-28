@@ -37,7 +37,9 @@ public interface IInjectable {
      *
      * @return  Dependent service id array
      */
-    String[] getDependentIds();
+//    String[] getDependentIds();
+
+    Dependency[] getDependencies();
 
     /**
      * Indicate specified service id is optional depends on or not

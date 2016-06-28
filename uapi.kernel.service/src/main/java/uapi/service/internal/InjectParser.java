@@ -19,7 +19,9 @@ import uapi.Type;
 import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
+import uapi.helper.Pair;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 import uapi.service.*;
 import uapi.service.annotation.Inject;
 
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 class InjectParser {
 
     private static final String TEMPLATE_FILE               = "template/inject_method.ftl";
-    private static final String TEMPLATE_GET_DEPENDENT_IDS  = "template/getDependentIds_method.ftl";
+    private static final String TEMPLATE_GET_DEPENDENCIES   = "template/getDependencies_method.ftl";
     private static final String SETTER_PARAM_NAME           = "value";
 
     public void parse(
@@ -139,7 +141,7 @@ class InjectParser {
         });
 
         implementIInjectable(builderCtx);
-        implementGetDependencyIds(builderCtx);
+        implementGetDependencies(builderCtx);
     }
 
     private boolean isCollection(
@@ -176,18 +178,18 @@ class InjectParser {
         return typeArgs;
     }
 
-    private void implementGetDependencyIds(
+    private void implementGetDependencies(
             final IBuilderContext builderCtx
     ) throws KernelException {
         builderCtx.getBuilders().forEach(classBuilder -> {
             // Receive service dependency id list
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-            List<String> dependentIds = setterBuilders.parallelStream()
+            List<Pair<String, String>> dependencies = Looper.from(setterBuilders)
                     .map(builder -> (SetterMeta.Builder) builder)
-                    .map(setterBuilder -> setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom())
-                    .collect(Collectors.toList());
+                    .map(setterBuilder -> new Pair<>(setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom(), setterBuilder.getInjectType()))
+                    .toList();
             // Check duplicated dependency
-            dependentIds.stream()
+            dependencies.stream()
                     .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
                     .forEach((dependSvc, counter) -> {
                         if (counter > 1) {
@@ -198,9 +200,9 @@ class InjectParser {
                                     dependSvc));
                         }
                     });
-            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
-            Map<String, Object> tempModelDependentIds = new HashMap<>();
-            tempModelDependentIds.put("dependentIds", dependentIds);
+            Template tempDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
+            Map<String, Object> tempModelDependencies = new HashMap<>();
+            tempModelDependencies.put("dependencies", dependencies);
 
             if (classBuilder.findSetterBuilders().size() == 0) {
                 // No setters means this class does not implement IInjectable interface
@@ -209,14 +211,56 @@ class InjectParser {
             classBuilder.addMethodBuilder(MethodMeta.builder()
                     .addAnnotationBuilder(AnnotationMeta.builder()
                             .setName(AnnotationMeta.OVERRIDE))
-                    .setName(IService.METHOD_GET_DEPENDENT_ID)
+                    .setName("getDependencies")
                     .addModifier(Modifier.PUBLIC)
-                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
+                    .setReturnTypeName(StringHelper.makeString("{}[]", Dependency.class.getName()))
                     .addCodeBuilder(CodeMeta.builder()
-                            .setTemplate(tempDependentIds)
-                            .setModel(tempModelDependentIds)));
+                            .setTemplate(tempDependencies)
+                            .setModel(tempModelDependencies)));
         });
     }
+
+//    private void implementGetDependencyIds(
+//            final IBuilderContext builderCtx
+//    ) throws KernelException {
+//        builderCtx.getBuilders().forEach(classBuilder -> {
+//            // Receive service dependency id list
+//            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
+//            List<String> dependentIds = setterBuilders.parallelStream()
+//                    .map(builder -> (SetterMeta.Builder) builder)
+//                    .map(setterBuilder -> setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom())
+//                    .collect(Collectors.toList());
+//            // Check duplicated dependency
+//            dependentIds.stream()
+//                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
+//                    .forEach((dependSvc, counter) -> {
+//                        if (counter > 1) {
+//                            throw new KernelException(StringHelper.makeString(
+//                                    "The service {}.{} has duplicated dependency on same service {}",
+//                                    classBuilder.getPackageName(),
+//                                    classBuilder.getClassName(),
+//                                    dependSvc));
+//                        }
+//                    });
+//            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
+//            Map<String, Object> tempModelDependentIds = new HashMap<>();
+//            tempModelDependentIds.put("dependentIds", dependentIds);
+//
+//            if (classBuilder.findSetterBuilders().size() == 0) {
+//                // No setters means this class does not implement IInjectable interface
+//                return;
+//            }
+//            classBuilder.addMethodBuilder(MethodMeta.builder()
+//                    .addAnnotationBuilder(AnnotationMeta.builder()
+//                            .setName(AnnotationMeta.OVERRIDE))
+//                    .setName(IService.METHOD_GET_DEPENDENT_ID)
+//                    .addModifier(Modifier.PUBLIC)
+//                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
+//                    .addCodeBuilder(CodeMeta.builder()
+//                            .setTemplate(tempDependentIds)
+//                            .setModel(tempModelDependentIds)));
+//        });
+//    }
 
     private void implementIInjectable(
             final IBuilderContext builderContext

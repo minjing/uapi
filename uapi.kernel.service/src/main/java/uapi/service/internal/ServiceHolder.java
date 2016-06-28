@@ -17,6 +17,7 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 import uapi.service.*;
 
 import java.util.*;
@@ -30,7 +31,7 @@ class ServiceHolder implements IServiceReference {
     private final String _svcId;
     private final String _from;
     private final QualifiedServiceId _qualifiedSvcId;
-    private final Multimap<QualifiedServiceId, ServiceHolder> _dependencies;
+    private final Multimap<Dependency, ServiceHolder> _dependencies;
     private final ISatisfyHook _satisfyHook;
     private final List<IStateMonitor> _stateMonitors;
     private final StateManagement _stateManagement;
@@ -43,14 +44,14 @@ class ServiceHolder implements IServiceReference {
             final String serviceId,
             final ISatisfyHook satisfyHook
     ) {
-        this(from, service, serviceId, new String[0], satisfyHook);
+        this(from, service, serviceId, new Dependency[0], satisfyHook);
     }
 
     ServiceHolder(
             final String from,
             final Object service,
             final String serviceId,
-            final String[] dependencies,
+            final Dependency[] dependencies,
             final ISatisfyHook satisfyHook
     ) {
         ArgumentChecker.notNull(from, "from");
@@ -67,8 +68,8 @@ class ServiceHolder implements IServiceReference {
         this._stateMonitors = new LinkedList<>();
 
         Observable.from(dependencies)
-                .map(dependency -> QualifiedServiceId.splitTo(dependency, QualifiedServiceId.LOCATION))
-                .subscribe(pair -> this._dependencies.put(pair, null));
+//                .map(Dependency::getServiceId)
+                .subscribe(dependency -> this._dependencies.put(dependency, null));
 
         // Create StateMonitor here since it need read dependencies information.
         this._stateManagement = new StateManagement();
@@ -121,12 +122,12 @@ class ServiceHolder implements IServiceReference {
             throw new KernelException("The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
         }
         // remove null entry first
-        QualifiedServiceId qsvcId = findDependentId(service.getQualifiedId());
-        if (qsvcId == null) {
+        Dependency dependency = findDependencies(service.getQualifiedId());
+        if (dependency == null) {
             throw new KernelException("The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
         }
-        this._dependencies.remove(qsvcId, null);
-        this._dependencies.put(qsvcId, service);
+        this._dependencies.remove(dependency, null);
+        this._dependencies.put(dependency, service);
 
         service.addStateMonitor(this._stateManagement);
         if (this._started) {
@@ -134,10 +135,10 @@ class ServiceHolder implements IServiceReference {
         }
     }
 
-    private QualifiedServiceId findDependentId(QualifiedServiceId qsId) {
+    private Dependency findDependencies(QualifiedServiceId qsId) {
         return Observable.from(this._dependencies.keySet())
-                .filter(dpendQsvcId -> dpendQsvcId.getId().equals(qsId.getId()))
-                .filter(dpendQsvcId -> dpendQsvcId.getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.equals(qsId))
+                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
+                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().equals(qsId))
                 .toBlocking().firstOrDefault(null);
     }
 
@@ -152,7 +153,7 @@ class ServiceHolder implements IServiceReference {
             return true;
         }
 
-        if (findDependentId(qualifiedServiceId) != null) {
+        if (findDependencies(qualifiedServiceId) != null) {
             return true;
         }
         return false;
@@ -163,6 +164,7 @@ class ServiceHolder implements IServiceReference {
         List<String> ids = Observable.from(this._dependencies.entries())
                 .filter(entry -> entry.getValue() == null)
                 .map(Map.Entry::getKey)
+                .map(Dependency::getServiceId)
                 .filter(qsId -> qsId.canFrom(from))
                 .map(QualifiedServiceId::getId)
                 .toList().toBlocking().first();
@@ -207,6 +209,7 @@ class ServiceHolder implements IServiceReference {
 
         private StateManagement() {
             Observable.from(ServiceHolder.this._dependencies.keySet())
+                    .map(Dependency::getServiceId)
                     .subscribe(qsId -> this._dependencyStatus.put(qsId, false));
 //            goon();
         }
@@ -270,16 +273,16 @@ class ServiceHolder implements IServiceReference {
             ArgumentChecker.equals(this._state, State.Unresolved, "ServiceHolder.state");
 
             // Check dependencies is set or not
-            QualifiedServiceId unsetSvc = Observable.from(ServiceHolder.this._dependencies.entries())
+            Dependency unsetSvc = Observable.from(ServiceHolder.this._dependencies.entries())
                     .filter(entry -> entry.getValue() == null)
-                    .filter(entry -> !((IInjectable) ServiceHolder.this._svc).isOptional(entry.getKey().getId()))
+                    .filter(entry -> !((IInjectable) ServiceHolder.this._svc).isOptional(entry.getKey().getServiceId().getId()))
                     .map(Map.Entry::getKey)
                     .toBlocking().firstOrDefault(null);
             if (unsetSvc != null) {
                 return false;
             }
             // Check dependencies is all initialized
-            QualifiedServiceId unSatisfiedSvc = Observable.from(ServiceHolder.this._dependencies.entries())
+            Dependency unSatisfiedSvc = Observable.from(ServiceHolder.this._dependencies.entries())
                     .filter(entry -> entry.getValue() != null)
                     .filter(entry -> ! entry.getValue().tryInitService())
                     .map(Map.Entry::getKey)

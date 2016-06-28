@@ -17,7 +17,7 @@ import uapi.Type;
 public interface IService {
 
     String METHOD_GETIDS                        = "getIds";
-    String METHOD_GET_DEPENDENT_ID              = "getDependentIds";
+    String METHOD_GET_DEPENDENCIES              = "getDependencies";
     String METHOD_GETIDS_RETURN_TYPE            = Type.STRING_ARRAY;
     String METHOD_GET_DEPENDENT_ID_RETURN_TYPE  = Type.STRING_ARRAY;
 

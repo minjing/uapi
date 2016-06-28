@@ -12,6 +12,7 @@ package uapi.rx;
 import uapi.helper.Functionals;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * All rx operator need to implement this interface
@@ -54,6 +55,12 @@ public interface IOperator<T> {
      */
     void foreach(Functionals.Action<T> action);
 
+    /**
+     * Iterate all of input data with its index by specific logic
+     *
+     * @param   action
+     *          The iteration logic
+     */
     void foreachWithIndex(IndexedForeachOperator.IndexedForeach<T> action);
 
     /**
@@ -69,4 +76,15 @@ public interface IOperator<T> {
      * @return  A list contains all element
      */
     List<T> toList();
+
+    /**
+     * Return all element to a map
+     *
+     * @param   <KT>
+     *          The type of key of the map
+     * @param   <VT>
+     *          The type of value of the value
+     * @return  A map contains all element
+     */
+    <KT, VT> Map<KT, VT> toMap();
 }

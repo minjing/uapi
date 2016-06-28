@@ -10,6 +10,7 @@
 package uapi.service.internal
 
 import spock.lang.Specification
+import uapi.service.Dependency
 import uapi.service.IInitial
 import uapi.service.IInjectable
 import uapi.service.IRegistry
@@ -85,7 +86,7 @@ class ServiceHolderTest extends Specification {
         given:
         IInjectable injectableSvc = Mock(IInjectable)
         ISatisfyHook mockHook = Mock(ISatisfyHook)
-        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local", "dep02@Local"] as String[], mockHook)
+        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, [new Dependency("dep01@Local", Object.class)] as Dependency[], mockHook)
         mockHook.isSatisfied(injectableSvc) >> true
 
         when:
@@ -111,7 +112,7 @@ class ServiceHolderTest extends Specification {
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
             isSatisfied(_) >> true
         }
-        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
+        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, [new Dependency("dep01@Local", Object.class)] as Dependency[], mockHook)
 
         when:
         holder.setDependency(dependSvc)
@@ -142,7 +143,7 @@ class ServiceHolderTest extends Specification {
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
             isSatisfied(_) >> true
         }
-        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
+        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, [new Dependency("dep01@Local", Object.class)] as Dependency[], mockHook)
 
         when:
         holder.setDependency(dependSvc)
@@ -164,7 +165,7 @@ class ServiceHolderTest extends Specification {
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
             isSatisfied(_) >> true
         }
-        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, ["dep01@Local"] as String[], mockHook)
+        ServiceHolder holder = new ServiceHolder(from, injectableSvc, serviceId, [new Dependency("dep01@Local", Object.class)] as Dependency[], mockHook)
 
         when:
         holder.tryInitService()

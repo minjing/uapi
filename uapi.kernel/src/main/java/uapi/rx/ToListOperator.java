@@ -21,7 +21,6 @@ class ToListOperator<T> extends TerminatedOperator<List<T>> {
 
     ToListOperator(Operator<T> previously) {
         super(previously);
-        this._list = new LinkedList<>();
     }
 
     @Override

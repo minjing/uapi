@@ -11,9 +11,11 @@ package uapi.rx;
 
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Functionals;
+import uapi.helper.Pair;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generic Operator
@@ -89,6 +91,14 @@ abstract class Operator<T> implements IOperator<T> {
     public List<T> toList() {
         ToListOperator<T> operator = new ToListOperator<>(this);
         List<T> result = operator.getItem();
+        operator.done();
+        return result;
+    }
+
+    @Override
+    public <KT, VT> Map<KT, VT> toMap() {
+        ToMapOperator<KT, VT> operator = new ToMapOperator<>((Operator<Pair<KT, VT>>) this);
+        Map<KT, VT> result = operator.getItem();
         operator.done();
         return result;
     }
