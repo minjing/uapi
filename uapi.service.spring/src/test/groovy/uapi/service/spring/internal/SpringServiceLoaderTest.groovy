@@ -26,7 +26,7 @@ class SpringServiceLoaderTest extends Specification {
         loader.init()
 
         expect:
-        TestBean bean = loader.load(svcId)
+        TestBean bean = loader.load(svcId, null)
         bean != null
         bean.name == name
 

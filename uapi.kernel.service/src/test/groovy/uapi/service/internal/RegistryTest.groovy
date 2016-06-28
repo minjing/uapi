@@ -155,7 +155,7 @@ class RegistryTest extends Specification {
         }
         def svcLoader = Mock(IServiceLoader) {
             getName() >> "Test"
-            load(dependSvcId) >> dependSvc
+            load(dependSvcId, Object.class) >> dependSvc
         }
 
         when:
@@ -163,7 +163,7 @@ class RegistryTest extends Specification {
         registry.registerServiceLoader(svcLoader)
 
         then:
-        1 * svcLoader.load(dependSvcId)
+        1 * svcLoader.load(dependSvcId, Object.class)
 
         where:
         dependSvcId | dependQSvcId                              | dependSvc

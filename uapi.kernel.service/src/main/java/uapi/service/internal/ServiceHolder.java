@@ -159,16 +159,15 @@ class ServiceHolder implements IServiceReference {
         return false;
     }
 
-    List<String> getUnresolvedServices(String from) {
+    List<Dependency> getUnresolvedServices(String from) {
         ArgumentChecker.notEmpty(from, "from");
-        List<String> ids = Observable.from(this._dependencies.entries())
+        return Observable.from(this._dependencies.entries())
                 .filter(entry -> entry.getValue() == null)
                 .map(Map.Entry::getKey)
-                .map(Dependency::getServiceId)
-                .filter(qsId -> qsId.canFrom(from))
-                .map(QualifiedServiceId::getId)
+//                .map(Dependency::getServiceId)
+                .filter(dependency -> dependency.getServiceId().canFrom(from))
+//                .map(QualifiedServiceId::getId)
                 .toList().toBlocking().first();
-        return ids;
     }
 
     boolean isInited() {

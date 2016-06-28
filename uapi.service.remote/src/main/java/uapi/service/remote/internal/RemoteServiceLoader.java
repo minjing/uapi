@@ -56,7 +56,9 @@ public class RemoteServiceLoader implements IServiceLoader {
     }
 
     @Override
-    public <T> T load(String serviceId) {
+    public <T> T load(
+            final String serviceId,
+            final Class<?> serviceType) {
         ArgumentChecker.required(serviceId, "serviceId");
         ICommunicator communicator = this._communicators.get(this._communicatorName);
         if (communicator == null) {

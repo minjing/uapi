@@ -55,7 +55,8 @@ public class SpringServiceLoader implements IServiceLoader {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T load(
-            final String serviceId) {
+            final String serviceId,
+            final Class<?> serviceType) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         T bean = (T) this._beanCache.get(serviceId);
         if (bean != null) {

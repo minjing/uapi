@@ -184,8 +184,10 @@ public class Registry implements IRegistry, IService, IInjectable {
         Observable.from(this._unsatisfiedSvcs.values())
                 .filter(ServiceHolder::isUninited)
                 .flatMap(serviceHolder -> Observable.from(serviceHolder.getUnresolvedServices(name)))
-                .subscribe(svcId -> {
-                    Object svc = serviceLoader.load(svcId);
+                .subscribe(dependency -> {
+                    String svcId = dependency.getServiceId().getId();
+                    Class<?> svcType = dependency.getServiceType();
+                    Object svc = serviceLoader.load(svcId, svcType);
                     if (svc != null) {
                         this.register(name, svc, svcId);
                     }

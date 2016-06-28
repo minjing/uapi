@@ -14,7 +14,23 @@ package uapi.service;
  */
 public interface IServiceLoader {
 
+    /**
+     * The name of service loader
+     *
+     * @return  The service name
+     */
     String getName();
 
-    <T> T load(final String serviceId);
+    /**
+     * Load service by id and type
+     *
+     * @param   serviceId
+     *          The service id
+     * @param   serviceType
+     *          The service type
+     * @param   <T>
+     *          The service instance type
+     * @return  The service instance or null
+     */
+    <T> T load(final String serviceId, final Class<?> serviceType);
 }

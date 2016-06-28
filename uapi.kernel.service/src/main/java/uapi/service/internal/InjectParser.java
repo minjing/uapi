@@ -220,48 +220,6 @@ class InjectParser {
         });
     }
 
-//    private void implementGetDependencyIds(
-//            final IBuilderContext builderCtx
-//    ) throws KernelException {
-//        builderCtx.getBuilders().forEach(classBuilder -> {
-//            // Receive service dependency id list
-//            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-//            List<String> dependentIds = setterBuilders.parallelStream()
-//                    .map(builder -> (SetterMeta.Builder) builder)
-//                    .map(setterBuilder -> setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom())
-//                    .collect(Collectors.toList());
-//            // Check duplicated dependency
-//            dependentIds.stream()
-//                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
-//                    .forEach((dependSvc, counter) -> {
-//                        if (counter > 1) {
-//                            throw new KernelException(StringHelper.makeString(
-//                                    "The service {}.{} has duplicated dependency on same service {}",
-//                                    classBuilder.getPackageName(),
-//                                    classBuilder.getClassName(),
-//                                    dependSvc));
-//                        }
-//                    });
-//            Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
-//            Map<String, Object> tempModelDependentIds = new HashMap<>();
-//            tempModelDependentIds.put("dependentIds", dependentIds);
-//
-//            if (classBuilder.findSetterBuilders().size() == 0) {
-//                // No setters means this class does not implement IInjectable interface
-//                return;
-//            }
-//            classBuilder.addMethodBuilder(MethodMeta.builder()
-//                    .addAnnotationBuilder(AnnotationMeta.builder()
-//                            .setName(AnnotationMeta.OVERRIDE))
-//                    .setName(IService.METHOD_GET_DEPENDENT_ID)
-//                    .addModifier(Modifier.PUBLIC)
-//                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
-//                    .addCodeBuilder(CodeMeta.builder()
-//                            .setTemplate(tempDependentIds)
-//                            .setModel(tempModelDependentIds)));
-//        });
-//    }
-
     private void implementIInjectable(
             final IBuilderContext builderContext
     ) throws KernelException {
@@ -306,69 +264,6 @@ class InjectParser {
 //            }
         });
     }
-
-//    private void implementInjectable(
-//            final IBuilderContext builderCtx,
-//            final ClassMeta.Builder classBuilder,
-//            final List<DependencyInfo> dependencyInfos
-//    ) {
-//        Observable.from(dependencyInfos)
-//                .subscribe(depInfo -> {
-//                    List<String> dependentIds = new LinkedList<>();
-//                    dependentIds.add(depInfo.getDependencyId());
-//                    Template tempDependentIds = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENT_IDS);
-//                    Map<String, Object> tempModelDependentIds = new HashMap<>();
-//                    tempModelDependentIds.put("dependentIds", dependentIds);
-//
-//                    if (depInfo.isGenerateField()) {
-//                        classBuilder
-//                                .addFieldBuilder(FieldMeta.builder()
-//                                        .addModifier(Modifier.PRIVATE)
-//                                        .setTypeName(depInfo.getFieldType())
-//                                        .setName(depInfo.getFieldName())
-//                                        .setIsList(false));
-//                    }
-//
-//                    classBuilder
-//                            .addMethodBuilder(SetterMeta.builder()
-//                                    .setFieldName(depInfo.getFieldName())
-//                                    .setInjectId(depInfo.getDependencyId())
-//                                    .setInjectFrom(depInfo.getInjectFrom())
-//                                    .setInjectType(depInfo.getFieldType())
-//                                    .setName(setterName)
-//                                    .setReturnTypeName(Type.VOID)
-//                                    .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
-//                                    .addParameterBuilder(ParameterMeta.builder()
-//                                            .addModifier(Modifier.FINAL)
-//                                            .setName(paramName)
-//                                            .setType(fieldTypeName))
-//                                    .addCodeBuilder(CodeMeta.builder()
-//                                            .addRawCode(code)))
-//                            .addMethodBuilder(MethodMeta.builder()
-//                                    .addAnnotationBuilder(AnnotationMeta.builder()
-//                                            .setName(AnnotationMeta.OVERRIDE))
-//                                    .setName(IService.METHOD_GET_DEPENDENT_ID)
-//                                    .addModifier(Modifier.PUBLIC)
-//                                    .setReturnTypeName(IService.METHOD_GET_DEPENDENT_ID_RETURN_TYPE)
-//                                    .addCodeBuilder(CodeMeta.builder()
-//                                            .setTemplate(tempDependentIds)
-//                                            .setModel(tempModelDependentIds)))
-//                            .addMethodBuilder(MethodMeta.builder()
-//                                    .addAnnotationBuilder(AnnotationMeta.builder()
-//                                            .setName("Override"))
-//                                    .addModifier(Modifier.PUBLIC)
-//                                    .setName(methodName)
-//                                    .setReturnTypeName(Type.VOID)
-//                                    .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
-//                                    .addParameterBuilder(ParameterMeta.builder()
-//                                            .addModifier(Modifier.FINAL)
-//                                            .setName(paramName)
-//                                            .setType(paramType))
-//                                    .addCodeBuilder(CodeMeta.builder()
-//                                            .setModel(tempModel)
-//                                            .setTemplate(temp)));
-//                });
-//    }
 
     public static final class SetterModel {
 
