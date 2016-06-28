@@ -18,7 +18,6 @@ import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Guarder;
-import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 import uapi.service.*;
 
@@ -36,15 +35,15 @@ import java.util.stream.Stream;
 @AutoService(IService.class)
 public class Registry implements IRegistry, IService, IInjectable {
 
-    private final Lock _unsatisfiedLock;
+    private final Lock _svcRepoLock;
     private final SatisfyDecider _satisfyDecider;
-    private final Multimap<String, ServiceHolder> _unsatisfiedSvcs;
+    private final Multimap<String, ServiceHolder> _svcRepo;
     private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
     private final Map<String, IServiceLoader> _serviceLoaders;
 
     public Registry() {
-        this._unsatisfiedLock = new ReentrantLock();
-        this._unsatisfiedSvcs = LinkedListMultimap.create();
+        this._svcRepoLock = new ReentrantLock();
+        this._svcRepo = LinkedListMultimap.create();
         this._satisfyHooks = new CopyOnWriteArrayList<>();
         this._satisfyDecider = new SatisfyDecider();
         this._serviceLoaders = new HashMap<>();
@@ -58,7 +57,7 @@ public class Registry implements IRegistry, IService, IInjectable {
             return;
         }
         this._inited = true;
-        Observable.from(this._unsatisfiedSvcs.values())
+        Observable.from(this._svcRepo.values())
                 .filter(svcHolder -> svcHolder.getService() != this)
                 .subscribe(ServiceHolder::tryInitService);
     }
@@ -124,7 +123,7 @@ public class Registry implements IRegistry, IService, IInjectable {
     @Override
     public <T> List<T> findServices(final Class<T> serviceType) {
         ArgumentChecker.notNull(serviceType, "serviceType");
-        return findService(serviceType.getName());
+        return findServices(serviceType.getName());
     }
 
     @Override
@@ -132,8 +131,8 @@ public class Registry implements IRegistry, IService, IInjectable {
     public <T> List<T> findServices(final String serviceId) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         List<T> resolvedSvcs = new ArrayList<>();
-        Guarder.by(this._unsatisfiedLock).run(() ->
-            Observable.from(this._unsatisfiedSvcs.values())
+        Guarder.by(this._svcRepoLock).run(() ->
+            Observable.from(this._svcRepo.values())
                     .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                     .filter(ServiceHolder::tryInitService)
                     .map(ServiceHolder::getService)
@@ -145,8 +144,8 @@ public class Registry implements IRegistry, IService, IInjectable {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T findService(final String serviceId, final String serviceFrom) {
-        List<T> found = Guarder.by(this._unsatisfiedLock).runForResult(() ->
-                (List<T>) Observable.from(this._unsatisfiedSvcs.values())
+        List<T> found = Guarder.by(this._svcRepoLock).runForResult(() ->
+                (List<T>) Observable.from(this._svcRepo.values())
                 .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                 .filter(svcHolder -> svcHolder.getFrom().equals(serviceFrom))
                 .filter(ServiceHolder::tryInitService)
@@ -163,7 +162,7 @@ public class Registry implements IRegistry, IService, IInjectable {
     }
 
     public void start() {
-        Observable.from(this._unsatisfiedSvcs.values())
+        Observable.from(this._svcRepo.values())
                 .doOnNext(ServiceHolder::start)
                 .subscribe(ServiceHolder::tryInitService);
     }
@@ -181,7 +180,7 @@ public class Registry implements IRegistry, IService, IInjectable {
                     existing, name);
         }
 
-        Observable.from(this._unsatisfiedSvcs.values())
+        Observable.from(this._svcRepo.values())
                 .filter(ServiceHolder::isUninited)
                 .flatMap(serviceHolder -> Observable.from(serviceHolder.getUnresolvedServices(name)))
                 .subscribe(dependency -> {
@@ -194,8 +193,12 @@ public class Registry implements IRegistry, IService, IInjectable {
                 });
     }
 
+    private void loadUnresolvedService(List<Dependency> dependencies) {
+        
+    }
+
     int getCount() {
-        return Guarder.by(this._unsatisfiedLock).runForResult(this._unsatisfiedSvcs::size);
+        return Guarder.by(this._svcRepoLock).runForResult(this._svcRepo::size);
     }
 
     private void registerService(
@@ -219,16 +222,16 @@ public class Registry implements IRegistry, IService, IInjectable {
         Observable.from(svcIds)
                 .map(svcId -> new ServiceHolder(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
                 .subscribe(svcHolder -> {
-                    Guarder.by(this._unsatisfiedLock).run(() -> {
+                    Guarder.by(this._svcRepoLock).run(() -> {
                         // Check whether the new register service depends on existing service
-                        Observable.from(this._unsatisfiedSvcs.values())
+                        Observable.from(this._svcRepo.values())
                                 .filter(existingSvc -> svcHolder.isDependsOn(existingSvc.getId()))
                                 .subscribe(svcHolder::setDependency);
                         // Check whether existing service depends on the new register service
-                        Observable.from(this._unsatisfiedSvcs.values())
+                        Observable.from(this._svcRepo.values())
                                 .filter(existingSvc -> existingSvc.isDependsOn(svcHolder.getId()))
                                 .subscribe(existingSvc -> existingSvc.setDependency(svcHolder));
-                        this._unsatisfiedSvcs.put(svcHolder.getId(), svcHolder);
+                        this._svcRepo.put(svcHolder.getId(), svcHolder);
                     });
                 });
     }
@@ -246,14 +249,6 @@ public class Registry implements IRegistry, IService, IInjectable {
         }
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
     }
-
-//    @Override
-//    public String[] getDependentIds() {
-//        return new String[] {
-//                StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(),
-//                        QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL)
-//        };
-//    }
 
     @Override
     public Dependency[] getDependencies() {

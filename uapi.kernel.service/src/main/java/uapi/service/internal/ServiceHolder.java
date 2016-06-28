@@ -17,7 +17,6 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
-import uapi.rx.Looper;
 import uapi.service.*;
 
 import java.util.*;
@@ -68,7 +67,6 @@ class ServiceHolder implements IServiceReference {
         this._stateMonitors = new LinkedList<>();
 
         Observable.from(dependencies)
-//                .map(Dependency::getServiceId)
                 .subscribe(dependency -> this._dependencies.put(dependency, null));
 
         // Create StateMonitor here since it need read dependencies information.
