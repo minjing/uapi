@@ -17,6 +17,7 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 import uapi.service.*;
 
 import java.util.*;
@@ -166,6 +167,13 @@ class ServiceHolder implements IServiceReference {
                 .filter(dependency -> dependency.getServiceId().canFrom(from))
 //                .map(QualifiedServiceId::getId)
                 .toList().toBlocking().first();
+    }
+
+    List<Dependency> getUnresolvedServices() {
+        return Looper.from(this._dependencies.entries())
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     boolean isInited() {

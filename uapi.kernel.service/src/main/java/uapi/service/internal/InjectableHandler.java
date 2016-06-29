@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -14,6 +14,7 @@ import uapi.KernelException;
 import uapi.annotation.AnnotationsHandler;
 import uapi.annotation.IAnnotationsHandler;
 import uapi.annotation.IBuilderContext;
+import uapi.annotation.IHandlerHelper;
 import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
@@ -61,4 +62,9 @@ public class InjectableHandler extends AnnotationsHandler {
             throw new KernelException("Unsupported annotation - {}", annotationType.getClass().getName());
         }
     }
+
+//    @Override
+//    public IHandlerHelper getHelper() {
+//        return this._injectParser.getHelper();
+//    }
 }

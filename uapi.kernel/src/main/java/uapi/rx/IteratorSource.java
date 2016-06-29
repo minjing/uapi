@@ -11,21 +11,18 @@ package uapi.rx;
 
 import uapi.helper.ArgumentChecker;
 
-import java.util.*;
+import java.util.Iterator;
 
 /**
- * A CollectionSource hold data source locally, unlike OrderedSource, it does not guarantee the items are ordered
- * which is depends on underlay implementation
+ * Created by xquan on 6/29/2016.
  */
-class CollectionSource<T> extends Operator<T> {
+class IteratorSource<T> extends Operator<T> {
 
-    private final Collection<T> _items;
-    private java.util.Iterator<T> _itemsIte;
+    private final Iterator<T> _itemsIte;
 
-    CollectionSource(Collection<T> items) {
-        ArgumentChecker.required(items, "items");
-        this._items = items;
-        this._itemsIte = items.iterator();
+    IteratorSource(Iterator<T> iterator) {
+        ArgumentChecker.required(iterator, "iterator");
+        this._itemsIte = iterator;
     }
 
     @Override
@@ -43,6 +40,6 @@ class CollectionSource<T> extends Operator<T> {
 
     @Override
     void done() {
-        this._itemsIte = this._items.iterator();
+        // do nothing
     }
 }

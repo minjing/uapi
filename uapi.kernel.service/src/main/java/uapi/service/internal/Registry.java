@@ -17,8 +17,11 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.ThreadSafe;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.helper.Guarder;
 import uapi.helper.StringHelper;
+import uapi.log.ILogger;
+import uapi.rx.Looper;
 import uapi.service.*;
 
 import java.lang.ref.WeakReference;
@@ -39,14 +42,18 @@ public class Registry implements IRegistry, IService, IInjectable {
     private final SatisfyDecider _satisfyDecider;
     private final Multimap<String, ServiceHolder> _svcRepo;
     private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
-    private final Map<String, IServiceLoader> _serviceLoaders;
+    private final Map<String, IServiceLoader> _svcLoaders;
+    private final SortedSet<IServiceLoader> _orderedSvcLoaders;
+
+    private ILogger _logger;
 
     public Registry() {
         this._svcRepoLock = new ReentrantLock();
         this._svcRepo = LinkedListMultimap.create();
         this._satisfyHooks = new CopyOnWriteArrayList<>();
         this._satisfyDecider = new SatisfyDecider();
-        this._serviceLoaders = new HashMap<>();
+        this._svcLoaders = new HashMap<>();
+        this._orderedSvcLoaders = new TreeSet<>();
     }
 
     private volatile boolean _inited = false;
@@ -165,6 +172,10 @@ public class Registry implements IRegistry, IService, IInjectable {
         Observable.from(this._svcRepo.values())
                 .doOnNext(ServiceHolder::start)
                 .subscribe(ServiceHolder::tryInitService);
+
+        Looper.from(this._svcRepo.values())
+                .map(ServiceHolder::getUnresolvedServices)
+                .foreach(this::loadUnresolvedService);
     }
 
     @Override
@@ -173,12 +184,13 @@ public class Registry implements IRegistry, IService, IInjectable {
         ArgumentChecker.notNull(serviceLoader, "serviceLoader");
 
         String name = serviceLoader.getName();
-        IServiceLoader existing = this._serviceLoaders.putIfAbsent(name, serviceLoader);
+        IServiceLoader existing = this._svcLoaders.putIfAbsent(name, serviceLoader);
         if (existing != null) {
             throw new InvalidArgumentException(
                     "There has an service loader{} named {}",
                     existing, name);
         }
+        this._orderedSvcLoaders.add(serviceLoader);
 
         Observable.from(this._svcRepo.values())
                 .filter(ServiceHolder::isUninited)
@@ -194,7 +206,43 @@ public class Registry implements IRegistry, IService, IInjectable {
     }
 
     private void loadUnresolvedService(List<Dependency> dependencies) {
-        
+        Looper.from(dependencies).foreach(dependency -> {
+            QualifiedServiceId qSvcId = dependency.getServiceId();
+            String from = qSvcId.getFrom();
+            if (from.equals(QualifiedServiceId.FROM_ANY)) {
+                // Search from any loader
+                Iterator<IServiceLoader> svcLoadersIte = this._orderedSvcLoaders.iterator();
+                boolean loaded = false;
+                while (svcLoadersIte.hasNext()) {
+                    IServiceLoader svcLoader = svcLoadersIte.next();
+                    Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+                    if (svc == null) {
+                        continue;
+                    }
+                    loaded = true;
+                    registerService(from, svc, new String[] { qSvcId.getId() }, new Dependency[0]);
+                    if (dependency.isSingle()) {
+                        break;
+                    }
+                }
+                if (! loaded) {
+                    this._logger.error("No any service loader can load service {}", qSvcId);
+                }
+            } else {
+                // Search specific service loader
+                IServiceLoader svcLoader = this._svcLoaders.get(from);
+                if (svcLoader == null) {
+                    this._logger.error("Can't found service {}", qSvcId);
+                    return;
+                }
+                Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+                if (svc == null) {
+                    this._logger.error("Load service {} from location {} failed", qSvcId, from);
+                    return;
+                }
+                registerService(from, svc, new String[] { qSvcId.getId() }, new Dependency[0]);
+            }
+        });
     }
 
     int getCount() {
@@ -241,10 +289,22 @@ public class Registry implements IRegistry, IService, IInjectable {
             final Injection injection
     ) throws InvalidArgumentException, KernelException {
         ArgumentChecker.notNull(injection, "injection");
-        if (ISatisfyHook.class.getName().equals(injection.getId()) && injection.getObject() instanceof ISatisfyHook) {
+        if (ISatisfyHook.class.getName().equals(injection.getId())) {
+            if (! (injection.getObject() instanceof ISatisfyHook)) {
+                throw new uapi.InvalidArgumentException(
+                        "The injected object {} can't be converted to {}", injection.getObject(), ISatisfyHook.class.getName());
+            }
             releaseHooks();
             ISatisfyHook hook = (ISatisfyHook) injection.getObject();
             this._satisfyHooks.add(new WeakReference<>(hook));
+            return;
+        }
+        if (ILogger.class.getName().equals(injection.getId())) {
+            if (! (injection.getObject() instanceof ILogger)) {
+                throw new uapi.InvalidArgumentException(
+                        "The injected object {} can't be converted to {}", injection.getObject(), ILogger.class.getName());
+            }
+            this._logger = (ILogger) injection.getObject();
             return;
         }
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
@@ -255,7 +315,10 @@ public class Registry implements IRegistry, IService, IInjectable {
         return new Dependency[] {
                 new Dependency(
                         StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
-                        ISatisfyHook.class)
+                        ISatisfyHook.class),
+                new Dependency(
+                        StringHelper.makeString("{}{}{}", ILogger.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
+                        ILogger.class)
         };
     }
 
@@ -263,6 +326,9 @@ public class Registry implements IRegistry, IService, IInjectable {
     public boolean isOptional(String id) throws InvalidArgumentException {
         if (ISatisfyHook.class.getName().equals(id)) {
             return true;
+        }
+        if (ILogger.class.getName().equals(id)) {
+            return false;
         }
         throw new InvalidArgumentException("The Registry does not depends on service {}", id);
     }

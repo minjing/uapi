@@ -28,7 +28,8 @@ import java.util.Map;
 @Service
 public class SpringServiceLoader implements IServiceLoader {
 
-    public static final String NAME = "Spring";
+    private static final String NAME    = "Spring";
+    private static final int PRIORITY   = 100;
 
     private Map<String, Object> _beanCache;
 
@@ -45,6 +46,11 @@ public class SpringServiceLoader implements IServiceLoader {
         this._beanCache = new HashMap<>();
         this._ctx = new ClassPathXmlApplicationContext(new String[] { this._cfgFile });
         this._registry.registerServiceLoader(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
     }
 
     @Override

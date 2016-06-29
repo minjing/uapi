@@ -53,6 +53,12 @@ public class QualifiedServiceId extends Pair<String, String> {
         }
     }
 
+    public static String combine(String id, String from) {
+        ArgumentChecker.required(id, "id");
+        ArgumentChecker.required(from, "from");
+        return StringHelper.makeString("{}{}{}", id, LOCATION, from);
+    }
+
     public QualifiedServiceId(String leftValue, String rightValue) {
         super(leftValue, rightValue);
     }
@@ -89,6 +95,8 @@ public class QualifiedServiceId extends Pair<String, String> {
     public boolean canFrom(final String from) {
         ArgumentChecker.notEmpty(from, "from");
         if (getFrom().equals(FROM_ANY)) {
+            return true;
+        } else if (getFrom().equals(FROM_ANY)) {
             return true;
         } else if (getFrom().equals(from)) {
             return true;

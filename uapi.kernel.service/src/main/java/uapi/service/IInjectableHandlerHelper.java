@@ -13,11 +13,11 @@ import uapi.annotation.ClassMeta;
 import uapi.annotation.IHandlerHelper;
 
 /**
- * A helper for maintain service annotation at build-time
+ * A helper for maintain injectable annotation at build-time
  */
-public interface IServiceHandlerHelper extends IHandlerHelper {
+public interface IInjectableHandlerHelper extends IHandlerHelper {
 
-    String name = "ServiceHelper";
+    String name = "InjectableHelper";
 
-    void addServiceId(ClassMeta.Builder classBuilder, String... serviceIds);
+    void setDependencyOptional(ClassMeta.Builder classBuilder, String serviceId, boolean optional);
 }

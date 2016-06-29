@@ -12,6 +12,7 @@ package uapi.rx;
 import uapi.helper.ArgumentChecker;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * An Looper will generate IOperator from specified data source.
@@ -45,5 +46,10 @@ public class Looper {
     public static <T> IOperator<T> from(Collection<T> items) {
         ArgumentChecker.required(items, "items");
         return new CollectionSource<>(items);
+    }
+
+    public static <T> IOperator<T> from(Iterator<T> iterator) {
+        ArgumentChecker.required(iterator, "iterator");
+        return new IteratorSource<>(iterator);
     }
 }

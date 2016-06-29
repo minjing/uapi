@@ -32,6 +32,8 @@ import java.util.Map;
 @Service(IServiceLoader.class)
 public class RemoteServiceLoader implements IServiceLoader {
 
+    private static final int PRIORITY   = 200;
+
     @Config(path=IRemoteServiceConfigurableKey.LOADER_DISCOVER)
     String _communicatorName;
 
@@ -49,6 +51,11 @@ public class RemoteServiceLoader implements IServiceLoader {
 
     @Inject
     ProxyBuilder _proxyBuilder;
+
+    @Override
+    public int getPriority() {
+        return PRIORITY;
+    }
 
     @Override
     public String getName() {

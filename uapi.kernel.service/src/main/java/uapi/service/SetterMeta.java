@@ -42,6 +42,7 @@ public class SetterMeta extends MethodMeta {
         private String _injectFrom;
         private String _injectType;
         private boolean _isOptional = false;
+        private boolean _isSingle = true;
 
         private Builder() {
             super.setIsSetter(true);
@@ -120,6 +121,17 @@ public class SetterMeta extends MethodMeta {
 
         public boolean getIsOptional() {
             return this._isOptional;
+        }
+
+        public Builder setIsSingle(
+                final boolean isSingle) {
+            checkStatus();
+            this._isSingle = isSingle;
+            return this;
+        }
+
+        public boolean getIsSingle() {
+            return this._isSingle;
         }
 
         @Override

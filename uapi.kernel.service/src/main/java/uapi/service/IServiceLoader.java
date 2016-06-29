@@ -12,7 +12,31 @@ package uapi.service;
 /**
  * A service loader used to load external service
  */
-public interface IServiceLoader {
+public interface IServiceLoader extends Comparable<IServiceLoader> {
+
+    /**
+     * Compare two service load based on its priority
+     *
+     * @param   other Other service loader instance
+     * @return  priority
+     */
+    default int compareTo(IServiceLoader other) {
+        if (getPriority() < other.getPriority()) {
+            return -1;
+        }
+        if (getPriority() > other.getPriority()) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Get priority of this service loader.
+     * Small value has high priority.
+     *
+     * @return  The priority value of this service loader
+     */
+    int getPriority();
 
     /**
      * The name of service loader

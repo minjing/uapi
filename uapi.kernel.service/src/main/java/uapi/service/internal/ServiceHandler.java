@@ -37,10 +37,9 @@ public final class ServiceHandler extends AnnotationsHandler {
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Service.class };
 
     private static final String TEMPLATE_GET_IDS            = "template/getIds_method.ftl";
-
-    private static final String VAR_SVC_IDS                 = "serviceIds";
-
+    
     private static final String MODEL_GET_IDS               = "ModelGetId";
+    private static final String VAR_SVC_IDS                 = "serviceIds";
 
     private final ServiceHandlerHelper _helper = new ServiceHandlerHelper();
 

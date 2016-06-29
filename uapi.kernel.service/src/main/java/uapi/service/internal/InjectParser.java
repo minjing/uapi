@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -45,6 +45,15 @@ class InjectParser {
     private static final String TEMPLATE_FILE               = "template/inject_method.ftl";
     private static final String TEMPLATE_GET_DEPENDENCIES   = "template/getDependencies_method.ftl";
     private static final String SETTER_PARAM_NAME           = "value";
+
+    private static final String MODEL_GET_DEPENDENCIES      = "ModelGetDependencies";
+    private static final String VAR_DEPENDENCIES            = "dependencies";
+
+    private final InjectableHandlerHelper _helper = new InjectableHandlerHelper();
+
+    InjectableHandlerHelper getHelper() {
+        return this._helper;
+    }
 
     public void parse(
             final IBuilderContext builderCtx,
@@ -125,6 +134,7 @@ class InjectParser {
             clsBuilder
                     .addImplement(IInjectable.class.getCanonicalName())
                     .addMethodBuilder(SetterMeta.builder()
+                            .setIsSingle(! isCollection && ! isMap)
                             .setFieldName(fieldName)
                             .setInjectId(injectId)
                             .setInjectFrom(injectFrom)
@@ -184,9 +194,15 @@ class InjectParser {
         builderCtx.getBuilders().forEach(classBuilder -> {
             // Receive service dependency id list
             List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-            List<Pair<String, String>> dependencies = Looper.from(setterBuilders)
+            List<DependencyModel> dependencies = Looper.from(setterBuilders)
                     .map(builder -> (SetterMeta.Builder) builder)
-                    .map(setterBuilder -> new Pair<>(setterBuilder.getInjectId() + QualifiedServiceId.LOCATION + setterBuilder.getInjectFrom(), setterBuilder.getInjectType()))
+                    .map(setterBuilder -> {
+                        DependencyModel depModel = new DependencyModel(
+                                QualifiedServiceId.combine(setterBuilder.getInjectId(), setterBuilder.getInjectFrom()),
+                                setterBuilder.getInjectType());
+                        depModel.setSingle(setterBuilder.getIsSingle());
+                        return depModel;
+                    })
                     .toList();
             // Check duplicated dependency
             dependencies.stream()
@@ -265,6 +281,22 @@ class InjectParser {
         });
     }
 
+    private class InjectableHandlerHelper implements IInjectableHandlerHelper {
+
+        @Override
+        public String getName() {
+            return IInjectableHandlerHelper.name;
+        }
+
+        @Override
+        public void setDependencyOptional(
+                final ClassMeta.Builder classBuilder,
+                final String serviceId,
+                final boolean optional) {
+
+        }
+    }
+
     public static final class SetterModel {
 
         private String _name;
@@ -294,6 +326,45 @@ class InjectParser {
 
         public String getInjectType() {
             return this._injectType;
+        }
+    }
+
+    public static final class DependencyModel {
+
+        private String _qSvcId;
+        private String _svcType;
+        private boolean _optional;
+        private boolean _single;
+
+        private DependencyModel(
+                final String qualifiedServiceId,
+                final String serviceType) {
+            this._qSvcId = qualifiedServiceId;
+            this._svcType = serviceType;
+        }
+
+        public String getQualifiedServiceId() {
+            return this._qSvcId;
+        }
+
+        public String getServiceType() {
+            return this._svcType;
+        }
+
+        public void setOptional(boolean optional) {
+            this._optional = optional;
+        }
+
+        public boolean getOptional() {
+            return this._optional;
+        }
+
+        public void setSingle(boolean single) {
+            this._single = single;
+        }
+
+        public boolean getSingle() {
+            return this._single;
         }
     }
 }
