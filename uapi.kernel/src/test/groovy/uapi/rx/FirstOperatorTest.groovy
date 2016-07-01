@@ -27,8 +27,21 @@ class FirstOperatorTest extends Specification {
 
         expect:
         opt.getItem() == "1"
-        opt.getItem() == null
-        opt.getItem() == null
+//        opt.getItem() == null
+//        opt.getItem() == null
+        ! opt.hasItem()
+    }
+
+    def 'Test get item with default'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >>> [false]
+        }
+
+        given:
+        FirstOperator opt = new FirstOperator(preOpt, "1")
+
+        expect:
+        opt.getItem() == "1"
         ! opt.hasItem()
     }
 }

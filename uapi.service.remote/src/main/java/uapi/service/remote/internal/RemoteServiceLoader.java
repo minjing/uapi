@@ -12,6 +12,7 @@ package uapi.service.remote.internal;
 import uapi.KernelException;
 import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
+import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IServiceLoader;
 import uapi.service.annotation.Inject;
@@ -41,6 +42,9 @@ public class RemoteServiceLoader implements IServiceLoader {
     IRegistry _registry;
 
     @Inject
+    ILogger _logger;
+
+    @Inject
     ServiceInspector _svcInspector;
 
     @Inject
@@ -67,11 +71,17 @@ public class RemoteServiceLoader implements IServiceLoader {
             final String serviceId,
             final Class<?> serviceType) {
         ArgumentChecker.required(serviceId, "serviceId");
+        ArgumentChecker.required(serviceType, "serviceType");
         ICommunicator communicator = this._communicators.get(this._communicatorName);
         if (communicator == null) {
             throw new KernelException("No communicator named - {}", this._communicatorName);
         }
-        ServiceInterfaceMeta svcIntfMeta = this._svcInspector.inspect(serviceId);
+        ServiceInterfaceMeta svcIntfMeta = null;
+        try {
+            svcIntfMeta = this._svcInspector.inspect(serviceId, serviceType);
+        } catch (Exception ex) {
+            this._logger.warn(ex, "Inspect service {} failed, cause: ", serviceId);
+        }
         svcIntfMeta = this._svcDiscover.discover(svcIntfMeta);
         return (T) this._proxyBuilder.build(svcIntfMeta);
     }

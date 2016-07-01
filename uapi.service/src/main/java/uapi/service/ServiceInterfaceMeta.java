@@ -23,21 +23,29 @@ import java.util.*;
 public final class ServiceInterfaceMeta {
 
     private final String _intfId;
+    private final Class<?> _intfType;
     private final Multimap<String, ServiceMeta> _svcMetas;
     private String _commName;
 
     public ServiceInterfaceMeta(
             final String interfaceId,
+            final Class<?> interfaceType,
             final List<ServiceMeta> svcMetas) {
         ArgumentChecker.required(interfaceId, "interfaceId");
+        ArgumentChecker.required(interfaceType, "interfaceType");
         ArgumentChecker.required(svcMetas, "svcMetas");
         this._intfId = interfaceId;
+        this._intfType = interfaceType;
         this._svcMetas = LinkedListMultimap.create();
         Observable.from(svcMetas).subscribe(svcMeta -> this._svcMetas.put(svcMeta.getName(), svcMeta));
     }
 
     public String getInterfaceId() {
         return this._intfId;
+    }
+
+    public Class<?> getInterfaceType() {
+        return this._intfType;
     }
 
     public void updateServiceMetas(List<ServiceMeta> svcMetas) {

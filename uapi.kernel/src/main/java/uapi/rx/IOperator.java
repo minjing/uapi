@@ -70,7 +70,9 @@ public interface IOperator<T> {
      *
      * @return  The first element
      */
-    T first();
+    T first() throws NoItemException;
+
+    T first(T defaultValue);
 
     /**
      * Return all element to a list

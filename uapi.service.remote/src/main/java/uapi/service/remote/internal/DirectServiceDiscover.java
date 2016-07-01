@@ -11,6 +11,7 @@ package uapi.service.remote.internal;
 
 import com.google.common.base.Strings;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
@@ -86,10 +87,13 @@ public class DirectServiceDiscover implements IServiceDiscover {
             String url = StringHelper.makeString("http://{}:{}/{}",
                     this._host, this._port, this._uriPrefix);
 
+            NamedArgumentMapping namedArg = new NamedArgumentMapping(ArgumentFrom.Param, Type.Q_STRING, "interface");
+            List<ArgumentMeta> args = new ArrayList<>();
+            args.add(namedArg);
             RestfulServiceMeta svcMeta = new RestfulServiceMeta(
                     "DiscoverService",
                     ServiceDiscoveryResponse.class.getCanonicalName(),
-                    new ArrayList<>(), url,
+                    args, url,
                     new HttpMethod[] { HttpMethod.GET },
                     JsonStringCodec.NAME);
             ServiceDiscoveryResponse response = (ServiceDiscoveryResponse) communicator.request(svcMeta);

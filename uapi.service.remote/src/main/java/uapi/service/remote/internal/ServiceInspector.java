@@ -27,23 +27,17 @@ import java.util.List;
  */
 class ServiceInspector {
 
-    ServiceInterfaceMeta inspect(final String serviceId) {
-        ArgumentChecker.required(serviceId, "serviceId");
+    ServiceInterfaceMeta inspect(final String serviceId, final Class<?> serviceType) {
+        ArgumentChecker.required(serviceType, "serviceType");
 
-        Class<?> svcType;
-        try {
-            svcType = Class.forName(serviceId);
-        } catch (ClassNotFoundException ex) {
-            throw new KernelException(ex);
-        }
-        if (! svcType.isInterface()) {
-            throw new KernelException("The remote service id {} must be an interface", serviceId);
+        if (! serviceType.isInterface()) {
+            throw new KernelException("The remote service type {} must be an interface", serviceType);
         }
 
-        List<ServiceMeta> svcMetas = Observable.from(svcType.getMethods())
+        List<ServiceMeta> svcMetas = Observable.from(serviceType.getMethods())
                 .map(method -> parseServiceMeta(method))
                 .toList().toBlocking().first();
-        return new ServiceInterfaceMeta(svcType.getCanonicalName(), svcMetas);
+        return new ServiceInterfaceMeta(serviceId, serviceType, svcMetas);
     }
 
     private ServiceMeta parseServiceMeta(Method method) {

@@ -15,9 +15,17 @@ package uapi.rx;
 class FirstOperator<T> extends TerminatedOperator<T> {
 
     private boolean _firstIsSent = false;
+    private boolean _useDefault = false;
+    private T _default = null;
 
     FirstOperator(Operator<T> previously) {
         super(previously);
+    }
+
+    FirstOperator(Operator<T> previously, T defaultValue) {
+        super(previously);
+        this._useDefault = true;
+        this._default = defaultValue;
     }
 
     @Override
@@ -25,15 +33,27 @@ class FirstOperator<T> extends TerminatedOperator<T> {
         if (this._firstIsSent) {
             return false;
         }
-        return true;
+        return super.hasItem();
     }
 
     @Override
     T getItem() {
         if (! hasItem()) {
-            return null;
+            if (this._useDefault) {
+                return this._default;
+            } else {
+                throw new NoItemException();
+            }
         }
         this._firstIsSent = true;
-        return (T) getPreviously().getItem();
+        try {
+            return (T) getPreviously().getItem();
+        } catch (NoItemException ex) {
+            if (this._useDefault) {
+                return this._default;
+            } else {
+                throw ex;
+            }
+        }
     }
 }
