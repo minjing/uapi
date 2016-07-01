@@ -56,6 +56,11 @@ abstract class Operator<T> implements IOperator<T> {
     }
 
     @Override
+    public <O> IOperator<O> flatmap(ConvertMore<T, O> operator) {
+        return new FlatMapOperator<>(this, operator);
+    }
+
+    @Override
     public IOperator<T> filter(Functionals.Filter<T> operator) {
         return new FilterOperator<>(this, operator);
     }

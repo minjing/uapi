@@ -52,7 +52,6 @@ class FlatMapOperator<I, T> extends Operator<T> {
                 return this._currently.getItem();
             }
         }
-
-        return null;
+        throw new NoItemException();
     }
 }

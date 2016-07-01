@@ -9,6 +9,8 @@
 
 package uapi.helper;
 
+import java.util.Collection;
+
 /**
  * Useful functional interface is defined here
  */

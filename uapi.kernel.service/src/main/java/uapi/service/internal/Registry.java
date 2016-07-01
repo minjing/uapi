@@ -173,9 +173,10 @@ public class Registry implements IRegistry, IService, IInjectable {
                 .doOnNext(ServiceHolder::start)
                 .subscribe(ServiceHolder::tryInitService);
 
-        Looper.from(this._svcRepo.values())
-                .map(ServiceHolder::getUnresolvedServices)
-                .foreach(this::loadUnresolvedService);
+        List<Dependency> unresolvedSvcs = Looper.from(this._svcRepo.values())
+                .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
+                .toList();
+        loadUnresolvedService(unresolvedSvcs);
     }
 
     @Override

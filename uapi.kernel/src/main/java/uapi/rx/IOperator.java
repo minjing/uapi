@@ -30,6 +30,8 @@ public interface IOperator<T> {
      */
     <O> IOperator<O> map(Functionals.Convert<T, O> operator);
 
+    <O> IOperator<O> flatmap(ConvertMore<T, O> operator);
+
     /**
      * Return a operator which can filter out input data by specific logic
      *
