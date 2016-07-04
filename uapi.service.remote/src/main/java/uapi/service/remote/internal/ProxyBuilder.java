@@ -11,20 +11,18 @@ package uapi.service.remote.internal;
 
 import uapi.KernelException;
 import uapi.rx.Looper;
-import uapi.service.ArgumentMeta;
-import uapi.service.MethodMeta;
-import uapi.service.ServiceMeta;
+import uapi.service.*;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IServiceInterfaceProxy;
-import uapi.service.ServiceInterfaceMeta;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,35 +35,50 @@ public class ProxyBuilder {
     @Inject
     Map<String, ICommunicator> _communicators = new HashMap<>();
 
-    IServiceInterfaceProxy build(ServiceInterfaceMeta meta) {
+    private final List<IServiceInterfaceProxy> _proxyCache = new LinkedList<>();
+
+    Object build(ServiceInterfaceMeta meta) {
         Class<?> svcIntfType = meta.getInterfaceType();
-        return (IServiceInterfaceProxy) Proxy.newProxyInstance(
+        ICommunicator communicator = this._communicators.get(meta.getCommunicatorName());
+        if (communicator == null) {
+            throw new KernelException("No communicator named {} for service interface {}", meta.getCommunicatorName(), meta);
+        }
+        IServiceInterfaceProxy proxy = Looper.from(this._proxyCache)
+                .filter(svcProxy -> svcProxy.getMeta() == meta)
+                .first(null);
+        if (proxy != null) {
+            return proxy;
+        }
+        proxy = (IServiceInterfaceProxy) Proxy.newProxyInstance(
                 svcIntfType.getClassLoader(),
                 new Class<?>[] { svcIntfType, IServiceInterfaceProxy.class },
-                new ServiceProxy(meta));
+                new ServiceProxy(meta, communicator));
+        this._proxyCache.add(proxy);
+        return proxy;
     }
 
-    private final class ServiceProxy implements InvocationHandler, IServiceInterfaceProxy {
+    private final class ServiceProxy implements InvocationHandler {
 
         private final ServiceInterfaceMeta _svcIntfMeta;
+        private final ICommunicator _communicator;
 
-        private ServiceProxy(final ServiceInterfaceMeta svcIntfMeta) {
+        private ServiceProxy(final ServiceInterfaceMeta svcIntfMeta, final ICommunicator communicator) {
             this._svcIntfMeta = svcIntfMeta;
+            this._communicator = communicator;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("getCommunicator") && args.length == 0) {
+                return this._communicator;
+            }
+            if (method.getName().equals("getMeta") && args.length == 0) {
+                return this._svcIntfMeta;
+            }
             ServiceMeta svcMeta = Looper.from(this._svcIntfMeta.getServices())
                     .filter(methodMeta -> isSame(methodMeta, method))
                     .first();
-            if (svcMeta == null) {
-                throw new KernelException("Can't find method {} in service interface {}", method, this._svcIntfMeta);
-            }
-            ICommunicator communicator = ProxyBuilder.this._communicators.get(this._svcIntfMeta.getCommunicatorName());
-            if (communicator == null) {
-                throw new KernelException("No communicator named {} for service interface {}", this._svcIntfMeta.getCommunicatorName(), this._svcIntfMeta);
-            }
-            return communicator.request(svcMeta, args);
+            return this._communicator.request(svcMeta, args);
         }
 
         private boolean isSame(MethodMeta methodMeta, Method method) {
@@ -83,16 +96,6 @@ public class ProxyBuilder {
                 }
             }
             return true;
-        }
-
-        @Override
-        public void setCommunicators(List<ICommunicator> communicator) {
-
-        }
-
-        @Override
-        public void setMeta(ServiceInterfaceMeta meta) {
-
         }
     }
 }

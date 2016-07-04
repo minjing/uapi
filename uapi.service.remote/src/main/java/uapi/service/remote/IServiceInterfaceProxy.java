@@ -20,18 +20,12 @@ import java.util.List;
 public interface IServiceInterfaceProxy {
 
     /**
-     * Set a communicator which used for interaction
-     *
-     * @param   communicator
-     *          The ICommunicator instance
+     * Get a communicator which used for interaction
      */
-    void setCommunicators(List<ICommunicator> communicator);
+    ICommunicator getCommunicator();
 
     /**
-     * Set service interface meta class
-     *
-     * @param   meta
-     *          Service interface meta
+     * Get service interface meta class
      */
-    void setMeta(ServiceInterfaceMeta meta);
+    ServiceInterfaceMeta getMeta();
 }

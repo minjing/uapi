@@ -103,6 +103,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
             // update service interface
             List<ServiceMeta> svcMetas = parseResponse(response);
             serviceInterfaceMeta.updateServiceMetas(svcMetas);
+            serviceInterfaceMeta.setCommunicatorName(response.getData().getCommunication());
             return serviceInterfaceMeta;
         } else {
             throw new KernelException("Unsupported communicator name - {}", this._communicatorName);
