@@ -19842,7 +19842,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "+setCommunicators(communicator: ICommunicator)",
+													"text": "+getCommunicators(): ICommunicator",
 													"horizontalAlignment": 0,
 													"verticalAlignment": 5
 												},
@@ -19870,7 +19870,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "+setMeat(meta: ServiceInterfaceMeta)",
+													"text": "+getMeta(): ServiceInterfaceMeta",
 													"horizontalAlignment": 0,
 													"verticalAlignment": 5
 												}
@@ -24064,18 +24064,17 @@
 											"_parent": {
 												"$ref": "AAAAAAFU0cHDAfMn78A="
 											},
-											"name": "setCommunicators",
+											"name": "getCommunicators",
 											"visibility": "public",
 											"isStatic": false,
 											"isLeaf": false,
 											"parameters": [
 												{
 													"_type": "UMLParameter",
-													"_id": "AAAAAAFU0eXeXnF8LZo=",
+													"_id": "AAAAAAFVtMsC/MuYn4g=",
 													"_parent": {
 														"$ref": "AAAAAAFU0eV4knA8MPU="
 													},
-													"name": "communicator",
 													"visibility": "public",
 													"isStatic": false,
 													"isLeaf": false,
@@ -24085,7 +24084,7 @@
 													"isReadOnly": false,
 													"isOrdered": false,
 													"isUnique": false,
-													"direction": "in"
+													"direction": "return"
 												}
 											],
 											"concurrency": "sequential",
@@ -24098,18 +24097,17 @@
 											"_parent": {
 												"$ref": "AAAAAAFU0cHDAfMn78A="
 											},
-											"name": "setMeat",
+											"name": "getMeta",
 											"visibility": "public",
 											"isStatic": false,
 											"isLeaf": false,
 											"parameters": [
 												{
 													"_type": "UMLParameter",
-													"_id": "AAAAAAFU0eaxT3z3gkM=",
+													"_id": "AAAAAAFVtMtGGcv8uNE=",
 													"_parent": {
 														"$ref": "AAAAAAFU0eZHmnwwG2U="
 													},
-													"name": "meta",
 													"visibility": "public",
 													"isStatic": false,
 													"isLeaf": false,
@@ -24119,7 +24117,7 @@
 													"isReadOnly": false,
 													"isOrdered": false,
 													"isUnique": false,
-													"direction": "in"
+													"direction": "return"
 												}
 											],
 											"concurrency": "sequential",
