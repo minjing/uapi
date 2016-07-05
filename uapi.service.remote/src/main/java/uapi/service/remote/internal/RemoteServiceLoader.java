@@ -15,10 +15,12 @@ import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IServiceLoader;
+import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.service.remote.IRemoteServiceConfigurableKey;
+import uapi.service.remote.IRemoteServiceLoader;
 import uapi.service.remote.IServiceDiscover;
 import uapi.service.ServiceInterfaceMeta;
 
@@ -31,7 +33,7 @@ import java.util.Map;
  * Invocation driver: HTTP + JSON ...
  */
 @Service(IServiceLoader.class)
-public class RemoteServiceLoader implements IServiceLoader {
+public class RemoteServiceLoader implements IRemoteServiceLoader {
 
     private static final int PRIORITY   = 200;
 
@@ -62,9 +64,14 @@ public class RemoteServiceLoader implements IServiceLoader {
     }
 
     @Override
-    public String getName() {
-        return "Remote";
+    public String getId() {
+        return NAME;
     }
+
+//    @Init
+//    public void init() {
+//        this._registry.registerServiceLoader(this);
+//    }
 
     @Override
     public <T> T load(

@@ -9,10 +9,12 @@
 
 package uapi.service;
 
+import uapi.IIdentifiable;
+
 /**
  * A service loader used to load external service
  */
-public interface IServiceLoader extends Comparable<IServiceLoader> {
+public interface IServiceLoader extends Comparable<IServiceLoader>, IIdentifiable<String> {
 
     /**
      * Compare two service load based on its priority
@@ -38,12 +40,12 @@ public interface IServiceLoader extends Comparable<IServiceLoader> {
      */
     int getPriority();
 
-    /**
-     * The name of service loader
-     *
-     * @return  The service name
-     */
-    String getName();
+//    /**
+//     * The name of service loader
+//     *
+//     * @return  The service name
+//     */
+//    String getName();
 
     /**
      * Load service by id and type

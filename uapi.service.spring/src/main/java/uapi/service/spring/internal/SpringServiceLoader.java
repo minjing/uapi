@@ -18,6 +18,7 @@ import uapi.service.IServiceLoader;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.spring.ISpringServiceLoader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +27,8 @@ import java.util.Map;
  * The service used to load Spring bean into the framework
  */
 @Service
-public class SpringServiceLoader implements IServiceLoader {
+public class SpringServiceLoader implements ISpringServiceLoader {
 
-    private static final String NAME    = "Spring";
     private static final int PRIORITY   = 100;
 
     private Map<String, Object> _beanCache;
@@ -45,7 +45,7 @@ public class SpringServiceLoader implements IServiceLoader {
     public void init() {
         this._beanCache = new HashMap<>();
         this._ctx = new ClassPathXmlApplicationContext(new String[] { this._cfgFile });
-        this._registry.registerServiceLoader(this);
+//        this._registry.registerServiceLoader(this);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class SpringServiceLoader implements IServiceLoader {
     }
 
     @Override
-    public String getName() {
+    public String getId() {
         return NAME;
     }
 

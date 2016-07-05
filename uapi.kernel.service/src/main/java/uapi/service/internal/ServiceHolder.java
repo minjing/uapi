@@ -108,10 +108,15 @@ class ServiceHolder implements IServiceReference {
         Observable.from(this._dependencies.entries())
                 .filter(entry -> entry.getValue() != null)
                 .map(Map.Entry::getValue)
+                .filter(dependency -> ! dependency.isMonitored(this._stateManagement))
                 .subscribe(dependency -> dependency.addStateMonitor(this._stateManagement));
         if (this._started) {
             this._stateManagement.goon();
         }
+    }
+
+    boolean isMonitored(IStateMonitor monitor) {
+        return this._stateMonitors.contains(monitor);
     }
 
     void setDependency(ServiceHolder service) {

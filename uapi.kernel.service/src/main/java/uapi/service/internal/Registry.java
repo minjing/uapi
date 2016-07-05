@@ -184,7 +184,7 @@ public class Registry implements IRegistry, IService, IInjectable {
             final IServiceLoader serviceLoader) {
         ArgumentChecker.notNull(serviceLoader, "serviceLoader");
 
-        String name = serviceLoader.getName();
+        String name = serviceLoader.getId();
         IServiceLoader existing = this._svcLoaders.putIfAbsent(name, serviceLoader);
         if (existing != null) {
             throw new InvalidArgumentException(
@@ -308,6 +308,14 @@ public class Registry implements IRegistry, IService, IInjectable {
             this._logger = (ILogger) injection.getObject();
             return;
         }
+//        if (IServiceLoader.class.getName().equals(injection.getId())) {
+//            if (! (injection.getObject() instanceof  IServiceLoader)) {
+//                throw new uapi.InvalidArgumentException(
+//                        "The injected object {} can't be converted to {}", injection.getObject(), IServiceLoader.class.getName());
+//            }
+//            IServiceLoader svcLoader = (IServiceLoader) injection.getObject();
+//            this._svcLoaders.put(svcLoader.getId(), svcLoader);
+//        }
         throw new InvalidArgumentException("The Registry does not depends on service {}", injection);
     }
 
@@ -319,7 +327,10 @@ public class Registry implements IRegistry, IService, IInjectable {
                         ISatisfyHook.class),
                 new Dependency(
                         StringHelper.makeString("{}{}{}", ILogger.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
-                        ILogger.class)
+                        ILogger.class),
+//                new Dependency(
+//                        StringHelper.makeString("{}{}{}", IServiceLoader.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
+//                        IServiceLoader.class)
         };
     }
 
@@ -331,6 +342,9 @@ public class Registry implements IRegistry, IService, IInjectable {
         if (ILogger.class.getName().equals(id)) {
             return false;
         }
+//        if (IServiceLoader.class.getName().equals(id)) {
+//            return true;
+//        }
         throw new InvalidArgumentException("The Registry does not depends on service {}", id);
     }
 

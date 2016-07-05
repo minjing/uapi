@@ -1,0 +1,6 @@
+restful:
+  codec: JSON
+  encoder: JSON
+
+launcher:
+  app: HelloAppClient

@@ -154,7 +154,7 @@ class RegistryTest extends Specification {
             getDependencies() >> [dependQSvcId]
         }
         def svcLoader = Mock(IServiceLoader) {
-            getName() >> "Test"
+            getId() >> "Test"
             load(dependSvcId, Object.class) >> dependSvc
         }
 

@@ -23,7 +23,7 @@ public class QualifiedServiceId extends Pair<String, String> {
      * The separator used to separate service id and service from
      * Like service@location
      */
-    public static final String LOCATION     = "@";
+    static final String LOCATION     = "@";
 
     /**
      * Indicate the service can be matched any location, normally

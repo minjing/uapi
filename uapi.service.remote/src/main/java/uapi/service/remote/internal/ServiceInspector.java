@@ -15,6 +15,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.service.ArgumentMeta;
 import uapi.service.ServiceInterfaceMeta;
 import uapi.service.ServiceMeta;
+import uapi.service.annotation.Service;
 import uapi.service.web.ArgumentMapping;
 
 import java.lang.reflect.Method;
@@ -25,6 +26,7 @@ import java.util.List;
  * The ServiceInspector inspect specific service interface by its id
  * and generate service interface meta class
  */
+@Service
 class ServiceInspector {
 
     ServiceInterfaceMeta inspect(final String serviceId, final Class<?> serviceType) {

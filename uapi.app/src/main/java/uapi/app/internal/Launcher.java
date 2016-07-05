@@ -9,13 +9,16 @@
 
 package uapi.app.internal;
 
+import com.google.common.base.Strings;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.app.IAppLifecycle;
 import uapi.app.ILauncher;
 import uapi.config.ICliConfigProvider;
+import uapi.config.annotation.Config;
 import uapi.helper.TimeHelper;
 import uapi.log.ILogger;
+import uapi.rx.Looper;
 import uapi.service.IRegistry;
 import uapi.service.IService;
 import uapi.service.annotation.Inject;
@@ -63,11 +66,17 @@ public class Launcher implements ILauncher {
     }
 
     @Inject
+    IRegistry _registry;
+
+    @Inject
     ILogger _logger;
 
     @Inject
     @Optional
     List<IAppLifecycle> _lifecycles;
+
+    @Config(path="launcher.app", optional=true)
+    String _launchAppName;
 
     private final Semaphore _semaphore;
 
@@ -83,7 +92,16 @@ public class Launcher implements ILauncher {
 
     @Override
     public void launch(long startTime) {
-        Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
+        if (Strings.isNullOrEmpty(this._launchAppName)) {
+            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
+        } else {
+            IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
+                    .filter(lifecycle -> lifecycle.getAppName().equals(this._launchAppName))
+                    .first(null);
+            if (appLifecycle != null) {
+                appLifecycle.onStarted();
+            }
+        }
 
         long expend = System.currentTimeMillis() - startTime;
         long expendSecond = expend / TimeHelper.MS_OF_SECOND;
@@ -97,7 +115,16 @@ public class Launcher implements ILauncher {
             this._logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
 
-        Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStopped);
+        if (Strings.isNullOrEmpty(this._launchAppName)) {
+            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStopped);
+        } else {
+            IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
+                    .filter(lifecycle -> lifecycle.getAppName().equals(this._launchAppName))
+                    .first(null);
+            if (appLifecycle != null) {
+                appLifecycle.onStopped();
+            }
+        }
         this._logger.info("The system is shutdown.");
     }
 

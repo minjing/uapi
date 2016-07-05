@@ -15,6 +15,12 @@ package uapi.app;
 public interface IAppLifecycle {
 
     /**
+     * The name of the app lifecycle
+     * @return
+     */
+    String getAppName();
+
+    /**
      * Invoked when application is started
      */
     void onStarted();

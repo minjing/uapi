@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -7,8 +7,9 @@
  * use the project into a commercial product
  */
 
-package uapi.sample;
+package uapi.sample.hello;
 
+import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
 import uapi.service.web.HttpMethod;
@@ -27,8 +28,8 @@ public class HelloRestful implements IHello {
     @Restful(HttpMethod.Get)
     public String sayHello(
             @FromUri(0) String name,
-            @FromParam("test") String test
+            @FromParam("title") String title
     ) {
-        return "Hello " + name + ", " + test;
+        return StringHelper.makeString("Hello {} {}", title, name);
     }
 }
