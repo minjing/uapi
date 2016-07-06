@@ -78,6 +78,9 @@ public class Launcher implements ILauncher {
     @Config(path="launcher.app", optional=true)
     String _launchAppName;
 
+    @Config(path="launcher.ignored-services", optional=true)
+    List<String> _ingoredSvcs;
+
     private final Semaphore _semaphore;
 
     public Launcher() {
@@ -92,6 +95,8 @@ public class Launcher implements ILauncher {
 
     @Override
     public void launch(long startTime) {
+        this._registry.loadExternalServices(this._ingoredSvcs);
+
         if (Strings.isNullOrEmpty(this._launchAppName)) {
             Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
         } else {

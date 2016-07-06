@@ -95,12 +95,12 @@ class ServiceHolder implements IServiceReference {
 
     @Override
     public void notifySatisfied() {
-        this._stateManagement.goon();
+        this._stateManagement.goon(null);
     }
 
     void start() {
         this._started = true;
-        this._stateManagement.goon();
+        this._stateManagement.goon(null);
     }
 
     void addStateMonitor(IStateMonitor monitor) {
@@ -111,7 +111,7 @@ class ServiceHolder implements IServiceReference {
                 .filter(dependency -> ! dependency.isMonitored(this._stateManagement))
                 .subscribe(dependency -> dependency.addStateMonitor(this._stateManagement));
         if (this._started) {
-            this._stateManagement.goon();
+            this._stateManagement.goon(null);
         }
     }
 
@@ -135,7 +135,7 @@ class ServiceHolder implements IServiceReference {
 
         service.addStateMonitor(this._stateManagement);
         if (this._started) {
-            this._stateManagement.goon();
+            this._stateManagement.goon(service.getQualifiedId());
         }
     }
 
@@ -190,7 +190,7 @@ class ServiceHolder implements IServiceReference {
     }
 
     boolean tryInitService() {
-        return this._stateManagement.goon();
+        return this._stateManagement.goon(null);
     }
 
     @Override
@@ -235,11 +235,11 @@ class ServiceHolder implements IServiceReference {
                     .filter(satisfied -> ! satisfied)
                     .toBlocking().firstOrDefault(true);
             if (allSatified) {
-                goon();
+                goon(qsId);
             }
         }
 
-        private boolean goon() {
+        private boolean goon(QualifiedServiceId qSvcId) {
             if (this._changing) {
                 return this._state == State.Initialized;
             }
@@ -259,7 +259,9 @@ class ServiceHolder implements IServiceReference {
                     successful = tryInit();
                     break;
                 case Initialized:
-                    // do nothing
+                    if (qSvcId != null) {
+                        injectDependency(qSvcId);
+                    }
                     successful = true;
                     break;
                 default:
@@ -294,7 +296,7 @@ class ServiceHolder implements IServiceReference {
             // Check dependencies is all initialized
             Dependency unSatisfiedSvc = Observable.from(ServiceHolder.this._dependencies.entries())
                     .filter(entry -> entry.getValue() != null)
-                    .filter(entry -> ! entry.getValue().tryInitService())
+                    .filter(entry -> ! entry.getValue().tryInitService() && !((IInjectable) ServiceHolder.this._svc).isOptional(entry.getKey().getServiceId().getId()))
                     .map(Map.Entry::getKey)
                     .toBlocking().firstOrDefault(null);
             if (unSatisfiedSvc != null) {
@@ -305,12 +307,19 @@ class ServiceHolder implements IServiceReference {
             return tryInject();
         }
 
+        private void injectDependency(QualifiedServiceId qSvcId) {
+            ArgumentChecker.equals(this._state, State.Initialized, "ServiceHolder.state");
+
+            // TODO: inject resolved dependency and notify the service
+        }
+
         private boolean tryInject() {
             ArgumentChecker.equals(this._state, State.Resolved, "ServiceHolder.state");
 
             if (ServiceHolder.this._dependencies.size() > 0) {
                 if (ServiceHolder.this._svc instanceof IInjectable) {
                     Observable.from(ServiceHolder.this._dependencies.values())
+                            .filter(ServiceHolder::isInited)
                             .filter(dependency -> dependency != null)
                             .subscribe(dependency -> {
                                 // if the service was injected before, it is not necessary to inject again

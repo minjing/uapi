@@ -20,6 +20,6 @@ public class ServiceFactory implements IServiceFactory<String> {
 
     @Override
     public String createService(Object serveFor) {
-        return null;
+        return "";
     }
 }

@@ -12,6 +12,7 @@ package uapi.app.internal
 import spock.lang.Specification
 import uapi.app.IAppLifecycle
 import uapi.log.ILogger
+import uapi.service.IRegistry
 
 /**
  * Test case for Launch
@@ -25,8 +26,10 @@ class LauncherTest extends Specification {
         launcher = new Launcher()
         ILogger logger = Mock(ILogger)
         IAppLifecycle appLife = Mock(IAppLifecycle)
+        IRegistry registry = Mock(IRegistry)
         launcher._logger = logger;
         launcher._lifecycles.add(appLife)
+        launcher._registry = registry
 
         when:
         new Thread(new Runnable() {
@@ -40,6 +43,7 @@ class LauncherTest extends Specification {
         Thread.sleep(100)
 
         then:
+        1 * registry.loadExternalServices(_)
         1 * appLife.onStarted()
         1 * appLife.onStopped()
     }

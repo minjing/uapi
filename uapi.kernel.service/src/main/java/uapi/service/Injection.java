@@ -56,7 +56,7 @@ public class Injection {
         StringBuilder sb = new StringBuilder();
         sb.append("Injection[")
                 .append("id=").append(this._id)
-                .append("object=").append(this._object);
+                .append(",object=").append(this._object);
         return sb.toString();
     }
 }

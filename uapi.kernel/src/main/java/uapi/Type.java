@@ -9,6 +9,9 @@
 
 package uapi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by min on 16/2/25.
  */
@@ -34,17 +37,19 @@ public final class Type {
     public static final String OBJECT           = "Object";
     public static final String STRING           = "String";
     public static final String STRING_ARRAY     = "String[]";
+    public static final String STRING_LIST      = "java.util.List<java.lang.String>";
 
     public static final String Q_OBJECT         = Object.class.getCanonicalName();
     public static final String Q_STRING         = String.class.getCanonicalName();
     public static final String Q_STRING_ARRAY   = String[].class.getCanonicalName();
+    public static final String Q_ARRAY_LIST     = ArrayList.class.getCanonicalName();
 
-    public static final Class<Boolean> T_BOOLEAN    = Boolean.class;
-    public static final Class<Integer> T_INTEGER    = Integer.class;
-    public static final Class<Long> T_LONG          = Long.class;
-    public static final Class<Short> T_SHORT        = Short.class;
-    public static final Class<Float> T_FLOAT        = Float.class;
-    public static final Class<Double> T_DOUBLE      = Double.class;
+    public static final Class<Boolean>  T_BOOLEAN   = Boolean.class;
+    public static final Class<Integer>  T_INTEGER   = Integer.class;
+    public static final Class<Long>     T_LONG      = Long.class;
+    public static final Class<Short>    T_SHORT     = Short.class;
+    public static final Class<Float>    T_FLOAT     = Float.class;
+    public static final Class<Double>   T_DOUBLE    = Double.class;
 
-    public static final Class<String> T_STRING      = String.class;
+    public static final Class<String>   T_STRING    = String.class;
 }

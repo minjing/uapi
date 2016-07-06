@@ -148,26 +148,26 @@ class RegistryTest extends Specification {
 
     static interface IInjectableService extends IService, IInjectable {}
 
-    def 'Test getUnresolvedServices method'() {
-        def svc = Mock(IInjectableService) {
-            getIds() >> ["1"]
-            getDependencies() >> [dependQSvcId]
-        }
-        def svcLoader = Mock(IServiceLoader) {
-            getId() >> "Test"
-            load(dependSvcId, Object.class) >> dependSvc
-        }
-
-        when:
-        registry.register(svc)
-        registry.registerServiceLoader(svcLoader)
-
-        then:
-        1 * svcLoader.load(dependSvcId, Object.class)
-
-        where:
-        dependSvcId | dependQSvcId                              | dependSvc
-        'd1'        | new Dependency('d1@Test', Object.class)   | 'abc'
-        'd2'        | new Dependency('d2@Any', Object.class)    | 'abc'
-    }
+//    def 'Test getUnresolvedServices method'() {
+//        def svc = Mock(IInjectableService) {
+//            getIds() >> ["1"]
+//            getDependencies() >> [dependQSvcId]
+//        }
+//        def svcLoader = Mock(IServiceLoader) {
+//            getId() >> "Test"
+//            load(dependSvcId, Object.class) >> dependSvc
+//        }
+//
+//        when:
+//        registry.register(svc)
+//        registry.registerServiceLoader(svcLoader)
+//
+//        then:
+//        1 * svcLoader.load(dependSvcId, Object.class)
+//
+//        where:
+//        dependSvcId | dependQSvcId                              | dependSvc
+//        'd1'        | new Dependency('d1@Test', Object.class)   | 'abc'
+//        'd2'        | new Dependency('d2@Any', Object.class)    | 'abc'
+//    }
 }

@@ -18,7 +18,7 @@ import java.util.List;
  *  * Hold service in local map
  *  * Resolve dependency between services
  */
-public interface IRegistry extends IInitial {
+public interface IRegistry {
 
     /**
      * Register a local service
@@ -138,5 +138,7 @@ public interface IRegistry extends IInitial {
      */
     void start();
 
-    void registerServiceLoader(IServiceLoader serviceLoader);
+//    void registerServiceLoader(IServiceLoader serviceLoader);
+
+    void loadExternalServices(final List<String> ignoredServices);
 }

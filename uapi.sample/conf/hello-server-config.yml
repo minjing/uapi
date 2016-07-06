@@ -10,3 +10,5 @@ restful:
 
 launcher:
   app: HelloAppServer
+  ignored-services:
+    - uapi.sample.hello.IHello
