@@ -110,7 +110,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         UriInfo uriInfo = parseUri(request);
         if (Strings.isNullOrEmpty(uriInfo.serviceName)) {
             // Handle restful interface query
-            handleDescoverRequest(request, response, uriInfo);
+            handleDiscoverRequest(request, response, uriInfo);
         } else {
             handleRequest(request, response, HttpMethod.GET, uriInfo);
         }
@@ -143,7 +143,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
         handleRequest(request, response, HttpMethod.DELETE, uriInfo);
     }
 
-    private void handleDescoverRequest(
+    private void handleDiscoverRequest(
             final HttpServletRequest request,
             final HttpServletResponse response,
             final UriInfo uriInfo
@@ -169,7 +169,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
             resp.data.interfaceId = restfulIntf.getInterfaceId();
             Map<MethodMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
-            resp.data.serviceMetas = new ServiceDiscoveryResponse.ServiceMeta[methodHttpMethodMappings.size()];
+            resp.data.serviceMetas = new ArrayList<>();
             Looper.from(methodHttpMethodMappings.entrySet())
                     .foreachWithIndex((index, entry) -> {
                         MethodMeta methodInfo = entry.getKey();
@@ -178,7 +178,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                         svcMeta.returnTypeName = methodInfo.getReturnTypeName();
                         svcMeta.codec = this._codecName;
                         svcMeta.uri = this._uriPrefix;
-                        svcMeta.methods = entry.getValue().toArray(new HttpMethod[entry.getValue().size()]);
+                        svcMeta.methods = entry.getValue();//.toArray(new HttpMethod[entry.getValue().size()]);
                         List<ArgumentMeta> argMappings = methodInfo.getArgumentMappings();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
@@ -196,7 +196,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                                     argMeta.typeName = argMapping.getType();
                                     svcMeta.argumentMetas[argIdx] = argMeta;
                                 });
-                        resp.data.serviceMetas[index] = svcMeta;
+                        resp.data.serviceMetas.add(svcMeta);
                     });
         }
         IStringCodec codec = this._codecs.get(this._codecName);

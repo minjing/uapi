@@ -37,7 +37,7 @@ public class RemoteServiceLoader implements IRemoteServiceLoader {
 
     private static final int PRIORITY   = 200;
 
-    @Config(path=IRemoteServiceConfigurableKey.LOADER_DISCOVER)
+    @Config(path=IRemoteServiceConfigurableKey.LOADER_COMM)
     String _communicatorName;
 
     @Inject

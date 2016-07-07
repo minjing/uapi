@@ -16,6 +16,7 @@ import uapi.app.IAppLifecycle;
 import uapi.app.ILauncher;
 import uapi.config.ICliConfigProvider;
 import uapi.config.annotation.Config;
+import uapi.helper.CollectionHelper;
 import uapi.helper.TimeHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
@@ -26,6 +27,7 @@ import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
@@ -79,7 +81,7 @@ public class Launcher implements ILauncher {
     String _launchAppName;
 
     @Config(path="launcher.ignored-services", optional=true)
-    List<String> _ingoredSvcs;
+    List<String> _ignoredSvcs = Collections.EMPTY_LIST;
 
     private final Semaphore _semaphore;
 
@@ -95,7 +97,7 @@ public class Launcher implements ILauncher {
 
     @Override
     public void launch(long startTime) {
-        this._registry.loadExternalServices(this._ingoredSvcs);
+        this._registry.loadExternalServices(this._ignoredSvcs);
 
         if (Strings.isNullOrEmpty(this._launchAppName)) {
             Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);

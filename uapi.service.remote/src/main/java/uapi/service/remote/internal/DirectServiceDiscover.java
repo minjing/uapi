@@ -43,7 +43,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
     int _port;
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_URI_PREFIX)
-    int _uriPrefix;
+    String _uriPrefix;
 
     @Inject
     IRegistry _registry;
@@ -90,13 +90,16 @@ public class DirectServiceDiscover implements IServiceDiscover {
             NamedArgumentMapping namedArg = new NamedArgumentMapping(ArgumentFrom.Param, Type.Q_STRING, "interface");
             List<ArgumentMeta> args = new ArrayList<>();
             args.add(namedArg);
+            List<HttpMethod> methods = new ArrayList<>();
+            methods.add(HttpMethod.GET);
             RestfulServiceMeta svcMeta = new RestfulServiceMeta(
                     "DiscoverService",
                     ServiceDiscoveryResponse.class.getCanonicalName(),
                     args, url,
-                    new HttpMethod[] { HttpMethod.GET },
+                    methods,
                     JsonStringCodec.NAME);
-            ServiceDiscoveryResponse response = (ServiceDiscoveryResponse) communicator.request(svcMeta);
+            // Using interface type name to query since server side do not know client service id (interface id)
+            ServiceDiscoveryResponse response = (ServiceDiscoveryResponse) communicator.request(svcMeta, serviceInterfaceMeta.getInterfaceType().getName());
             if (response == null) {
                 throw new KernelException("No response when request service - {}", svcMeta);
             }
@@ -128,7 +131,7 @@ public class DirectServiceDiscover implements IServiceDiscover {
                         if (svcMeta.argumentMetas != null && svcMeta.argumentMetas.length > 0) {
                             Looper.from(svcMeta.argumentMetas)
                                     .map(argMeta -> {
-                                        if (Strings.isNullOrEmpty(argMeta.name)) {
+                                        if (! Strings.isNullOrEmpty(argMeta.name)) {
                                             return new NamedArgumentMapping(argMeta.from, argMeta.typeName, argMeta.name);
                                         } else {
                                             return new IndexedArgumentMapping(argMeta.from, argMeta.typeName, argMeta.index);

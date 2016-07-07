@@ -37,6 +37,9 @@ public class JsonStringCodec implements IStringCodec {
     ) throws KernelException {
         ArgumentChecker.required(value, "value");
         ArgumentChecker.required(type, "type");
+        if (type.equals(String.class) && value instanceof String) {
+            return value.toString();
+        }
         try {
             return JSON.std.asString(value);
         } catch (Exception ex) {
@@ -51,6 +54,9 @@ public class JsonStringCodec implements IStringCodec {
     ) throws KernelException {
         ArgumentChecker.required(value, "value");
         ArgumentChecker.required(type, "type");
+        if (type.equals(String.class)) {
+            return value;
+        }
         try {
             if (type.equals(Map.class)) {
                 return JSON.std.mapFrom(value);

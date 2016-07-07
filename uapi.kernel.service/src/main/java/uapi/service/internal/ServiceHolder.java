@@ -153,9 +153,9 @@ class ServiceHolder implements IServiceReference {
 
     boolean isDependsOn(QualifiedServiceId qualifiedServiceId) {
         ArgumentChecker.notNull(qualifiedServiceId, "qualifiedServiceId");
-        if (this._dependencies.containsKey(qualifiedServiceId)) {
-            return true;
-        }
+//        if (this._dependencies.containsKey(qualifiedServiceId)) {
+//            return true;
+//        }
 
         if (findDependencies(qualifiedServiceId) != null) {
             return true;
@@ -195,8 +195,8 @@ class ServiceHolder implements IServiceReference {
 
     @Override
     public String toString() {
-        return StringHelper.makeString("Service[id={}, type={}, dependencies={}]",
-                this._qualifiedSvcId, this._svc.getClass().getName(), this._dependencies);
+        return StringHelper.makeString("Service[id={}, type={}]",
+                this._qualifiedSvcId, this._svc.getClass().getName());
     }
 
     private enum State {
@@ -310,7 +310,27 @@ class ServiceHolder implements IServiceReference {
         private void injectDependency(QualifiedServiceId qSvcId) {
             ArgumentChecker.equals(this._state, State.Initialized, "ServiceHolder.state");
 
-            // TODO: inject resolved dependency and notify the service
+            ServiceHolder svcHolder = Looper.from(ServiceHolder.this._dependencies.entries())
+                    .filter(entry -> entry.getKey().getServiceId().equals(qSvcId))
+                    .filter(entry -> entry.getValue().isInited())
+                    .map(entry -> entry.getValue())
+                    .first(null);
+            if (svcHolder == null) {
+                return;
+            }
+            Object svc = svcHolder.getService();
+            if (svc == null) {
+                throw new KernelException("The dependency service {} is not created", qSvcId);
+            }
+            if (svc instanceof IServiceFactory) {
+                // Create service from service factory
+                svc = ((IServiceFactory) svc).createService(ServiceHolder.this._svc);
+            }
+            ((IInjectable) ServiceHolder.this._svc).injectObject(new Injection(qSvcId.getId(), svc));
+            if (ServiceHolder.this._svc instanceof IServiceListener) {
+                ((IServiceListener) ServiceHolder.this._svc).onDependencySet(qSvcId.getId(), svc);
+            }
+            this._injectedSvcs.add(svcHolder);
         }
 
         private boolean tryInject() {

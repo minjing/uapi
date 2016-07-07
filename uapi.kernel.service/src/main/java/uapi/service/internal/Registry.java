@@ -59,7 +59,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         this._orderedSvcLoaders = new TreeSet<>();
     }
 
-    private volatile boolean _inited = false;
+    private volatile boolean _started = false;
 
 //    @Override
 //    public void init() {
@@ -186,6 +186,8 @@ public class Registry implements IRegistry, IService, IInjectable {
             this._orderedSvcLoaders.addAll(this._svcLoaders.values());
         }
 
+        this._started = true;
+
 //        loadUnresolvedService(unresolvedSvcs);
     }
 
@@ -304,9 +306,12 @@ public class Registry implements IRegistry, IService, IInjectable {
                                 .subscribe(svcHolder::setDependency);
                         // Check whether existing service depends on the new register service
                         Observable.from(this._svcRepo.values())
-                                .filter(existingSvc -> existingSvc.isDependsOn(svcHolder.getId()))
+                                .filter(existingSvc -> existingSvc.isDependsOn(svcHolder.getQualifiedId()))
                                 .subscribe(existingSvc -> existingSvc.setDependency(svcHolder));
                         this._svcRepo.put(svcHolder.getId(), svcHolder);
+                        if (this._started) {
+                            svcHolder.start();
+                        }
                     });
                 });
     }

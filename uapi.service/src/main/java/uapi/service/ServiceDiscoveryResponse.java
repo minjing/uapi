@@ -13,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import uapi.service.web.ArgumentFrom;
 import uapi.service.web.HttpMethod;
 
+import java.util.List;
+
 /**
  * Created by xquan on 6/14/2016.
  */
@@ -37,7 +39,7 @@ public class ServiceDiscoveryResponse extends Response {
         public String communication;
 
         @JsonProperty("service-meta")
-        public ServiceMeta[] serviceMetas;
+        public List<ServiceMeta> serviceMetas;
 
         public void setInterfaceId(String interfaceId) {
             this.interfaceId = interfaceId;
@@ -47,7 +49,7 @@ public class ServiceDiscoveryResponse extends Response {
             this.communication = communication;
         }
 
-        public void setServiceMetas(ServiceMeta[] serviceMetas) {
+        public void setServiceMetas(List<ServiceMeta> serviceMetas) {
             this.serviceMetas = serviceMetas;
         }
 
@@ -59,7 +61,7 @@ public class ServiceDiscoveryResponse extends Response {
             return communication;
         }
 
-        public ServiceMeta[] getServiceMetas() {
+        public List<ServiceMeta> getServiceMetas() {
             return serviceMetas;
         }
     }
@@ -74,8 +76,8 @@ public class ServiceDiscoveryResponse extends Response {
         @JsonProperty("uri")
         public String uri;
 
-        @JsonProperty("method")
-        public HttpMethod[] methods;
+        @JsonProperty("methods")
+        public List<HttpMethod> methods;
 
         @JsonProperty("codec")
         public String codec;
@@ -107,11 +109,11 @@ public class ServiceDiscoveryResponse extends Response {
             this.uri = uri;
         }
 
-        public HttpMethod[] getMethods() {
+        public List<HttpMethod> getMethods() {
             return methods;
         }
 
-        public void setMethods(HttpMethod[] methods) {
+        public void setMethods(List<HttpMethod> methods) {
             this.methods = methods;
         }
 

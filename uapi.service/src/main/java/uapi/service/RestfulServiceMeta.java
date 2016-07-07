@@ -22,7 +22,7 @@ import java.util.List;
 public class RestfulServiceMeta extends ServiceMeta {
 
     private String _uri;
-    private HttpMethod[] _methods;
+    private List<HttpMethod> _methods;
     private String _codec;
 
     public RestfulServiceMeta(
@@ -30,7 +30,7 @@ public class RestfulServiceMeta extends ServiceMeta {
             final String returnTypeName,
             final List<ArgumentMeta> argMappings,
             final String uri,
-            final HttpMethod[] httpMethods,
+            final List<HttpMethod> httpMethods,
             final String codec
     ) {
         super(name, returnTypeName, argMappings);
@@ -46,7 +46,7 @@ public class RestfulServiceMeta extends ServiceMeta {
         return this._uri;
     }
 
-    public HttpMethod[] getMethods() {
+    public List<HttpMethod> getMethods() {
         return this._methods;
     }
 

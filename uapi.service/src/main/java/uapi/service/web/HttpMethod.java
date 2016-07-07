@@ -9,6 +9,7 @@
 
 package uapi.service.web;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import uapi.InvalidArgumentException;
 
@@ -36,6 +37,7 @@ public enum HttpMethod {
     public static final int Head    = 0x32;
     public static final int Trace   = 0x64;
 
+    @JsonCreator
     public static HttpMethod[] parse(int value) {
         List<HttpMethod> httpMethods = new ArrayList<>();
         if ((value & GET._value) == GET._value) {
@@ -88,6 +90,7 @@ public enum HttpMethod {
         this._value = value;
     }
 
+    @JsonValue
     public int getValue() {
         return this._value;
     }

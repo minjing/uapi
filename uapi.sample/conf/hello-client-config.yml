@@ -4,3 +4,13 @@ restful:
 
 launcher:
   app: HelloAppClient
+
+service:
+  remote:
+    loader:
+      communicator: Restful
+    discover:
+      communicator: Restful
+      host: 127.0.0.1
+      port: 8080
+      uri_prefix: rest

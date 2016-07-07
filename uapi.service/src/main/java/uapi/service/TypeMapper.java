@@ -30,6 +30,8 @@ public class TypeMapper {
 
         this._typeMapping.put(Type.STRING, Type.T_STRING);
         this._typeMapping.put(Type.Q_STRING, Type.T_STRING);
+
+        this._typeMapping.put(ServiceDiscoveryResponse.class.getName(), ServiceDiscoveryResponse.class);
     }
 
     public Class<?> getType(String typeName) {

@@ -71,7 +71,7 @@ public class RestfulCommunicator implements ICommunicator {
         }
 
         String format = restfulSvcMeta.getCodec();
-        HttpMethod reqMethod = restfulSvcMeta.getMethods()[0];
+        HttpMethod reqMethod = restfulSvcMeta.getMethods().get(0);
         List<Triple<ArgumentMapping, String, Object>> uriArgs = new ArrayList<>();
         Map<String, Triple<ArgumentMapping, String, Object>> paramArgs = new HashMap<>();
         Map<String, Triple<ArgumentMapping, String, Object>> headerArgs = new HashMap<>();
@@ -184,7 +184,7 @@ public class RestfulCommunicator implements ICommunicator {
         String rtnTypeName = responseInfo.getLeftValue();
         String format = responseInfo.getCenterValue();
         String respText = responseInfo.getRightValue();
-        IStringCodec codec = this._codecs.get(rtnTypeName);
+        IStringCodec codec = this._codecs.get(format);
         if (codec == null) {
             throw new KernelException("Not type was mapped to name {}", rtnTypeName);
         }

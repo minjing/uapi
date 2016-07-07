@@ -26,10 +26,10 @@ public interface IRemoteServiceConfigurableKey extends IConfigurableKey {
     String RESTFUL_HTTP_TYPE    = "service.remote.driver.restful.http_type";
     String RESTFUL_URI_PRIFIX   = "service.remote.driver.restful.uri_prefix";
 
-    String LOADER_DISCOVER      = "service.remote.loader.discover";
+    String LOADER_COMM          = "service.remote.loader.communicator";
 
     String DISCOVER_COMM        = "service.remote.discover.communicator";
     String DISCOVER_HOST        = "service.remote.discover.host";
-    String DISCOVER_PORT        = "service.remote.discover.port";;
+    String DISCOVER_PORT        = "service.remote.discover.port";
     String DISCOVER_URI_PREFIX  = "service.remote.discover.uri_prefix";
 }
