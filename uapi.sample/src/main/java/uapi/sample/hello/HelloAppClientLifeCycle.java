@@ -10,6 +10,7 @@
 package uapi.sample.hello;
 
 import uapi.app.IAppLifecycle;
+import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -23,6 +24,9 @@ public class HelloAppClientLifeCycle implements IAppLifecycle {
     @Inject
     IRegistry _registry;
 
+    @Inject
+    ILogger _logger;
+
     @Override
     public String getAppName() {
         return "HelloAppClient";
@@ -31,7 +35,7 @@ public class HelloAppClientLifeCycle implements IAppLifecycle {
     @Override
     public void onStarted() {
         HelloClient client = this._registry.findService(HelloClient.class);
-        client.getHelloString("Mr.", "Min");
+        this._logger.info(client.getHelloString("Mr.", "Min"));
     }
 
     @Override

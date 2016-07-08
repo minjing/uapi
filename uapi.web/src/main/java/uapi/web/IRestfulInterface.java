@@ -1,6 +1,7 @@
 package uapi.web;
 
 import uapi.service.MethodMeta;
+import uapi.service.ServiceMeta;
 import uapi.service.web.HttpMethod;
 
 import java.util.List;
@@ -18,5 +19,5 @@ public interface IRestfulInterface {
      */
     String getInterfaceId();
 
-    Map<MethodMeta, List<HttpMethod>> getMethodHttpMethodInfos();
+    Map<ServiceMeta, List<HttpMethod>> getMethodHttpMethodInfos();
 }

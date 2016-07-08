@@ -83,7 +83,7 @@ public class RestfulCommunicator implements ICommunicator {
                     throw new KernelException("The service {} argument {}'s index {} is out of real arguments index {}",
                             restfulSvcMeta.getName(), i, index, args.length - 1);
                 }
-                uriArgs.set(index, new Triple<>(argMapping, format, args[i]));
+                uriArgs.add(index, new Triple<>(argMapping, format, args[i]));
             } else if (argMapping instanceof NamedArgumentMapping) {
                 String argName = ((NamedArgumentMapping) argMapping).getName();
                 if (argMapping.getFrom() == ArgumentFrom.Param) {
@@ -134,8 +134,12 @@ public class RestfulCommunicator implements ICommunicator {
         }
 
         Request request = reqBuild.build();
+        this._logger.info("Request url is {}", request.toString());
         try {
             Response response = httpClient.newCall(request).execute();
+            if (response.code() != 200) {
+                throw new KernelException("Request for {} got a non 200 response: {}", response.body().string());
+            }
             return decodeResponse(new Triple<>(
                     restfulSvcMeta.getReturnTypeName(), restfulSvcMeta.getCodec(), response.body().string()));
         } catch (IOException ex) {

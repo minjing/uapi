@@ -7,6 +7,7 @@ server:
 restful:
   codec: JSON
   encoder: JSON
+  uri-prefix: rest
 
 launcher:
   app: HelloAppServer

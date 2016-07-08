@@ -9,6 +9,7 @@
 
 package uapi.service;
 
+import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
@@ -21,29 +22,57 @@ import java.util.List;
  */
 public class RestfulServiceMeta extends ServiceMeta {
 
-    private String _uri;
-    private List<HttpMethod> _methods;
-    private String _codec;
+    private final String _host;
+    private final int _port;
+    private final String _ctx;
+    private final String _uri;
+    private final List<HttpMethod> _methods;
+    private final String _codec;
 
     public RestfulServiceMeta(
+            final String host,
+            final int port,
             final String name,
             final String returnTypeName,
             final List<ArgumentMeta> argMappings,
-            final String uri,
+            final String context,
             final List<HttpMethod> httpMethods,
             final String codec
     ) {
         super(name, returnTypeName, argMappings);
-        ArgumentChecker.required(uri, "uri");
+        ArgumentChecker.required(host, "host");
+        ArgumentChecker.required(context, "context");
         ArgumentChecker.required(httpMethods, "httpMethods");
         ArgumentChecker.required(codec, "codec");
-        this._uri = uri;
+        if (port <= 0) {
+            throw new InvalidArgumentException("Invalid port argument - {}", port);
+        }
+        this._host = host;
+        this._port = port;
+        this._ctx = context;
+        this._uri = StringHelper.makeString("http://{}:{}/{}", host, port, context);
         this._methods = httpMethods;
         this._codec = codec;
     }
 
+    public String getHost() {
+        return this._host;
+    }
+
+    public int getPort() {
+        return this._port;
+    }
+
+    public String getContext() {
+        return this._ctx;
+    }
+
     public String getUri() {
-        return this._uri;
+        if (getId() == null) {
+            return this._uri;
+        } else {
+            return this._uri + "/" + getId();
+        }
     }
 
     public List<HttpMethod> getMethods() {

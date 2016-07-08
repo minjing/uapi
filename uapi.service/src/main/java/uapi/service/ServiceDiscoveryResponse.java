@@ -68,13 +68,21 @@ public class ServiceDiscoveryResponse extends Response {
 
     public static final class ServiceMeta {
 
+        public String id;
+
         public String name;
 
         @JsonProperty("return-type-name")
         public String returnTypeName;
 
-        @JsonProperty("uri")
-        public String uri;
+        @JsonProperty
+        public String host;
+
+        @JsonProperty
+        public int port;
+
+        @JsonProperty("context")
+        public String context;
 
         @JsonProperty("methods")
         public List<HttpMethod> methods;
@@ -84,6 +92,14 @@ public class ServiceDiscoveryResponse extends Response {
 
         @JsonProperty("argument-metas")
         public ArgumentMeta[] argumentMetas;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
 
         public String getName() {
             return name;
@@ -101,12 +117,28 @@ public class ServiceDiscoveryResponse extends Response {
             this.returnTypeName = returnTypeName;
         }
 
-        public String getUri() {
-            return uri;
+        public String getHost() {
+            return host;
         }
 
-        public void setUri(String uri) {
-            this.uri = uri;
+        public void setHost(String host) {
+            this.host = host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public String getContext() {
+            return context;
+        }
+
+        public void setContext(String context) {
+            this.context = context;
         }
 
         public List<HttpMethod> getMethods() {

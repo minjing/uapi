@@ -84,8 +84,8 @@ public class DirectServiceDiscover implements IServiceDiscover {
         // verify service interface meta from remote
         if (RestfulCommunicator.id.equals(communicator.getId())) {
             // do restful way
-            String url = StringHelper.makeString("http://{}:{}/{}",
-                    this._host, this._port, this._uriPrefix);
+//            String url = StringHelper.makeString("http://{}:{}/{}",
+//                    this._host, this._port, this._uriPrefix);
 
             NamedArgumentMapping namedArg = new NamedArgumentMapping(ArgumentFrom.Param, Type.Q_STRING, "interface");
             List<ArgumentMeta> args = new ArrayList<>();
@@ -93,9 +93,12 @@ public class DirectServiceDiscover implements IServiceDiscover {
             List<HttpMethod> methods = new ArrayList<>();
             methods.add(HttpMethod.GET);
             RestfulServiceMeta svcMeta = new RestfulServiceMeta(
+                    this._host,
+                    this._port,
                     "DiscoverService",
                     ServiceDiscoveryResponse.class.getCanonicalName(),
-                    args, url,
+                    args,
+                    this._uriPrefix,
                     methods,
                     JsonStringCodec.NAME);
             // Using interface type name to query since server side do not know client service id (interface id)
@@ -138,8 +141,10 @@ public class DirectServiceDiscover implements IServiceDiscover {
                                         }
                                     }).foreach(args::add);
                         }
-                        return new RestfulServiceMeta(
-                                svcMeta.name, svcMeta.returnTypeName, args, svcMeta.uri, svcMeta.methods, svcMeta.codec);
+                        RestfulServiceMeta restSvcMeta = new RestfulServiceMeta(
+                                svcMeta.host, svcMeta.port, svcMeta.name, svcMeta.returnTypeName, args, svcMeta.context, svcMeta.methods, svcMeta.codec);
+                        restSvcMeta.setId(svcMeta.getId());
+                        return restSvcMeta;
                     } else {
                         throw new KernelException("Unsupported communication type - ", comm);
                     }

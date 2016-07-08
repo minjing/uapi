@@ -40,10 +40,16 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     private static final String PARAM_INTERFACE                 = "interface";
 
     @Config(path=IWebConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
-    String _uriPrefix = Constant.DEF_RESTFUL_URI_PREFIX;
+    String _context = Constant.DEF_RESTFUL_URI_PREFIX;
 
     @Config(path=IWebConfigurableKey.RESTFUL_CODEC)
     String _codecName;
+
+    @Config(path=IWebConfigurableKey.SERVER_HTTP_HOST)
+    String _host;
+
+    @Config(path=IWebConfigurableKey.SERVER_HTTP_PORT)
+    int _port;
 
     @Inject
     ILogger _logger;
@@ -69,7 +75,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     @Override
     public String getPathPattern() {
-        return this._uriPrefix + "/*";
+        return "/" + this._context + "/*";
     }
 
     /**
@@ -168,18 +174,21 @@ public class RestfulServiceServlet extends MappableHttpServlet {
             resp.data = new ServiceDiscoveryResponse.Data();
             resp.data.communication = Constants.COMMUNICATION_RESTFUL;
             resp.data.interfaceId = restfulIntf.getInterfaceId();
-            Map<MethodMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
+            Map<ServiceMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
             resp.data.serviceMetas = new ArrayList<>();
             Looper.from(methodHttpMethodMappings.entrySet())
                     .foreachWithIndex((index, entry) -> {
-                        MethodMeta methodInfo = entry.getKey();
+                        ServiceMeta svcInfo = entry.getKey();
                         ServiceDiscoveryResponse.ServiceMeta svcMeta = new ServiceDiscoveryResponse.ServiceMeta();
-                        svcMeta.name = methodInfo.getName();
-                        svcMeta.returnTypeName = methodInfo.getReturnTypeName();
+                        svcMeta.id = svcInfo.getId();
+                        svcMeta.name = svcInfo.getName();
+                        svcMeta.returnTypeName = svcInfo.getReturnTypeName();
                         svcMeta.codec = this._codecName;
-                        svcMeta.uri = this._uriPrefix;
+                        svcMeta.host = this._host;
+                        svcMeta.port = this._port;
+                        svcMeta.context = this._context;
                         svcMeta.methods = entry.getValue();//.toArray(new HttpMethod[entry.getValue().size()]);
-                        List<ArgumentMeta> argMappings = methodInfo.getArgumentMappings();
+                        List<ArgumentMeta> argMappings = svcInfo.getArgumentMappings();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
                                 .map(argMapping -> (ArgumentMapping) argMapping)
@@ -272,8 +281,9 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
     private UriInfo parseUri(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        if (uri.indexOf(this._uriPrefix) != 0) {
-            throw new KernelException("The requested URI {} is not prefixed by {}", uri, this._uriPrefix);
+        String urlPrefix = "/" + this._context;
+        if (uri.indexOf(urlPrefix) != 0) {
+            throw new KernelException("The requested URI {} is not prefixed by {}", uri, urlPrefix);
         }
         String[] pathAndQuery = uri.split(SEPARATOR_URI_QUERY_PARAM);
         String path = pathAndQuery[0];
@@ -281,7 +291,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
 
         UriInfo uriInfo = new UriInfo();
         StringBuilder buffer = new StringBuilder();
-        for (int i = this._uriPrefix.length(); i < path.length(); i++) {
+        for (int i = urlPrefix.length(); i < path.length(); i++) {
             char c = path.charAt(i);
             switch (c) {
                 case '/':
