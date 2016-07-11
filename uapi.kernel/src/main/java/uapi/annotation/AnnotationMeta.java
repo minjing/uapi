@@ -16,10 +16,9 @@ import uapi.helper.StringHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AnnotationMeta {
+public class AnnotationMeta {
 
     public static final String OVERRIDE     = "Override";
-    public static final String AUTO_SERVICE = "AutoService";
 
     private final Builder _builder;
 
@@ -39,7 +38,7 @@ public final class AnnotationMeta {
         return new Builder();
     }
 
-    public static final class Builder extends uapi.helper.Builder<AnnotationMeta> {
+    public static class Builder extends uapi.helper.Builder<AnnotationMeta> {
 
         private String _name;
         private List<ArgumentMeta> _args = new ArrayList<>();

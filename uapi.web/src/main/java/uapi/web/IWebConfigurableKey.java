@@ -28,4 +28,9 @@ public interface IWebConfigurableKey extends IConfigurableKey {
      */
     String RESTFUL_URI_PREFIX       = "restful.uri-prefix";
     String RESTFUL_CODEC            = "restful.codec";
+
+    /**
+     * Below configurations are used in ConsulRegister
+     */
+    String RESTFUL_REG_CONSUL       = "restful.registration.consul";
 }

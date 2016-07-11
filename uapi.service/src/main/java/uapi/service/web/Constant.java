@@ -16,7 +16,7 @@ public class Constant {
 
     private Constant() { }
 
-    public static final String DEF_RESTFUL_URI_PREFIX   = "/rest";
+    public static final String DEF_RESTFUL_URI_PREFIX   = "rest";
 
     public static final String INTF_ID         = "interface-id";
     public static final String SVC_METAS       = "service-metas";

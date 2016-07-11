@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * A meta object for a formal parameter
  */
-public final class ParameterMeta {
+public class ParameterMeta {
 
     private final Builder _builder;
 
@@ -69,13 +69,13 @@ public final class ParameterMeta {
                 .setType(parameterElement.asType().toString());
     }
 
-    public static final class Builder extends uapi.helper.Builder<ParameterMeta> {
+    public static class Builder extends uapi.helper.Builder<ParameterMeta> {
 
         private String _name;
         private String _type;
         private List<Modifier> _modifiers = new ArrayList<>();
 
-        private Builder() { }
+        protected Builder() { }
 
         public Builder setName(
                 final String name

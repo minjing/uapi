@@ -16,7 +16,7 @@ import uapi.helper.StringHelper;
 /**
  * A meta object for actual argument
  */
-public final class ArgumentMeta {
+public class ArgumentMeta {
 
     private final Builder _builder;
 
@@ -42,14 +42,14 @@ public final class ArgumentMeta {
         return new Builder();
     }
 
-    public static final class Builder
+    public static class Builder
             extends uapi.helper.Builder<ArgumentMeta> {
 
         private String _name;
         private String _value;
         private boolean _isString;
 
-        private Builder() { }
+        protected Builder() { }
 
         public Builder setName(
                 final String name

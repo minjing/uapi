@@ -1,0 +1,20 @@
+server:
+  http:
+    host: 127.0.0.1
+    port: 8080
+    idle-timeout: 5000
+
+restful:
+  codec: JSON
+  uri-prefix: rest
+  registration:
+    to:
+      - Consul
+    consul:
+      host: 127.0.0.1
+      port: 8888
+
+launcher:
+  app: ConsulAppServer
+  ignored-services:
+    - uapi.sample.hello.IHello

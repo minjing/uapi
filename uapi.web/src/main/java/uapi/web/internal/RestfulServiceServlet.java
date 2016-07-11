@@ -70,6 +70,9 @@ public class RestfulServiceServlet extends MappableHttpServlet {
     @Inject
     IRegistry _registry;
 
+    @Inject
+    Map<String, IServiceRegister> _svcRegisters = new HashMap<>();
+
     @Init
     public void init() { }
 
