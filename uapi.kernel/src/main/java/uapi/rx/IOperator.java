@@ -50,6 +50,8 @@ public interface IOperator<T> {
      */
     IOperator<T> limit(int count);
 
+    IOperator<T> next(Functionals.Action<T> operator);
+
     /**
      * Iterate all of input data by specific logic
      * @param   action
@@ -73,6 +75,27 @@ public interface IOperator<T> {
     T first() throws NoItemException;
 
     T first(T defaultValue);
+
+    /**
+     * Except return only one element of input data
+     *
+     * @return  Single element
+     * @throws  NoItemException
+     *          If no element can be returned
+     * @throws  MoreItemException
+     *          Found more element can be returned
+     */
+    T single() throws NoItemException, MoreItemException;
+
+    /**
+     * Except return only one element of input data
+     * The default value will be returned if no element can be returned
+     *
+     * @return  Single element
+     * @throws  MoreItemException
+     *          Found more element can be returned
+     */
+    T single(T defaultValue) throws MoreItemException;
 
     /**
      * Return all element to a list

@@ -17,6 +17,7 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.Type;
 import uapi.annotation.*;
+import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
 import uapi.helper.Pair;
@@ -49,9 +50,9 @@ class InjectParser {
     private static final String MODEL_GET_DEPENDENCIES      = "ModelGetDependencies";
     private static final String VAR_DEPENDENCIES            = "dependencies";
 
-    private final InjectableHandlerHelper _helper = new InjectableHandlerHelper();
+    private final InjectParserHelper _helper = new InjectParserHelper();
 
-    InjectableHandlerHelper getHelper() {
+    InjectParserHelper getHelper() {
         return this._helper;
     }
 
@@ -119,39 +120,105 @@ class InjectParser {
                         fieldElement.getSimpleName().toString());
             }
 
-            String paramName = SETTER_PARAM_NAME;
-            String code;
-            if (isCollection) {
-                code = StringHelper.makeString("{}.add({});", fieldName, paramName);
-            } else if (isMap) {
-                code = StringHelper.makeString("{}.put( ({}) (({}) {}).getId(), {} );",
-                        fieldName, idType, IIdentifiable.class.getCanonicalName(), paramName, paramName);
-            } else {
-                code = StringHelper.makeString("{}={};", fieldName, paramName);
-            }
+//            String paramName = SETTER_PARAM_NAME;
+//            String code;
+//            if (isCollection) {
+//                code = StringHelper.makeString("{}.add({});", fieldName, paramName);
+//            } else if (isMap) {
+//                code = StringHelper.makeString("{}.put( ({}) (({}) {}).getId(), {} );",
+//                        fieldName, idType, IIdentifiable.class.getCanonicalName(), paramName, paramName);
+//            } else {
+//                code = StringHelper.makeString("{}={};", fieldName, paramName);
+//            }
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            clsBuilder
-                    .addImplement(IInjectable.class.getCanonicalName())
-                    .addMethodBuilder(SetterMeta.builder()
-                            .setIsSingle(! isCollection && ! isMap)
-                            .setFieldName(fieldName)
-                            .setInjectId(injectId)
-                            .setInjectFrom(injectFrom)
-                            .setInjectType(fieldTypeName)
-                            .setName(setterName)
-                            .setReturnTypeName(Type.VOID)
-                            .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .addModifier(Modifier.FINAL)
-                                    .setName(paramName)
-                                    .setType(fieldTypeName))
-                            .addCodeBuilder(CodeMeta.builder()
-                                    .addRawCode(code)));
+//            clsBuilder
+//                    .addImplement(IInjectable.class.getCanonicalName())
+//                    .addMethodBuilder(SetterMeta.builder()
+//                            .setIsSingle(! isCollection && ! isMap)
+//                            .setFieldName(fieldName)
+//                            .setInjectId(injectId)
+//                            .setInjectFrom(injectFrom)
+//                            .setInjectType(fieldTypeName)
+//                            .setName(setterName)
+//                            .setReturnTypeName(Type.VOID)
+//                            .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
+//                            .addParameterBuilder(ParameterMeta.builder()
+//                                    .addModifier(Modifier.FINAL)
+//                                    .setName(paramName)
+//                                    .setType(fieldTypeName))
+//                            .addCodeBuilder(CodeMeta.builder()
+//                                    .addRawCode(code)));
+
+            addSetter(clsBuilder, fieldName, fieldTypeName, injectId, injectFrom, setterName, isCollection, isMap, idType, false);
+//            builderCtx.getLogger().info("Handle service {}", clsBuilder.getClassName());
+//            Looper.from(clsBuilder.findSetterBuilders()).foreach(builder -> builderCtx.getLogger().info("-->> {}", builder.getName()));
         });
 
         implementIInjectable(builderCtx);
         implementGetDependencies(builderCtx);
+    }
+
+    private void addSetter(
+            final ClassMeta.Builder classBuilder,
+            final String fieldName,
+            final String fieldType,
+            final String injectId,
+            final String injectFrom,
+            final String setterName,
+            final boolean isCollection,
+            final boolean isMap,
+            final String mapKeyType,
+            final boolean needGenerateField) {
+        SetterMeta.Builder setterBdr = Looper.from(classBuilder.findSetterBuilders())
+                .filter(methodBuilder -> methodBuilder.getName().equals(setterName))
+                .map(methodBuilder -> (SetterMeta.Builder) methodBuilder)
+                .filter(setterBuilder -> setterBuilder.getInjectType().equals(fieldType))
+                .first(null);
+        if (setterBdr != null) {
+            return;
+        }
+
+        if (needGenerateField) {
+            // Generate field
+            FieldMeta.Builder fieldMeta = classBuilder.findFieldBuilder(fieldName, fieldType);
+            if (fieldMeta == null) {
+                classBuilder.addFieldBuilder(FieldMeta.builder()
+                        .addModifier(Modifier.PRIVATE)
+                        .setName(fieldName)
+                        .setTypeName(fieldType)
+                        .setIsList(isCollection)
+                        .setIsMap(isMap));
+            }
+        }
+
+        String paramName = SETTER_PARAM_NAME;
+        String code;
+        if (isCollection) {
+            code = StringHelper.makeString("{}.add({});", fieldName, paramName);
+        } else if (isMap) {
+            code = StringHelper.makeString("{}.put( ({}) (({}) {}).getId(), {} );",
+                    fieldName, mapKeyType, IIdentifiable.class.getCanonicalName(), paramName, paramName);
+        } else {
+            code = StringHelper.makeString("{}={};", fieldName, paramName);
+        }
+        classBuilder
+                .addImplement(IInjectable.class.getCanonicalName())
+                .addMethodBuilder(SetterMeta.builder()
+                        .setIsSingle(! isCollection && ! isMap)
+                        .setFieldName(fieldName)
+                        .setInjectId(injectId)
+                        .setInjectFrom(injectFrom)
+                        .setInjectType(fieldType)
+                        .setName(setterName)
+                        .setReturnTypeName(Type.VOID)
+                        .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
+                        .addParameterBuilder(ParameterMeta.builder()
+                                .addModifier(Modifier.FINAL)
+                                .setName(paramName)
+                                .setType(fieldType))
+                        .addCodeBuilder(CodeMeta.builder()
+                                .addRawCode(code)));
     }
 
     private boolean isCollection(
@@ -191,49 +258,93 @@ class InjectParser {
     private void implementGetDependencies(
             final IBuilderContext builderCtx
     ) throws KernelException {
+        Template temp = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
         builderCtx.getBuilders().forEach(classBuilder -> {
-            // Receive service dependency id list
-            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-            List<DependencyModel> dependencies = Looper.from(setterBuilders)
-                    .map(builder -> (SetterMeta.Builder) builder)
-                    .map(setterBuilder -> {
-                        DependencyModel depModel = new DependencyModel(
-                                QualifiedServiceId.combine(setterBuilder.getInjectId(), setterBuilder.getInjectFrom()),
-                                setterBuilder.getInjectType());
-                        depModel.setSingle(setterBuilder.getIsSingle());
-                        return depModel;
-                    })
-                    .toList();
-            // Check duplicated dependency
-            dependencies.stream()
-                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
-                    .forEach((dependSvc, counter) -> {
-                        if (counter > 1) {
-                            throw new KernelException(StringHelper.makeString(
-                                    "The service {}.{} has duplicated dependency on same service {}",
-                                    classBuilder.getPackageName(),
-                                    classBuilder.getClassName(),
-                                    dependSvc));
-                        }
-                    });
-            Template tempDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
-            Map<String, Object> tempModelDependencies = new HashMap<>();
-            tempModelDependencies.put("dependencies", dependencies);
-
-            if (classBuilder.findSetterBuilders().size() == 0) {
-                // No setters means this class does not implement IInjectable interface
-                return;
-            }
-            classBuilder.addMethodBuilder(MethodMeta.builder()
-                    .addAnnotationBuilder(AnnotationMeta.builder()
-                            .setName(AnnotationMeta.OVERRIDE))
-                    .setName("getDependencies")
-                    .addModifier(Modifier.PUBLIC)
-                    .setReturnTypeName(StringHelper.makeString("{}[]", Dependency.class.getName()))
-                    .addCodeBuilder(CodeMeta.builder()
-                            .setTemplate(tempDependencies)
-                            .setModel(tempModelDependencies)));
+            implementGetDependenciesForClass(classBuilder, temp);
+//            // Receive service dependency id list
+//            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
+//            List<DependencyModel> dependencies = Looper.from(setterBuilders)
+//                    .map(builder -> (SetterMeta.Builder) builder)
+//                    .map(setterBuilder -> {
+//                        DependencyModel depModel = new DependencyModel(
+//                                QualifiedServiceId.combine(setterBuilder.getInjectId(), setterBuilder.getInjectFrom()),
+//                                setterBuilder.getInjectType());
+//                        depModel.setSingle(setterBuilder.getIsSingle());
+//                        return depModel;
+//                    })
+//                    .toList();
+//            // Check duplicated dependency
+//            dependencies.stream()
+//                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
+//                    .forEach((dependSvc, counter) -> {
+//                        if (counter > 1) {
+//                            throw new KernelException(StringHelper.makeString(
+//                                    "The service {}.{} has duplicated dependency on same service {}",
+//                                    classBuilder.getPackageName(),
+//                                    classBuilder.getClassName(),
+//                                    dependSvc));
+//                        }
+//                    });
+//            Template tempDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
+//            Map<String, Object> tempModelDependencies = new HashMap<>();
+//            tempModelDependencies.put("dependencies", dependencies);
+//            if (classBuilder.findSetterBuilders().size() == 0) {
+//                // No setters means this class does not implement IInjectable interface
+//                return;
+//            }
+//            classBuilder.addMethodBuilder(MethodMeta.builder()
+//                    .addAnnotationBuilder(AnnotationMeta.builder()
+//                            .setName(AnnotationMeta.OVERRIDE))
+//                    .setName("getDependencies")
+//                    .addModifier(Modifier.PUBLIC)
+//                    .setReturnTypeName(StringHelper.makeString("{}[]", Dependency.class.getName()))
+//                    .addCodeBuilder(CodeMeta.builder()
+//                            .setTemplate(tempDependencies)
+//                            .setModel(tempModelDependencies)));
         });
+    }
+
+    private void implementGetDependenciesForClass(ClassMeta.Builder classBuilder, Template temp) {
+        // Receive service dependency id list
+        List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
+        List<DependencyModel> dependencies = Looper.from(setterBuilders)
+                .map(builder -> (SetterMeta.Builder) builder)
+                .map(setterBuilder -> {
+                    DependencyModel depModel = new DependencyModel(
+                            QualifiedServiceId.combine(setterBuilder.getInjectId(), setterBuilder.getInjectFrom()),
+                            setterBuilder.getInjectType());
+                    depModel.setSingle(setterBuilder.getIsSingle());
+                    return depModel;
+                })
+                .toList();
+        // Check duplicated dependency
+        dependencies.stream()
+                .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
+                .forEach((dependSvc, counter) -> {
+                    if (counter > 1) {
+                        throw new KernelException(StringHelper.makeString(
+                                "The service {}.{} has duplicated dependency on same service {}",
+                                classBuilder.getPackageName(),
+                                classBuilder.getClassName(),
+                                dependSvc));
+                    }
+                });
+//        Template tempDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
+        Map<String, Object> tempModelDependencies = new HashMap<>();
+        tempModelDependencies.put("dependencies", dependencies);
+        if (classBuilder.findSetterBuilders().size() == 0) {
+            // No setters means this class does not implement IInjectable interface
+            return;
+        }
+        classBuilder.overrideMethodBuilder(MethodMeta.builder()
+                .addAnnotationBuilder(AnnotationMeta.builder()
+                        .setName(AnnotationMeta.OVERRIDE))
+                .setName("getDependencies")
+                .addModifier(Modifier.PUBLIC)
+                .setReturnTypeName(StringHelper.makeString("{}[]", Dependency.class.getName()))
+                .addCodeBuilder(CodeMeta.builder()
+                        .setTemplate(temp)
+                        .setModel(tempModelDependencies)));
     }
 
     private void implementIInjectable(
@@ -241,59 +352,117 @@ class InjectParser {
     ) throws KernelException {
         Template temp = builderContext.loadTemplate(TEMPLATE_FILE);
 
-        String methodName = "injectObject";
-        String paramName = "injection";
-        String paramType = Injection.class.getName();
+//        String methodName = "injectObject";
+//        String paramName = "injection";
+//        String paramType = Injection.class.getName();
         builderContext.getBuilders().forEach(classBuilder -> {
-            final List<SetterModel> setterModels = new ArrayList<>();
-            classBuilder.findSetterBuilders().forEach(methodBuilder -> {
-                SetterMeta.Builder setterBuilder = (SetterMeta.Builder) methodBuilder;
-                setterModels.add(new SetterModel(
-                        setterBuilder.getName(),
-                        setterBuilder.getInjectId(),
-                        setterBuilder.getInjectType()));
-            });
-//            if (setterModels.size() >= 0) {
-            Map<String, Object> tempModel = new HashMap<>();
-            tempModel.put("setters", setterModels);
-
-            if (classBuilder.findSetterBuilders().size() == 0) {
-                // No setters means this class does not implement IInjectable interface
-                return;
-            }
-            classBuilder
-                    .addImplement(IInjectable.class.getCanonicalName())
-                    .addMethodBuilder(MethodMeta.builder()
-                            .addAnnotationBuilder(AnnotationMeta.builder()
-                                    .setName("Override"))
-                            .addModifier(Modifier.PUBLIC)
-                            .setName(methodName)
-                            .setReturnTypeName(Type.VOID)
-                            .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
-                            .addParameterBuilder(ParameterMeta.builder()
-                                    .addModifier(Modifier.FINAL)
-                                    .setName(paramName)
-                                    .setType(paramType))
-                            .addCodeBuilder(CodeMeta.builder()
-                                    .setModel(tempModel)
-                                    .setTemplate(temp)));
+            implementInjectObjectForClass(classBuilder, temp);
+//            final List<SetterModel> setterModels = new ArrayList<>();
+//            classBuilder.findSetterBuilders().forEach(methodBuilder -> {
+//                SetterMeta.Builder setterBuilder = (SetterMeta.Builder) methodBuilder;
+//                setterModels.add(new SetterModel(
+//                        setterBuilder.getName(),
+//                        setterBuilder.getInjectId(),
+//                        setterBuilder.getInjectType()));
+//            });
+//            Map<String, Object> tempModel = new HashMap<>();
+//            tempModel.put("setters", setterModels);
+//
+//            if (classBuilder.findSetterBuilders().size() == 0) {
+//                // No setters means this class does not implement IInjectable interface
+//                return;
 //            }
+//            classBuilder
+//                    .addImplement(IInjectable.class.getCanonicalName())
+//                    .addMethodBuilder(MethodMeta.builder()
+//                            .addAnnotationBuilder(AnnotationMeta.builder()
+//                                    .setName("Override"))
+//                            .addModifier(Modifier.PUBLIC)
+//                            .setName(methodName)
+//                            .setReturnTypeName(Type.VOID)
+//                            .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
+//                            .addParameterBuilder(ParameterMeta.builder()
+//                                    .addModifier(Modifier.FINAL)
+//                                    .setName(paramName)
+//                                    .setType(paramType))
+//                            .addCodeBuilder(CodeMeta.builder()
+//                                    .setModel(tempModel)
+//                                    .setTemplate(temp)));
         });
     }
 
-    private class InjectableHandlerHelper implements IInjectableHandlerHelper {
+    private void implementInjectObjectForClass(ClassMeta.Builder classBuilder, Template temp) {
+        String methodName = "injectObject";
+        String paramName = "injection";
+        String paramType = Injection.class.getName();
 
-        @Override
-        public String getName() {
-            return IInjectableHandlerHelper.name;
+        final List<SetterModel> setterModels = new ArrayList<>();
+        classBuilder.findSetterBuilders().forEach(methodBuilder -> {
+            SetterMeta.Builder setterBuilder = (SetterMeta.Builder) methodBuilder;
+            setterModels.add(new SetterModel(
+                    setterBuilder.getName(),
+                    setterBuilder.getInjectId(),
+                    setterBuilder.getInjectType()));
+        });
+        Map<String, Object> tempModel = new HashMap<>();
+        tempModel.put("setters", setterModels);
+
+        if (classBuilder.findSetterBuilders().size() == 0) {
+            // No setters means this class does not implement IInjectable interface
+            return;
         }
+        classBuilder
+                .addImplement(IInjectable.class.getCanonicalName())
+                .overrideMethodBuilder(MethodMeta.builder()
+                        .addAnnotationBuilder(AnnotationMeta.builder()
+                                .setName("Override"))
+                        .addModifier(Modifier.PUBLIC)
+                        .setName(methodName)
+                        .setReturnTypeName(Type.VOID)
+                        .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
+                        .addParameterBuilder(ParameterMeta.builder()
+                                .addModifier(Modifier.FINAL)
+                                .setName(paramName)
+                                .setType(paramType))
+                        .addCodeBuilder(CodeMeta.builder()
+                                .setModel(tempModel)
+                                .setTemplate(temp)));
+//        classBuilder
+//                .addImplement(IInjectable.class.getCanonicalName())
+//                .addMethodBuilder(MethodMeta.builder()
+//                        .addAnnotationBuilder(AnnotationMeta.builder()
+//                                .setName("Override"))
+//                        .addModifier(Modifier.PUBLIC)
+//                        .setName(methodName)
+//                        .setReturnTypeName(Type.VOID)
+//                        .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
+//                        .addParameterBuilder(ParameterMeta.builder()
+//                                .addModifier(Modifier.FINAL)
+//                                .setName(paramName)
+//                                .setType(paramType))
+//                        .addCodeBuilder(CodeMeta.builder()
+//                                .setModel(tempModel)
+//                                .setTemplate(temp)));
+    }
 
-        @Override
-        public void setDependencyOptional(
+    class InjectParserHelper {
+
+        public void addDependency(
+                final IBuilderContext builderContext,
                 final ClassMeta.Builder classBuilder,
-                final String serviceId,
-                final boolean optional) {
-
+                final String fieldName,
+                final String fieldType,
+                final String injectId,
+                final String injectFrom,
+                final boolean isCollection,
+                final boolean isMap,
+                final String mapKeyType) {
+            String setterName = ClassHelper.makeSetterName(fieldName, isCollection, isMap);
+            InjectParser.this.addSetter(classBuilder, fieldName, fieldType, injectId, injectFrom, setterName, isCollection, isMap, mapKeyType, true);
+            Template tempInjectObject = builderContext.loadTemplate(TEMPLATE_FILE);
+            Template tempGetDependencies = builderContext.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
+            implementInjectObjectForClass(classBuilder, tempInjectObject);
+            implementGetDependenciesForClass(classBuilder, tempGetDependencies);
         }
     }
 

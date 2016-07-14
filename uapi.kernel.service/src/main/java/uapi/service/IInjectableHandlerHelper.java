@@ -10,7 +10,9 @@
 package uapi.service;
 
 import uapi.annotation.ClassMeta;
+import uapi.annotation.IBuilderContext;
 import uapi.annotation.IHandlerHelper;
+import uapi.annotation.internal.BuilderContext;
 
 /**
  * A helper for maintain injectable annotation at build-time
@@ -19,5 +21,15 @@ public interface IInjectableHandlerHelper extends IHandlerHelper {
 
     String name = "InjectableHelper";
 
-    void setDependencyOptional(ClassMeta.Builder classBuilder, String serviceId, boolean optional);
+    void addDependency(
+            final IBuilderContext builderContext,
+            final ClassMeta.Builder classBuilder,
+            final String fieldName,
+            final String fieldType,
+            final String injectId,
+            final String injectFrom,
+            final boolean isCollection,
+            final boolean isMap,
+            final String mapKeyType,
+            final boolean isOptional);
 }

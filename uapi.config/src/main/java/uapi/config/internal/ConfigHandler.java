@@ -20,9 +20,12 @@ import uapi.config.IConfigValueParser;
 import uapi.config.IConfigurable;
 import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
+import uapi.service.IInjectableHandlerHelper;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.internal.InjectableHandler;
+import uapi.service.internal.QualifiedServiceId;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -73,22 +76,23 @@ public class ConfigHandler extends AnnotationsHandler {
 
             // Get field which is reference IRegistry instance
             Element svcRegElem = builderContext.findFieldWith(classElement, IRegistry.class, Inject.class);
-            if (svcRegElem == null) {
-                throw new KernelException(
-                        "The {} must define a field with type {} and annotated with {}",
-                        classElement, IRegistry.class.getName(), Inject.class.getName());
-            }
-//            String svcRegFieldName = "_registry";
-//            boolean isSvcRegFieldDefined = false;
-//            if (svcRegElem != null) {
-//                svcRegFieldName = svcRegElem.getSimpleName().toString();
-//                isSvcRegFieldDefined = true;
+//            if (svcRegElem == null) {
+//                throw new KernelException(
+//                        "The {} must define a field with type {} and annotated with {}",
+//                        classElement, IRegistry.class.getName(), Inject.class.getName());
+
 //            }
-            String svcRegFieldName = svcRegElem.getSimpleName().toString();
+            String svcRegFieldName = "_registry";
+            boolean isSvcRegFieldDefined = false;
+            if (svcRegElem != null) {
+                svcRegFieldName = svcRegElem.getSimpleName().toString();
+                isSvcRegFieldDefined = true;
+            }
+//            String svcRegFieldName = svcRegElem.getSimpleName().toString();
 
             ClassMeta.Builder classBuilder = builderContext.findClassBuilder(classElement);
             classBuilder.putTransience(FIELD_SVC_REG, svcRegFieldName);
-//            classBuilder.putTransience(IS_FIELD_SVC_REG_DEFINED, isSvcRegFieldDefined);
+            classBuilder.putTransience(IS_FIELD_SVC_REG_DEFINED, isSvcRegFieldDefined);
             List<ConfigInfo> cfgInfos = classBuilder.getTransience(CONFIG_INFOS);
             if (cfgInfos == null) {
                 cfgInfos = new ArrayList<>();
@@ -123,15 +127,25 @@ public class ConfigHandler extends AnnotationsHandler {
             tempModel.put("configInfos", configInfos);
             tempModel.put("fieldSvcReg", fieldSvcReg);
 
-//            Boolean isFieldSvcRegDef = classBuilder.getTransience(IS_FIELD_SVC_REG_DEFINED);
-//            if (! isFieldSvcRegDef) {
+            Boolean isFieldSvcRegDef = classBuilder.getTransience(IS_FIELD_SVC_REG_DEFINED);
+            String fieldRegName = classBuilder.getTransience(FIELD_SVC_REG);
+            if (! isFieldSvcRegDef) {
+                IInjectableHandlerHelper helper = (IInjectableHandlerHelper) builderContext.getHelper(IInjectableHandlerHelper.name);
+                helper.addDependency(
+                        builderContext,
+                        classBuilder,
+                        fieldRegName,
+                        IRegistry.class.getCanonicalName(),
+                        IRegistry.class.getCanonicalName(),
+                        QualifiedServiceId.FROM_LOCAL,
+                        false, false, null, true);
 //                classBuilder
 //                        .addFieldBuilder(FieldMeta.builder()
 //                                .addModifier(Modifier.PRIVATE)
 //                                .setTypeName(IRegistry.class.getCanonicalName())
 //                                .setName(fieldSvcReg)
 //                                .setIsList(false));
-//            }
+            }
             classBuilder
                     .addImplement(IConfigurable.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()

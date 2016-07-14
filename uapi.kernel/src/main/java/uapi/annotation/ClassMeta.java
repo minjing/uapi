@@ -14,6 +14,7 @@ import uapi.KernelException;
 import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -188,6 +189,15 @@ public final class ClassMeta {
             return null;
         }
 
+        public FieldMeta.Builder findFieldBuilder(String fieldName, String fieldType) {
+            ArgumentChecker.required(fieldName, "fieldName");
+            ArgumentChecker.required(fieldType, "fieldType");
+            return Looper.from(this._fieldBuilders)
+                    .filter(fieldBuilder -> fieldBuilder.getName().equals(fieldName))
+                    .filter(fieldBuilder -> fieldBuilder.getTypeName().equals(fieldType))
+                    .single(null);
+        }
+
         public Builder addFieldBuilderIfAbsent(
                 final FieldMeta.Builder fieldMetaBuilder
         ) throws KernelException {
@@ -289,6 +299,23 @@ public final class ClassMeta {
             } else {
                 return foundBuilder;
             }
+        }
+
+        public MethodMeta.Builder overrideMethodBuilder(
+                final MethodMeta.Builder methodBuilder
+        ) throws InvalidArgumentException {
+            checkStatus();
+            boolean isFound = false;
+            for (int i = 0; i < this._methodBuilders.size(); i++) {
+                if (this._methodBuilders.get(i).equals(methodBuilder)) {
+                    this._methodBuilders.set(i, methodBuilder);
+                    isFound = true;
+                }
+            }
+            if (! isFound) {
+                this._methodBuilders.add(methodBuilder);
+            }
+            return methodBuilder;
         }
 
         @Override

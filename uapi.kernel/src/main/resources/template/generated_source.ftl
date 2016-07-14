@@ -14,6 +14,8 @@ extends ${className}
 <#list fields as field>
     <#if field.isList>
     ${field.modifiers} java.util.List<${field.typeName}> ${field.name} = new java.util.ArrayList<>();
+    <#elseif field.isMap>
+    ${field.modifiers} java.util.Map<${field.typeName}> ${field.name} = new java.util.HashMap<>();
     <#else>
     ${field.modifiers} ${field.typeName} ${field.name};
     </#if>

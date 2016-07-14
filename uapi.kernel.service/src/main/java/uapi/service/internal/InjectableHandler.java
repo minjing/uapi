@@ -11,11 +11,10 @@ package uapi.service.internal;
 
 import com.google.auto.service.AutoService;
 import uapi.KernelException;
-import uapi.annotation.AnnotationsHandler;
-import uapi.annotation.IAnnotationsHandler;
-import uapi.annotation.IBuilderContext;
-import uapi.annotation.IHandlerHelper;
+import uapi.annotation.*;
+import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
+import uapi.service.IInjectableHandlerHelper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 
@@ -36,9 +35,13 @@ public class InjectableHandler extends AnnotationsHandler {
     private final InjectParser _injectParser;
     private final OptionalParser _optionalParser;
 
+    private final InjectableHandlerHelper _handlerHelper;
+
     public InjectableHandler() {
         this._injectParser = new InjectParser();
         this._optionalParser = new OptionalParser();
+
+        this._handlerHelper = new InjectableHandlerHelper();
     }
 
     @Override
@@ -63,8 +66,36 @@ public class InjectableHandler extends AnnotationsHandler {
         }
     }
 
-//    @Override
-//    public IHandlerHelper getHelper() {
-//        return this._injectParser.getHelper();
-//    }
+    @Override
+    public IHandlerHelper getHelper() {
+        return this._handlerHelper;
+    }
+
+    private class InjectableHandlerHelper implements IInjectableHandlerHelper {
+
+        @Override
+        public String getName() {
+            return IInjectableHandlerHelper.name;
+        }
+
+        @Override
+        public void addDependency(
+                final IBuilderContext builderContext,
+                final ClassMeta.Builder classBuilder,
+                final String fieldName,
+                final String fieldType,
+                final String injectId,
+                final String injectFrom,
+                final boolean isCollection,
+                final boolean isMap,
+                final String mapKeyType,
+                final boolean isOptional) {
+            InjectableHandler.this._injectParser.getHelper().addDependency(builderContext, classBuilder, fieldName, fieldType, injectId, injectFrom, isCollection, isMap, mapKeyType);
+            if (isOptional) {
+                InjectableHandler.this._optionalParser.getHelper().setOptional(builderContext, classBuilder, fieldName);
+            }
+        }
+
+
+    }
 }

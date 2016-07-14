@@ -35,12 +35,16 @@ public final class FieldMeta {
         return this._builder._typeName;
     }
 
-    public String getInjectServiceId() {
-        return this._builder._injectServiceId;
-    }
+//    public String getInjectServiceId() {
+//        return this._builder._injectServiceId;
+//    }
 
     public boolean getIsList() {
         return this._builder._isList;
+    }
+
+    public boolean getIsMap() {
+        return this._builder._isMap;
     }
 
     public String getModifiers() {
@@ -63,8 +67,9 @@ public final class FieldMeta {
 
         private String _name;
         private String _typeName;
-        private String _injectServiceId;
+//        private String _injectServiceId;
         private boolean _isList;
+        private boolean _isMap;
         private List<Modifier> _modifiers = new ArrayList<>();
 
         public Builder setName(
@@ -75,6 +80,10 @@ public final class FieldMeta {
             return this;
         }
 
+        public String getName() {
+            return this._name;
+        }
+
         public Builder setTypeName(
                 final String typeName
         ) throws KernelException {
@@ -83,19 +92,31 @@ public final class FieldMeta {
             return this;
         }
 
-        public Builder setInjectServiceId(
-                final String injectServiceId
-        ) throws KernelException {
-            checkStatus();
-            this._injectServiceId = injectServiceId;
-            return this;
+        public String getTypeName() {
+            return this._typeName;
         }
+
+//        public Builder setInjectServiceId(
+//                final String injectServiceId
+//        ) throws KernelException {
+//            checkStatus();
+//            this._injectServiceId = injectServiceId;
+//            return this;
+//        }
 
         public Builder setIsList(
                 final boolean isList
         ) throws KernelException {
             checkStatus();
             this._isList = isList;
+            return this;
+        }
+
+        public Builder setIsMap(
+                final boolean isMap
+        ) throws KernelException {
+            checkStatus();
+            this._isMap = isMap;
             return this;
         }
 
@@ -124,18 +145,6 @@ public final class FieldMeta {
         }
 
         @Override
-        public String toString() {
-            return StringHelper.makeString(
-                    "FieldMeta[" +
-                            "fieldName={}, " +
-                            "fieldTypeName={}," +
-                            "injectServiceId={}",
-                    this._name,
-                    this._typeName,
-                    this._injectServiceId);
-        }
-
-        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -143,8 +152,10 @@ public final class FieldMeta {
             Builder builder = (Builder) o;
 
             if (_isList != builder._isList) return false;
+            if (_isMap != builder._isMap) return false;
             if (!_name.equals(builder._name)) return false;
-            return _typeName.equals(builder._typeName);
+            if (!_typeName.equals(builder._typeName)) return false;
+            return _modifiers.equals(builder._modifiers);
 
         }
 
@@ -153,6 +164,8 @@ public final class FieldMeta {
             int result = _name.hashCode();
             result = 31 * result + _typeName.hashCode();
             result = 31 * result + (_isList ? 1 : 0);
+            result = 31 * result + (_isMap ? 1 : 0);
+            result = 31 * result + _modifiers.hashCode();
             return result;
         }
     }

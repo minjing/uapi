@@ -14,6 +14,7 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.Type;
 import uapi.annotation.*;
+import uapi.annotation.internal.BuilderContext;
 import uapi.service.SetterMeta;
 import uapi.service.annotation.Optional;
 
@@ -27,7 +28,15 @@ import java.util.*;
  */
 class OptionalParser {
 
-    private static final String TEMPLATE_IS_OPTIONAL = "template/isOptional_method.ftl";
+    private static final String TEMPLATE_IS_OPTIONAL    = "template/isOptional_method.ftl";
+
+    private static final String MODEL_IS_OPTIONAL       = "optionals";
+
+    private final OptionalParserHelper _helper = new OptionalParserHelper();
+
+    OptionalParserHelper getHelper() {
+        return this._helper;
+    }
 
     public void parse(
             final IBuilderContext builderCtx,
@@ -48,47 +57,99 @@ class OptionalParser {
             String fieldName = fieldElement.getSimpleName().toString();
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-            clsBuilder.findSetterBuilders().stream()
-                    .map(setter -> (SetterMeta.Builder) setter)
-                    .filter(setter -> setter.getFieldName().equals(fieldName))
-                    .forEach(setter -> setter.setIsOptional(true));
+            setOptionalDependency(clsBuilder, fieldName);
+//            clsBuilder.findSetterBuilders().stream()
+//                    .map(setter -> (SetterMeta.Builder) setter)
+//                    .filter(setter -> setter.getFieldName().equals(fieldName))
+//                    .forEach(setter -> setter.setIsOptional(true));
         });
 
         // implement isOptional method
+//        String methodName       = "isOptional";
+//        String methodReturnType = Type.BOOLEAN;
+//        String paramName        = "id";
+//        String paramType        = Type.STRING;
+
+        builderCtx.getBuilders().forEach(classBuilder -> {
+//            List<MethodMeta.Builder> setters = classBuilder.findSetterBuilders();
+//            if (setters.size() == 0) {
+//                // No setters means this class does not implement IInjectable interface
+//                return;
+//            }
+//            final List<String> optionals = new ArrayList<>();
+//            setters.stream()
+//                    .map(setter -> (SetterMeta.Builder) setter)
+//                    .filter(SetterMeta.Builder::getIsOptional)
+//                    .forEach(setter -> optionals.add(setter.getInjectId()));
+//
+            final Template temp = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
+//            final Map<String, List<String>> tempModel = new HashMap<>();
+//            tempModel.put(MODEL_IS_OPTIONAL, optionals);
+
+            builderCtx.getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
+//            classBuilder.addMethodBuilder(MethodMeta.builder()
+//                    .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
+//                    .setName(methodName)
+//                    .setReturnTypeName(methodReturnType)
+//                    .addModifier(Modifier.PUBLIC)
+//                    .addThrowTypeName(InvalidArgumentException.class.getName())
+//                    .addParameterBuilder(ParameterMeta.builder()
+//                            .setName(paramName)
+//                            .setType(paramType))
+//                    .addCodeBuilder(CodeMeta.builder()
+//                            .setTemplate(temp)
+//                            .setModel(tempModel)));
+            implementOptional(classBuilder, temp);
+        });
+    }
+
+    private void implementOptional(ClassMeta.Builder classBuilder, Template temp) {
         String methodName       = "isOptional";
         String methodReturnType = Type.BOOLEAN;
         String paramName        = "id";
         String paramType        = Type.STRING;
 
-        builderCtx.getBuilders().forEach(classBuilder -> {
-            List<MethodMeta.Builder> setters = classBuilder.findSetterBuilders();
-            if (setters.size() == 0) {
-                // No setters means this class does not implement IInjectable interface
-                return;
-            }
-            final List<String> optionals = new ArrayList<>();
-            setters.stream()
-                    .map(setter -> (SetterMeta.Builder) setter)
-                    .filter(SetterMeta.Builder::getIsOptional)
-                    .forEach(setter -> optionals.add(setter.getInjectId()));
+        List<MethodMeta.Builder> setters = classBuilder.findSetterBuilders();
+        if (setters.size() == 0) {
+            // No setters means this class does not implement IInjectable interface
+            return;
+        }
+        final List<String> optionals = new ArrayList<>();
+        setters.stream()
+                .map(setter -> (SetterMeta.Builder) setter)
+                .filter(SetterMeta.Builder::getIsOptional)
+                .forEach(setter -> optionals.add(setter.getInjectId()));
 
-            final Template temp = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
-            final Map<String, List<String>> tempModel = new HashMap<>();
-            tempModel.put("optionals", optionals);
+        final Map<String, List<String>> tempModel = new HashMap<>();
+        tempModel.put(MODEL_IS_OPTIONAL, optionals);
 
-            builderCtx.getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
-            classBuilder.addMethodBuilder(MethodMeta.builder()
-                    .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
-                    .setName(methodName)
-                    .setReturnTypeName(methodReturnType)
-                    .addModifier(Modifier.PUBLIC)
-                    .addThrowTypeName(InvalidArgumentException.class.getName())
-                    .addParameterBuilder(ParameterMeta.builder()
-                            .setName(paramName)
-                            .setType(paramType))
-                    .addCodeBuilder(CodeMeta.builder()
-                            .setTemplate(temp)
-                            .setModel(tempModel)));
-        });
+        classBuilder.addMethodBuilder(MethodMeta.builder()
+                .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
+                .setName(methodName)
+                .setReturnTypeName(methodReturnType)
+                .addModifier(Modifier.PUBLIC)
+                .addThrowTypeName(InvalidArgumentException.class.getName())
+                .addParameterBuilder(ParameterMeta.builder()
+                        .setName(paramName)
+                        .setType(paramType))
+                .addCodeBuilder(CodeMeta.builder()
+                        .setTemplate(temp)
+                        .setModel(tempModel)));
+    }
+
+    private void setOptionalDependency(ClassMeta.Builder classBuilder, String fieldName) {
+        classBuilder.findSetterBuilders().stream()
+                .map(setter -> (SetterMeta.Builder) setter)
+                .filter(setter -> setter.getFieldName().equals(fieldName))
+                .forEach(setter -> setter.setIsOptional(true));
+    }
+
+    class OptionalParserHelper {
+
+        void setOptional(IBuilderContext builderContext, ClassMeta.Builder classBuilder, String fieldName) {
+            setOptionalDependency(classBuilder, fieldName);
+            final Template temp = builderContext.loadTemplate(TEMPLATE_IS_OPTIONAL);
+            implementOptional(classBuilder, temp);
+        }
     }
 }

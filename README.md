@@ -1,3 +1,8 @@
+ _  _   _   ___ ___
+| || | / \ | _ | |
+| || |/ _ \| __| |
+|____/_/ \_|_|  _|_
+
 ## UAPI (Universal Application Platform Infrastructure)
 
 [![Build Status](https://travis-ci.org/minjing/uapi.svg?branch=master)](https://travis-ci.org/minjing/uapi)

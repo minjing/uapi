@@ -71,6 +71,11 @@ abstract class Operator<T> implements IOperator<T> {
     }
 
     @Override
+    public IOperator<T> next(Functionals.Action<T> operator) {
+        return new NextOperator<>(this, operator);
+    }
+
+    @Override
     public void foreach(Functionals.Action<T> action) {
         ForeachOperator operator = new ForeachOperator(this, action);
         operator.getItem();
@@ -95,6 +100,22 @@ abstract class Operator<T> implements IOperator<T> {
     @Override
     public T first(T defaultValue) {
         FirstOperator<T> operator = new FirstOperator<>(this, defaultValue);
+        T result = operator.getItem();
+        operator.done();
+        return result;
+    }
+
+    @Override
+    public T single() {
+        SingleOperator<T> operator = new SingleOperator<T>(this);
+        T result = operator.getItem();
+        operator.done();
+        return result;
+    }
+
+    @Override
+    public T single(T defaultValue) {
+        SingleOperator<T> operator = new SingleOperator<>(this, defaultValue);
         T result = operator.getItem();
         operator.done();
         return result;
