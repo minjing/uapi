@@ -1,7 +1,9 @@
- _  _   _   ___ ___
+ ```
+._  _.  _  .___.___
 | || | / \ | _ | |
 | || |/ _ \| __| |
 |____/_/ \_|_|  _|_
+```
 
 ## UAPI (Universal Application Platform Infrastructure)
 
