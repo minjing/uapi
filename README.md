@@ -242,7 +242,93 @@ The service will be exposed as a RESTful service, the access URL like: http://lo
 The @Exposure declare the service will be exposed as RESTful service with "hello" context.
 The [name] will be mapped to name argument of sayHello methodInfo, and the test query parameter will be mapped to test argument of sayHello methodInfo.
 
+## Remote service invocation based on Restful
+
+### Define an interface
+To invoke a service remotely, the interface must be defined:
+```java
+public interface IHello {
+
+    String sayHello(String name, String title);
+}
+```
+
+### Expose service via Restful
+```java
+@Service(IHello.class)
+@Exposure("hello")
+public class HelloRestful implements IHello {
+
+    @Override
+    @Restful(HttpMethod.Get)
+    public String sayHello(
+            @FromUri(0) String name,
+            @FromParam("title") String title
+    ) {
+        return StringHelper.makeString("Hello {} {}", title, name);
+    }
+}
+```
+The HelloRestful implement IHello interface, the framework will detect this, and generate the interface description for it, in default it will be register to http://[host]:[port]/[context]?interface=[interface name].
+For above example, you can enter URL: http://localhost/rest?interface=uapi.sample.hello.IHello, the response text is JSON based:
+```json
+{
+    "code": "000",
+    "data": {
+        "communication": "Restful",
+        "interfaceId": "uapi.sample.hello.IHello",
+        "serviceMetas": [{
+            "argumentMetas": [{
+                "from": "Uri",
+                "index": 0,
+                "typeName": "java.lang.String"
+            }, {
+                "from": "Param",
+                "index": 0,
+                "name": "title",
+                "typeName": "java.lang.String"
+            }],
+            "codec": "JSON",
+            "context": "rest",
+            "host": "127.0.0.1",
+            "id": "hello",
+            "methods": ["GET"],
+            "name": "sayHello",
+            "port": 8080,
+            "returnTypeName": "java.lang.String"
+        }]
+    }
+}
+```
+The response JSON will reflect the registered service meta data including service parameters, the return type and communication information.
+
+### Client code to invoke remote service
+To invoke remote service, you need define a service like:
+```java
+@Service
+public class HelloClient {
+
+    @Inject(from=IRemoteServiceLoader.NAME)
+    protected IHello _helloSvc;
+
+    public String getHelloString(String title, String name) {
+        return this._helloSvc.sayHello(name, title);
+    }
+}
+```
+The "IRemoteServiceLoader.NAME" is a string value which indicate the injected IHello service should be received from remote host, the framework will check remote service registration information and generate a IHello proxy to inject to the service.
+The the HelloClient can invoke the service like local service.
+
 ## Version History
+* Featured
+  1. A profile to indicate which service can be registered or not.
+  1. Service parameters and return type support custom object.
+  1. Service register support register to Consul.
+  1. Asynchronous service invocation.
+  1. Event support, decide using 3rd library or implement it self.
+  1. Behavior(actions) definition.
+  1. Event based behavior(actions) execution.
+
 * v0.2 - in working
   1. Remote service injection which is interface based.
   1. Generate remote service proxy based on specific interface.
