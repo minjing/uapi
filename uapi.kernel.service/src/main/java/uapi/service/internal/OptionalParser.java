@@ -58,47 +58,12 @@ class OptionalParser {
 
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
             setOptionalDependency(clsBuilder, fieldName);
-//            clsBuilder.findSetterBuilders().stream()
-//                    .map(setter -> (SetterMeta.Builder) setter)
-//                    .filter(setter -> setter.getFieldName().equals(fieldName))
-//                    .forEach(setter -> setter.setIsOptional(true));
         });
 
-        // implement isOptional method
-//        String methodName       = "isOptional";
-//        String methodReturnType = Type.BOOLEAN;
-//        String paramName        = "id";
-//        String paramType        = Type.STRING;
 
         builderCtx.getBuilders().forEach(classBuilder -> {
-//            List<MethodMeta.Builder> setters = classBuilder.findSetterBuilders();
-//            if (setters.size() == 0) {
-//                // No setters means this class does not implement IInjectable interface
-//                return;
-//            }
-//            final List<String> optionals = new ArrayList<>();
-//            setters.stream()
-//                    .map(setter -> (SetterMeta.Builder) setter)
-//                    .filter(SetterMeta.Builder::getIsOptional)
-//                    .forEach(setter -> optionals.add(setter.getInjectId()));
-//
             final Template temp = builderCtx.loadTemplate(TEMPLATE_IS_OPTIONAL);
-//            final Map<String, List<String>> tempModel = new HashMap<>();
-//            tempModel.put(MODEL_IS_OPTIONAL, optionals);
-
-            builderCtx.getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
-//            classBuilder.addMethodBuilder(MethodMeta.builder()
-//                    .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
-//                    .setName(methodName)
-//                    .setReturnTypeName(methodReturnType)
-//                    .addModifier(Modifier.PUBLIC)
-//                    .addThrowTypeName(InvalidArgumentException.class.getName())
-//                    .addParameterBuilder(ParameterMeta.builder()
-//                            .setName(paramName)
-//                            .setType(paramType))
-//                    .addCodeBuilder(CodeMeta.builder()
-//                            .setTemplate(temp)
-//                            .setModel(tempModel)));
+            // builderCtx.getLogger().info("Generate isOptional for {}", classBuilder.getClassName());
             implementOptional(classBuilder, temp);
         });
     }

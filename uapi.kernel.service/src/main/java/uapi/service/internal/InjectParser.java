@@ -11,16 +11,13 @@ package uapi.service.internal;
 
 import com.google.common.base.Strings;
 import freemarker.template.Template;
-import rx.Observable;
 import uapi.IIdentifiable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.Type;
 import uapi.annotation.*;
-import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.ClassHelper;
-import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 import uapi.rx.Looper;
 import uapi.service.*;
@@ -43,7 +40,7 @@ import java.util.stream.Collectors;
  */
 class InjectParser {
 
-    private static final String TEMPLATE_FILE               = "template/inject_method.ftl";
+    private static final String TEMPLATE_INJECT             = "template/inject_method.ftl";
     private static final String TEMPLATE_GET_DEPENDENCIES   = "template/getDependencies_method.ftl";
     private static final String SETTER_PARAM_NAME           = "value";
 
@@ -120,43 +117,16 @@ class InjectParser {
                         fieldElement.getSimpleName().toString());
             }
 
-//            String paramName = SETTER_PARAM_NAME;
-//            String code;
-//            if (isCollection) {
-//                code = StringHelper.makeString("{}.add({});", fieldName, paramName);
-//            } else if (isMap) {
-//                code = StringHelper.makeString("{}.put( ({}) (({}) {}).getId(), {} );",
-//                        fieldName, idType, IIdentifiable.class.getCanonicalName(), paramName, paramName);
-//            } else {
-//                code = StringHelper.makeString("{}={};", fieldName, paramName);
-//            }
-
             ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
-//            clsBuilder
-//                    .addImplement(IInjectable.class.getCanonicalName())
-//                    .addMethodBuilder(SetterMeta.builder()
-//                            .setIsSingle(! isCollection && ! isMap)
-//                            .setFieldName(fieldName)
-//                            .setInjectId(injectId)
-//                            .setInjectFrom(injectFrom)
-//                            .setInjectType(fieldTypeName)
-//                            .setName(setterName)
-//                            .setReturnTypeName(Type.VOID)
-//                            .setInvokeSuper(MethodMeta.InvokeSuper.NONE)
-//                            .addParameterBuilder(ParameterMeta.builder()
-//                                    .addModifier(Modifier.FINAL)
-//                                    .setName(paramName)
-//                                    .setType(fieldTypeName))
-//                            .addCodeBuilder(CodeMeta.builder()
-//                                    .addRawCode(code)));
-
             addSetter(clsBuilder, fieldName, fieldTypeName, injectId, injectFrom, setterName, isCollection, isMap, idType, false);
-//            builderCtx.getLogger().info("Handle service {}", clsBuilder.getClassName());
-//            Looper.from(clsBuilder.findSetterBuilders()).foreach(builder -> builderCtx.getLogger().info("-->> {}", builder.getName()));
         });
 
-        implementIInjectable(builderCtx);
-        implementGetDependencies(builderCtx);
+        Template tempInject = builderCtx.loadTemplate(TEMPLATE_INJECT);
+        Template tempGetDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
+        builderCtx.getBuilders().forEach(classBuilder -> {
+            implementInjectObjectForClass(classBuilder, tempInject);
+            implementGetDependenciesForClass(classBuilder, tempGetDependencies);
+        });
     }
 
     private void addSetter(
@@ -255,55 +225,6 @@ class InjectParser {
         return typeArgs;
     }
 
-    private void implementGetDependencies(
-            final IBuilderContext builderCtx
-    ) throws KernelException {
-        Template temp = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
-        builderCtx.getBuilders().forEach(classBuilder -> {
-            implementGetDependenciesForClass(classBuilder, temp);
-//            // Receive service dependency id list
-//            List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
-//            List<DependencyModel> dependencies = Looper.from(setterBuilders)
-//                    .map(builder -> (SetterMeta.Builder) builder)
-//                    .map(setterBuilder -> {
-//                        DependencyModel depModel = new DependencyModel(
-//                                QualifiedServiceId.combine(setterBuilder.getInjectId(), setterBuilder.getInjectFrom()),
-//                                setterBuilder.getInjectType());
-//                        depModel.setSingle(setterBuilder.getIsSingle());
-//                        return depModel;
-//                    })
-//                    .toList();
-//            // Check duplicated dependency
-//            dependencies.stream()
-//                    .collect(Collectors.groupingBy(p -> p, Collectors.summingInt(p -> 1)))
-//                    .forEach((dependSvc, counter) -> {
-//                        if (counter > 1) {
-//                            throw new KernelException(StringHelper.makeString(
-//                                    "The service {}.{} has duplicated dependency on same service {}",
-//                                    classBuilder.getPackageName(),
-//                                    classBuilder.getClassName(),
-//                                    dependSvc));
-//                        }
-//                    });
-//            Template tempDependencies = builderCtx.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
-//            Map<String, Object> tempModelDependencies = new HashMap<>();
-//            tempModelDependencies.put("dependencies", dependencies);
-//            if (classBuilder.findSetterBuilders().size() == 0) {
-//                // No setters means this class does not implement IInjectable interface
-//                return;
-//            }
-//            classBuilder.addMethodBuilder(MethodMeta.builder()
-//                    .addAnnotationBuilder(AnnotationMeta.builder()
-//                            .setName(AnnotationMeta.OVERRIDE))
-//                    .setName("getDependencies")
-//                    .addModifier(Modifier.PUBLIC)
-//                    .setReturnTypeName(StringHelper.makeString("{}[]", Dependency.class.getName()))
-//                    .addCodeBuilder(CodeMeta.builder()
-//                            .setTemplate(tempDependencies)
-//                            .setModel(tempModelDependencies)));
-        });
-    }
-
     private void implementGetDependenciesForClass(ClassMeta.Builder classBuilder, Template temp) {
         // Receive service dependency id list
         List<MethodMeta.Builder> setterBuilders = classBuilder.findSetterBuilders();
@@ -347,50 +268,6 @@ class InjectParser {
                         .setModel(tempModelDependencies)));
     }
 
-    private void implementIInjectable(
-            final IBuilderContext builderContext
-    ) throws KernelException {
-        Template temp = builderContext.loadTemplate(TEMPLATE_FILE);
-
-//        String methodName = "injectObject";
-//        String paramName = "injection";
-//        String paramType = Injection.class.getName();
-        builderContext.getBuilders().forEach(classBuilder -> {
-            implementInjectObjectForClass(classBuilder, temp);
-//            final List<SetterModel> setterModels = new ArrayList<>();
-//            classBuilder.findSetterBuilders().forEach(methodBuilder -> {
-//                SetterMeta.Builder setterBuilder = (SetterMeta.Builder) methodBuilder;
-//                setterModels.add(new SetterModel(
-//                        setterBuilder.getName(),
-//                        setterBuilder.getInjectId(),
-//                        setterBuilder.getInjectType()));
-//            });
-//            Map<String, Object> tempModel = new HashMap<>();
-//            tempModel.put("setters", setterModels);
-//
-//            if (classBuilder.findSetterBuilders().size() == 0) {
-//                // No setters means this class does not implement IInjectable interface
-//                return;
-//            }
-//            classBuilder
-//                    .addImplement(IInjectable.class.getCanonicalName())
-//                    .addMethodBuilder(MethodMeta.builder()
-//                            .addAnnotationBuilder(AnnotationMeta.builder()
-//                                    .setName("Override"))
-//                            .addModifier(Modifier.PUBLIC)
-//                            .setName(methodName)
-//                            .setReturnTypeName(Type.VOID)
-//                            .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
-//                            .addParameterBuilder(ParameterMeta.builder()
-//                                    .addModifier(Modifier.FINAL)
-//                                    .setName(paramName)
-//                                    .setType(paramType))
-//                            .addCodeBuilder(CodeMeta.builder()
-//                                    .setModel(tempModel)
-//                                    .setTemplate(temp)));
-        });
-    }
-
     private void implementInjectObjectForClass(ClassMeta.Builder classBuilder, Template temp) {
         String methodName = "injectObject";
         String paramName = "injection";
@@ -427,22 +304,6 @@ class InjectParser {
                         .addCodeBuilder(CodeMeta.builder()
                                 .setModel(tempModel)
                                 .setTemplate(temp)));
-//        classBuilder
-//                .addImplement(IInjectable.class.getCanonicalName())
-//                .addMethodBuilder(MethodMeta.builder()
-//                        .addAnnotationBuilder(AnnotationMeta.builder()
-//                                .setName("Override"))
-//                        .addModifier(Modifier.PUBLIC)
-//                        .setName(methodName)
-//                        .setReturnTypeName(Type.VOID)
-//                        .addThrowTypeName(InvalidArgumentException.class.getCanonicalName())
-//                        .addParameterBuilder(ParameterMeta.builder()
-//                                .addModifier(Modifier.FINAL)
-//                                .setName(paramName)
-//                                .setType(paramType))
-//                        .addCodeBuilder(CodeMeta.builder()
-//                                .setModel(tempModel)
-//                                .setTemplate(temp)));
     }
 
     class InjectParserHelper {
@@ -459,7 +320,7 @@ class InjectParser {
                 final String mapKeyType) {
             String setterName = ClassHelper.makeSetterName(fieldName, isCollection, isMap);
             InjectParser.this.addSetter(classBuilder, fieldName, fieldType, injectId, injectFrom, setterName, isCollection, isMap, mapKeyType, true);
-            Template tempInjectObject = builderContext.loadTemplate(TEMPLATE_FILE);
+            Template tempInjectObject = builderContext.loadTemplate(TEMPLATE_INJECT);
             Template tempGetDependencies = builderContext.loadTemplate(TEMPLATE_GET_DEPENDENCIES);
             implementInjectObjectForClass(classBuilder, tempInjectObject);
             implementGetDependenciesForClass(classBuilder, tempGetDependencies);
