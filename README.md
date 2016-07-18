@@ -323,15 +323,17 @@ The the HelloClient can invoke the service like local service.
 
 ## Version History
 * Featured
-  1. A profile to indicate which service can be registered or not.
-  1. Service parameters and return type support custom object.
-  1. Service register support register to Consul.
   1. Asynchronous service invocation.
   1. Event support, decide using 3rd library or implement it self.
   1. Behavior(actions) definition.
   1. Event based behavior(actions) execution.
 
-* v0.2 - in working
+* v0.3 - in working
+  1. A profile to indicate which service can be registered or not.
+  1. Support custom service parameter and return type.
+  1. Support register service to Consul.
+
+* v0.2
   1. Remote service injection which is interface based.
   1. Generate remote service proxy based on specific interface.
   1. Implement restful remote proxy.
