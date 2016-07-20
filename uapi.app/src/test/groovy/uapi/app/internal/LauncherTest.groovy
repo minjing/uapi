@@ -40,7 +40,7 @@ class LauncherTest extends Specification {
         }).start()
         Thread.sleep(100)
         launcher.stop()
-        Thread.sleep(100)
+        Thread.sleep(200)
 
         then:
         1 * registry.loadExternalServices(_)
