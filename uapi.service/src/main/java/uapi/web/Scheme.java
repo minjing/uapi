@@ -7,16 +7,12 @@
  * use the project into a commercial product
  */
 
-package uapi.web.internal;
-
-import uapi.web.Scheme;
+package uapi.web;
 
 /**
- * The class store information of Consul instance
+ * Enumeration for URL scheme
  */
-public class ConsulInstance {
+public enum Scheme {
 
-    public Scheme _scheme;
-    public String host;
-    public int port;
+    HTTP, HTTPS
 }
