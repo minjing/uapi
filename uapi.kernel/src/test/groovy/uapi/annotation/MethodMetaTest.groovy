@@ -11,7 +11,12 @@ package uapi.annotation
 
 import spock.lang.Specification
 
+import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
+import javax.lang.model.element.Name
+import javax.lang.model.type.TypeMirror
 
 /**
  * Test for MethodMeta
@@ -47,6 +52,9 @@ class MethodMetaTest extends Specification {
         methodMeta.getInvokeSuperBefore() == invokeSuperBefore
         methodMeta.getIsSetter() == isSetter
         methodMeta.getModifiers() == modifiers
+        methodMeta.getParameters().size() == 2
+        methodMeta.getThrowTypeNames().size() == 2
+        methodMeta.getCodes().size() == 1
         mockAnnoBudr._initInvokedCount == 1
         mockAnnoBudr._validationCount == 1
         mockAnnoBudr._createInstCount == 1
@@ -63,6 +71,40 @@ class MethodMetaTest extends Specification {
         where:
         name    | rtnType   | invokeSuper                   | invokeSuperAfter  | invokeSuperBefore | isSetter  | modifier1       | modifier2      | modifiers      | throwType1    | throwType2
         'Name'  | 'String'  | MethodMeta.InvokeSuper.AFTER  | true              | false             | false     | Modifier.PUBLIC | Modifier.FINAL | 'public final' | 'AE'          | 'BE'
+    }
+
+    def 'Test build from Element'() {
+        def mockName = Mock(Name) {
+            toString() >> name
+        }
+        def mockRtnType = Mock(TypeMirror) {
+            toString() >> rtnType
+        }
+        def mockThrownType = Mock(TypeMirror) {
+            toString() >> thrownType
+        }
+        def mockElemt = Mock(ExecutableElement) {
+            getKind() >> ElementKind.METHOD
+            getSimpleName() >> mockName
+            getReturnType() >> mockRtnType
+            getThrownTypes() >> [ mockThrownType ]
+            getModifiers() >> [ modifier ]
+            getParameters() >> []
+        }
+        def mockBudrCtx = Mock(IBuilderContext)
+
+        when:
+        MethodMeta methodMeta = MethodMeta.builder(mockElemt, mockBudrCtx).build()
+
+        then:
+        methodMeta.getName() == name
+        methodMeta.getReturnTypeName() == rtnType
+        methodMeta.getThrowTypeNames()[0] == thrownType
+        methodMeta.getModifiers() == modifiers
+
+        where:
+        name    | rtnType   | thrownType    | modifier          | modifiers
+        'Name'  | 'String'  | 'Exception'   | Modifier.PUBLIC   | 'public'
     }
 
     def 'Test find'() {
@@ -90,6 +132,39 @@ class MethodMetaTest extends Specification {
         where:
         name    | rtnType   | invokeSuper                   | invokeSuperAfter  | invokeSuperBefore | isSetter  | modifier1       | modifier2      | modifiers      | throwType1    | throwType2
         'Name'  | 'String'  | MethodMeta.InvokeSuper.AFTER  | true              | false             | false     | Modifier.PUBLIC | Modifier.FINAL | 'public final' | 'AE'          | 'BE'
+    }
+
+    def 'Test find Parameter by element'() {
+        def paramBudr = new MockParamMeta(paramName)
+        paramBudr._type = paramType
+        def mockName = Mock(Name) {
+            toString() >> paramName
+        }
+        def mockType = Mock(TypeMirror) {
+            toString() >> paramType
+        }
+        def mockElemt = Mock(Element) {
+            getKind() >> ElementKind.PARAMETER
+            getSimpleName() >> mockName
+            asType() >> mockType
+        }
+        def mockBudrCtx = Mock(IBuilderContext)
+
+        when:
+        MethodMeta.Builder methodBudr = MethodMeta.builder()
+                .setName(name)
+                .setReturnTypeName(rtnType)
+                .addModifier(modifier)
+                .addThrowTypeName(thrownType)
+                .addParameterBuilder(paramBudr)
+
+
+        then:
+        methodBudr.findParameterBuilder(mockElemt, mockBudrCtx) != null
+
+        where:
+        name    | rtnType   | thrownType    | modifier          | modifiers | paramName | paramType
+        'Name'  | 'String'  | 'Exception'   | Modifier.PUBLIC   | 'public'  | 'Param'   | 'String'
     }
 
     def 'Test equals'() {
@@ -178,6 +253,7 @@ class MethodMetaTest extends Specification {
     private class MockParamMeta extends ParameterMeta.Builder {
 
         private String _name;
+        private String _type;
         private int _initInvokedCount = 0
         private int _validationCount = 0;
         private int _createInstCount = 0
@@ -186,8 +262,12 @@ class MethodMetaTest extends Specification {
             this._name = name;
         }
 
+        public String getType() {
+            return this._type
+        }
+
         public String getName() {
-            return this._name;
+            return this._name
         }
 
         public void initProperties() {
@@ -201,6 +281,10 @@ class MethodMetaTest extends Specification {
         public ParameterMeta createInstance() {
             this._createInstCount++
             return mockParamMeta
+        }
+
+        public boolean equals(Object other) {
+            return true
         }
     }
 

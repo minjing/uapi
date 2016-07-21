@@ -232,23 +232,23 @@ public class MethodMeta {
             return this;
         }
 
-        public CodeMeta.Builder addCodeBuilderIfAbsent(
-                final CodeMeta.Builder codeBuilder
-        ) throws InvalidArgumentException {
-            checkStatus();
-            ArgumentChecker.notNull(codeBuilder, "codeBuilder");
-            List<CodeMeta.Builder> matchedBuilders = this._codeBuilders.parallelStream()
-                    .filter(existing -> existing.equals(codeBuilder))
-                    .collect(Collectors.toList());
-            if (matchedBuilders.size() == 0) {
-                addCodeBuilder(codeBuilder);
-                return codeBuilder;
-            }
-            if (matchedBuilders.size() == 1) {
-                return matchedBuilders.get(0);
-            }
-            throw new KernelException("Found not only one code builder - {}" + matchedBuilders);
-        }
+//        public CodeMeta.Builder addCodeBuilderIfAbsent(
+//                final CodeMeta.Builder codeBuilder
+//        ) throws InvalidArgumentException {
+//            checkStatus();
+//            ArgumentChecker.notNull(codeBuilder, "codeBuilder");
+//            List<CodeMeta.Builder> matchedBuilders = this._codeBuilders.parallelStream()
+//                    .filter(existing -> existing.equals(codeBuilder))
+//                    .collect(Collectors.toList());
+//            if (matchedBuilders.size() == 0) {
+//                addCodeBuilder(codeBuilder);
+//                return codeBuilder;
+//            }
+//            if (matchedBuilders.size() == 1) {
+//                return matchedBuilders.get(0);
+//            }
+//            throw new KernelException("Found not only one code builder - {}" + matchedBuilders);
+//        }
 
         public CodeMeta.Builder findCodeBuilder(
                 final String templateSourceName
