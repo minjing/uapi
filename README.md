@@ -8,7 +8,7 @@
 ## UAPI (Universal Application Platform Infrastructure)
 
 [![Build Status](https://travis-ci.org/minjing/uapi.svg?branch=master)](https://travis-ci.org/minjing/uapi)
-[![Code Coverage](https://img.shields.io/codecov/c/github/minjing/uapi/master.svg)](https://codecov.io/github/minjing/uapi?branch=master)
+[![Code Coverage](http://codecov.io/github/minjing/uapi/coverage.svg?branch=master)](https://codecov.io/github/minjing/uapi?branch=master)
 
 ## Introduction
 
