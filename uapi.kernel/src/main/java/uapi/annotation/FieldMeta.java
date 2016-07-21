@@ -19,6 +19,9 @@ import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represent field in the class
+ */
 public final class FieldMeta {
 
     private Builder _builder;
@@ -34,10 +37,6 @@ public final class FieldMeta {
     public String getTypeName() {
         return this._builder._typeName;
     }
-
-//    public String getInjectServiceId() {
-//        return this._builder._injectServiceId;
-//    }
 
     public boolean getIsList() {
         return this._builder._isList;
@@ -67,7 +66,6 @@ public final class FieldMeta {
 
         private String _name;
         private String _typeName;
-//        private String _injectServiceId;
         private boolean _isList;
         private boolean _isMap;
         private List<Modifier> _modifiers = new ArrayList<>();
@@ -95,14 +93,6 @@ public final class FieldMeta {
         public String getTypeName() {
             return this._typeName;
         }
-
-//        public Builder setInjectServiceId(
-//                final String injectServiceId
-//        ) throws KernelException {
-//            checkStatus();
-//            this._injectServiceId = injectServiceId;
-//            return this;
-//        }
 
         public Builder setIsList(
                 final boolean isList

@@ -13,6 +13,8 @@ import freemarker.template.Template;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
+import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
 
 import java.io.StringWriter;
@@ -20,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by min on 16/2/20.
+ * Code metadata used to generate codes in specific method
  */
 public class CodeMeta {
 
@@ -122,10 +124,28 @@ public class CodeMeta {
                 return false;
             }
             Builder other = (Builder) obj;
-            if (this._temp == null || other._temp == null) {
-                return false;
+            if (this._temp != null) {
+                if (other._temp == null) {
+                    return false;
+                }
+                if (! this._temp.getSourceName().equals(other._temp.getSourceName())) {
+                    return false;
+                }
+                if (this._model == null || other._model == null) {
+                    return false;
+                }
+                return this._model.equals(other._model);
+            } else {
+                return CollectionHelper.equals(this._rawCodes, other._rawCodes);
             }
-            return this._temp.getSourceName().equals(other._temp.getSourceName());
+        }
+
+        @Override
+        public int hashCode() {
+            int result = _model != null ? _model.hashCode() : 0;
+            result = 31 * result + (_temp != null ? _temp.hashCode() : 0);
+            result = 31 * result + (_rawCodes != null ? _rawCodes.hashCode() : 0);
+            return result;
         }
 
         @Override

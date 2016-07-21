@@ -11,7 +11,11 @@ package uapi.annotation
 
 import spock.lang.Specification
 
+import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
+import javax.lang.model.element.Name
+import javax.lang.model.type.TypeMirror
 
 /**
  * Test for ParameterMeta
@@ -31,6 +35,62 @@ class ParameterMetaTest extends Specification {
         paramMet.getName() == name
         paramMet.getType() == type
         paramMet.getModifiers() == modifies
+
+        where:
+        name    | type      | modify1           | modify2           | modifies
+        'Test'  | 'String'  | Modifier.PUBLIC   | Modifier.FINAL    | "public final"
+    }
+
+    def 'Test build from Element'() {
+        def mockName = Mock(Name) {
+            toString() >> name
+        }
+        def mockType = Mock(TypeMirror) {
+            toString() >> type
+        }
+        def mockElement = Mock(Element) {
+            getKind() >> ElementKind.PARAMETER
+            getSimpleName() >> mockName
+            asType() >> mockType
+        }
+        def mockBuilderCtx = Mock(IBuilderContext)
+
+        when:
+        ParameterMeta paramMeta = ParameterMeta.builder(mockElement, mockBuilderCtx).build()
+
+        then:
+        paramMeta.getName() == name
+        paramMeta.getType() == type
+
+        where:
+        name    | type
+        'Test'  | 'String'
+    }
+
+    def 'Test equals'() {
+        when:
+        ParameterMeta.Builder paramBuilder1 = ParameterMeta.builder()
+                .setName(name)
+                .setType(type)
+                .addModifier(Modifier.PUBLIC)
+                .addModifier(Modifier.FINAL)
+        ParameterMeta.Builder paramBuilder2 = ParameterMeta.builder()
+                .setName(name)
+                .setType(type)
+                .addModifier(Modifier.PUBLIC)
+                .addModifier(Modifier.FINAL)
+        ParameterMeta.Builder paramBuilder3 = ParameterMeta.builder()
+                .setName(name)
+                .setType(type)
+                .addModifier(Modifier.PUBLIC)
+
+        then:
+        paramBuilder1 == paramBuilder2
+        paramBuilder1 != paramBuilder3
+        paramBuilder2 != paramBuilder3
+        paramBuilder1.hashCode() == paramBuilder2.hashCode()
+        paramBuilder1.hashCode() != paramBuilder3.hashCode()
+        paramBuilder2.hashCode() != paramBuilder3.hashCode()
 
         where:
         name    | type      | modify1           | modify2           | modifies

@@ -200,16 +200,16 @@ public class MethodMeta {
             return this;
         }
 
-        public ParameterMeta.Builder getParameterBuilder(
-                final String parameterName
-        ) {
-            for (ParameterMeta.Builder paramBuilder : this._paramBuilders) {
-                if (parameterName.equals(paramBuilder.getName())) {
-                    return paramBuilder;
-                }
-            }
-            return null;
-        }
+//        public ParameterMeta.Builder getParameterBuilder(
+//                final String parameterName
+//        ) {
+//            for (ParameterMeta.Builder paramBuilder : this._paramBuilders) {
+//                if (parameterName.equals(paramBuilder.getName())) {
+//                    return paramBuilder;
+//                }
+//            }
+//            return null;
+//        }
 
         public int getParameterCount() {
             return this._paramBuilders.size();
@@ -255,7 +255,7 @@ public class MethodMeta {
         ) throws InvalidArgumentException {
             ArgumentChecker.notNull(templateSourceName, "templateSourceName");
             List<CodeMeta.Builder> matchedBuilders = this._codeBuilders.parallelStream()
-                    .filter(existing -> existing.getTemplateSourceName().equals(templateSourceName))
+                    .filter(existing -> templateSourceName.equals(existing.getTemplateSourceName()))
                     .collect(Collectors.toList());
             if (matchedBuilders.size() == 0) {
                 return null;
@@ -290,12 +290,12 @@ public class MethodMeta {
         ) throws KernelException {
             ArgumentChecker.notEmpty(name, "name");
             List<ParameterMeta.Builder> params = this._paramBuilders.stream()
-                    .filter(paramBuilder -> paramBuilder.getName().equals(name))
+                    .filter(paramBuilder -> name.equals(paramBuilder.getName()))
                     .collect(Collectors.toList());
             if (params.size() == 0) {
-                throw new KernelException("Can't found parameter {} at {}", name, this._name);
+                throw new KernelException("Can't found parameter named {} at method {}", name, this._name);
             } else if (params.size() > 1) {
-                throw new KernelException("Find duplicate parameter name {} at {}", name, this._name);
+                throw new KernelException("Find duplicate parameter named {} at method {}", name, this._name);
             }
             return params.get(0);
         }
@@ -382,7 +382,7 @@ public class MethodMeta {
         }
     }
 
-    public static enum InvokeSuper {
+    public enum InvokeSuper {
         // Call super method before execute self statement
         BEFORE,
 

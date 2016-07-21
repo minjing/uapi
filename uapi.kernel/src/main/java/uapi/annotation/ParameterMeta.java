@@ -145,7 +145,7 @@ public class ParameterMeta {
 
         @Override
         public int hashCode() {
-            return Objects.hash(_name, _type);
+            return Objects.hash(this._name, this._type, this._modifiers);
         }
     }
 }
