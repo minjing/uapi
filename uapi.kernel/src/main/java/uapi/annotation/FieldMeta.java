@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Represent field in the class
  */
-public final class FieldMeta {
+public class FieldMeta {
 
     private Builder _builder;
 
@@ -62,7 +62,7 @@ public final class FieldMeta {
     /**
      * The builder for <code>FieldMeta</code>
      */
-    public static final class Builder extends uapi.helper.Builder<FieldMeta> {
+    public static class Builder extends uapi.helper.Builder<FieldMeta> {
 
         private String _name;
         private String _typeName;

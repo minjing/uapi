@@ -77,7 +77,7 @@ public final class ClassMeta {
 
     public static Builder builder(
             final Element classElement,
-            final BuilderContext builderContext
+            final IBuilderContext builderContext
     ) throws KernelException {
         ArgumentChecker.notNull(classElement, "classElement");
         ArgumentChecker.notNull(builderContext, "builderContext");

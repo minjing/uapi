@@ -12,8 +12,6 @@
 [![Build Status](https://travis-ci.org/minjing/uapi.svg?branch=master)](https://travis-ci.org/minjing/uapi)
 [![Code Coverage](http://codecov.io/github/minjing/uapi/coverage.svg?branch=master)](https://codecov.io/github/minjing/uapi?branch=master)
 
-[![Gitter](https://badges.gitter.im/minjing/uapi.svg)](https://gitter.im/minjing/uapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
 ## Introduction
 
 Welcome to UAPI project!
