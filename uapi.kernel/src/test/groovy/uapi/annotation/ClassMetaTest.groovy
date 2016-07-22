@@ -15,4 +15,8 @@ import spock.lang.Specification
  * Test case for ClassMeta
  */
 class ClassMetaTest extends Specification {
+
+    def 'Test build'() {
+
+    }
 }
