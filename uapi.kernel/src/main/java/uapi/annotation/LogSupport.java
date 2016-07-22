@@ -22,7 +22,7 @@ import javax.tools.Diagnostic;
 /**
  * Created by min on 16/2/10.
  */
-public final class LogSupport {
+public class LogSupport {
 
     private final ProcessingEnvironment _procEnv;
     private final Messager _msger;

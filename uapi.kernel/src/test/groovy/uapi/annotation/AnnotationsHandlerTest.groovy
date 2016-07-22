@@ -12,10 +12,15 @@ package uapi.annotation
 import spock.lang.Specification
 import uapi.KernelException
 
+import javax.lang.model.element.AnnotationMirror
+import javax.lang.model.element.AnnotationValue
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.Name
+import javax.lang.model.element.TypeElement
+import javax.lang.model.type.DeclaredType
 import java.lang.annotation.Annotation
 
 /**
@@ -25,9 +30,11 @@ class AnnotationsHandlerTest extends Specification {
 
     def handler = new AnnotationsHandler() {
 
+        int handleCount = 0;
+
         @Override
         protected Class<? extends Annotation>[] getOrderedAnnotations() {
-            return new Class<? extends Annotation>[0]
+            return [ NotNull.class ] as Class<? extends Annotation>[]
         }
 
         @Override
@@ -36,7 +43,7 @@ class AnnotationsHandlerTest extends Specification {
                 Class<? extends Annotation> annotationType,
                 Set<? extends Element> elements
         ) throws KernelException {
-
+            handleCount++
         }
     }
 
@@ -80,7 +87,53 @@ class AnnotationsHandlerTest extends Specification {
         thrown(KernelException)
     }
 
-    def 'Test get type in annotation'() {
-        
+//    def 'Test get type in annotation'() {
+//        def mockAnno = Mock(AnnotationMirror) {
+//            getElementValues() >> Mock(Map) {
+//                entrySet() >> Mock(Set) {
+//                    iterator() >> Mock(Iterator) {
+//                        hasNext() >>> [true, false]
+//                        next() >> Mock(Map.Entry) {
+//                            getKey() >> Mock(ExecutableElement) {
+//                                getSimpleName() >> Mock(Name) {
+//                                    toString() >> fieldName
+//                                }
+//                            }
+//                            getValue() >> Mock(AnnotationValue) {
+//                                getValue() >> Mock(DeclaredType) {
+//                                    asElement() >> Mock(TypeElement) {
+//                                        getQualifiedName() >> Mock(Name) {
+//                                            toString() >> fieldType
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        when:
+//        def types = handler.getTypesInAnnotation(mockAnno, fieldName, Mock(LogSupport))
+//
+//        then:
+//        types == [ fieldType ]
+//
+//        where:
+//        fieldName   | fieldType
+//        'AAA'       | 'String'
+//    }
+
+    def 'Test handle'() {
+        def budrCtx = Mock(IBuilderContext) {
+            getElementsAnnotatedWith(_) >> Mock(Set)
+        }
+
+        when:
+        handler.handle(budrCtx)
+
+        then:
+        handler.handleCount == 1
     }
 }
