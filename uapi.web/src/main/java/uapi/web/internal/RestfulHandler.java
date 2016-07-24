@@ -134,7 +134,7 @@ public class RestfulHandler extends AnnotationsHandler {
                             //builderContext.getLogger().info(StringHelper.makeString(">>> interface={}, methods={}", intfName, CollectionHelper.asString(methods)));
                             //builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {} size = {},", intfMethodMap, intfMethodMap.get(intfName).size()));
                         });
-                builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {} size = {}", intfMethodMap, intfMethodMap.size()));
+                //builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {} size = {}", intfMethodMap, intfMethodMap.size()));
             } else {
                 throw new KernelException(
                         "Invalid interface implementation for class - {}",
@@ -147,10 +147,10 @@ public class RestfulHandler extends AnnotationsHandler {
                     Observable.from(intfEntry.getValue().entrySet())
                             .doOnNext(meta -> builderContext.getLogger().info(StringHelper.makeString(">>> meta {} vs {} >>> {}", meta.getKey(), svcMethodMeta, meta.getKey().isSame(svcMethodMeta))))
                             .filter(methodEntry -> methodEntry.getKey().isSame(svcMethodMeta))
-                            .doOnNext(filtered -> builderContext.getLogger().info("----------" + filtered.getKey().toString()))
+                            //.doOnNext(filtered -> builderContext.getLogger().info("----------" + filtered.getKey().toString()))
                             .subscribe(methodEntry -> methodEntry.setValue(svcMethodMeta));
                 });
-        builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {}", intfMethodMap));
+        //builderContext.getLogger().info(StringHelper.makeString(">>> intfMethodMap {}", intfMethodMap));
     }
 
     private List<uapi.service.MethodMeta> getInterfaceMethods(DeclaredType intfType, IBuilderContext builderCtx) {

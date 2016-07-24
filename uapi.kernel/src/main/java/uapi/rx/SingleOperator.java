@@ -10,9 +10,9 @@
 package uapi.rx;
 
 /**
- * Created by xquan on 7/14/2016.
+ * The SingleOperator return only one item or throw an exception if no item can be returned
  */
-public class SingleOperator<T> extends TerminatedOperator<T> {
+class SingleOperator<T> extends TerminatedOperator<T> {
 
     private boolean _itemSet = false;
     private T _item = null;

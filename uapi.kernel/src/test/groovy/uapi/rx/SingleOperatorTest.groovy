@@ -23,7 +23,7 @@ class SingleOperatorTest extends Specification {
         }
 
         given:
-        FirstOperator opt = new FirstOperator(preOpt)
+        SingleOperator opt = new SingleOperator(preOpt)
 
         expect:
         opt.getItem() == "1"

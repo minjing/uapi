@@ -28,9 +28,6 @@ class NextOperator<T> extends Operator<T> {
     @Override
     T getItem() throws NoItemException {
         T item = ((Operator<T>) getPreviously()).getItem();
-//        if (item == null) {
-//            return null;
-//        }
         this._action.accept(item);
         return item;
     }
