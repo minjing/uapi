@@ -12,7 +12,7 @@ package uapi.helper;
 import uapi.InvalidArgumentException;
 
 /**
- * Created by xquan on 5/25/2016.
+ * The Triple hold three value
  */
 public class Triple<LT, CT, RT> {
 
