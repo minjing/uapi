@@ -55,6 +55,9 @@ public final class MapHelper {
                         buffer.append(entry.getValue()).append(",");
                     }
                 });
+        if (buffer.length() > 0) {
+            buffer.deleteCharAt(buffer.lastIndexOf(","));
+        }
         buffer.append("}");
         return buffer.toString();
     }
