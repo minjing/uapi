@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2010 The UAPI Authors
  * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at the LICENSE file.
@@ -323,7 +323,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         ArgumentChecker.notNull(injection, "injection");
         if (ISatisfyHook.class.getName().equals(injection.getId())) {
             if (! (injection.getObject() instanceof ISatisfyHook)) {
-                throw new uapi.InvalidArgumentException(
+                throw new InvalidArgumentException(
                         "The injected object {} can't be converted to {}", injection.getObject(), ISatisfyHook.class.getName());
             }
             releaseHooks();
@@ -333,7 +333,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         }
         if (ILogger.class.getName().equals(injection.getId())) {
             if (! (injection.getObject() instanceof ILogger)) {
-                throw new uapi.InvalidArgumentException(
+                throw new InvalidArgumentException(
                         "The injected object {} can't be converted to {}", injection.getObject(), ILogger.class.getName());
             }
             this._logger = (ILogger) injection.getObject();
@@ -341,7 +341,7 @@ public class Registry implements IRegistry, IService, IInjectable {
         }
         if (IServiceLoader.class.getName().equals(injection.getId())) {
             if (! (injection.getObject() instanceof IServiceLoader)) {
-                throw new uapi.InvalidArgumentException(
+                throw new InvalidArgumentException(
                         "The injected object {} can't be converted to {}", injection.getObject(), IServiceLoader.class.getName());
             }
             IServiceLoader svcLoader = (IServiceLoader) injection.getObject();

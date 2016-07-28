@@ -2,7 +2,7 @@ apply plugin: 'application'
 
 dependencies {
     compile project(':uapi.kernel')
-    compile project(':uapi.kernel.service')
+//    compile project(':uapi.kernel.service')
     compile project(':uapi.service')
     compile project(':uapi.service.spring')
     compile project(':uapi.service.remote')
