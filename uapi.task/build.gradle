@@ -1,7 +1,6 @@
 dependencies {
     compile (
-        project(':uapi.kernel'),
-//        project(':uapi.kernel.service')
+        project(':uapi.kernel')
     )
     testCompile (
         project(':uapi.test')

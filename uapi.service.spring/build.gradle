@@ -1,6 +1,5 @@
 dependencies {
     compile project(':uapi.kernel')
-//    compile project(':uapi.kernel.service')
     compile project(':uapi.config')
 
     compile (
