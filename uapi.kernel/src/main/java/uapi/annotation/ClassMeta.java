@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public final class ClassMeta {
+public class ClassMeta {
 
     private final Builder _builder;
 
@@ -95,7 +95,7 @@ public final class ClassMeta {
 
     }
 
-    public static final class Builder extends uapi.helper.Builder<ClassMeta> {
+    public static class Builder extends uapi.helper.Builder<ClassMeta> {
 
         private String _pkgName;
         private String _className;
