@@ -9,12 +9,12 @@
 
 package uapi.service.internal
 
-import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.annotation.ClassMeta
 import uapi.annotation.IBuilderContext
 import uapi.annotation.LogSupport
-import uapi.service.annotation.Service
+import uapi.service.IInitial
+import uapi.service.annotation.Init
 
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
@@ -26,16 +26,17 @@ import javax.lang.model.type.TypeMirror
 /**
  * Test for InitialHandler
  */
-@Ignore
 class InitialHandlerTest extends Specification {
 
     def 'Test handleAnnotatedElements'() {
         setup:
+        def mockClsBudr = Mock(ClassMeta.Builder) {
+            findMethodBuilders('init') >> ([] as List)
+        }
+
         IBuilderContext builderCtx = Mock(IBuilderContext) {
             getLogger() >> Mock(LogSupport)
-            findClassBuilder(_) >> Mock(ClassMeta.Builder) {
-                findMethodBuilders('init') >> [] as List
-            }
+            findClassBuilder(_) >> mockClsBudr
         }
         Element methodElement = Mock(ExecutableElement) {
             getKind() >> ElementKind.METHOD
@@ -47,21 +48,24 @@ class InitialHandlerTest extends Specification {
                 getSimpleName() >> Mock(Name) {
                     toString() >> className
                 }
+                getModifiers() >> ([] as Set)
             }
             getReturnType() >> Mock(TypeMirror) {
                 toString() >> returnType
             }
-            getModifiers() >> [Modifier.PUBLIC] as Set
-            getThrownTypes() >> [] as List
-            getParameters() >> [] as List
+            getModifiers() >> ([Modifier.PUBLIC] as Set)
+            getThrownTypes() >> ([] as List)
+            getParameters() >> ([] as List)
         }
         Set elements = [methodElement] as Set
         InitialHandler initHandler = new InitialHandler()
 
-        expect:
-        initHandler.handleAnnotatedElements(builderCtx, Service.class, elements)
+        when:
+        initHandler.handleAnnotatedElements(builderCtx, Init.class, elements)
 
-//        then:
+        then:
+        1 * mockClsBudr.addImplement(IInitial.class.getCanonicalName()) >> mockClsBudr
+        1 * mockClsBudr.addMethodBuilder(_) >> mockClsBudr
 
         where:
         methodName      | className     | returnType
