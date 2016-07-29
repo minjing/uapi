@@ -11,7 +11,6 @@ package uapi.web;
 
 import uapi.IIdentifiable;
 import uapi.service.web.ArgumentMapping;
-import uapi.service.web.HttpMethod;
 
 import java.util.List;
 

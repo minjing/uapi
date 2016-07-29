@@ -1,7 +1,7 @@
 uapi.helper.ArgumentChecker.required(method, "method");
         uapi.helper.ArgumentChecker.required(args, "args");
 <#list model?keys as key>
-        if (method == uapi.service.web.HttpMethod.${key}) {
+        if (method == uapi.web.HttpMethod.${key}) {
             if (args.size() != ${model[key].argumentMappings?size}) {
                 throw new uapi.KernelException("Found unmatched method {} argument count {}, expect {}",
                         "${model[key].name}", args.size(), ${model[key].argumentMappings?size});

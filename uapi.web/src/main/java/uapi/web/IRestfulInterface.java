@@ -1,7 +1,6 @@
 package uapi.web;
 
 import uapi.service.ServiceMeta;
-import uapi.service.web.HttpMethod;
 
 import java.util.List;
 import java.util.Map;

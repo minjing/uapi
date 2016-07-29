@@ -24,6 +24,10 @@ import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.service.ServiceMeta;
 import uapi.service.web.*;
+import uapi.web.HttpMethod;
+import uapi.web.IStringCodec;
+import uapi.web.IndexedArgumentMapping;
+import uapi.web.NamedArgumentMapping;
 
 import java.io.IOException;
 import java.util.ArrayList;

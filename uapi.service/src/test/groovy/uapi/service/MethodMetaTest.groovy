@@ -11,7 +11,7 @@ package uapi.service
 
 import spock.lang.Specification
 import uapi.service.web.ArgumentMapping
-import uapi.service.web.IndexedArgumentMapping
+import uapi.web.IndexedArgumentMapping
 
 /**
  * Test case for MethodMeta

@@ -7,7 +7,7 @@
  * use the project into a commercial product
  */
 
-package uapi.service.web;
+package uapi.web;
 
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;

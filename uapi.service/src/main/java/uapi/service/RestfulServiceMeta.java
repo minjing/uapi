@@ -13,7 +13,7 @@ import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
-import uapi.service.web.HttpMethod;
+import uapi.web.HttpMethod;
 
 import java.util.List;
 

@@ -7,35 +7,43 @@
  * use the project into a commercial product
  */
 
-package uapi.service.web;
+package uapi.web;
 
 import uapi.InvalidArgumentException;
-import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
+import uapi.service.web.ArgumentFrom;
+import uapi.service.web.ArgumentMapping;
 
 /**
  * Created by xquan on 5/3/2016.
  */
-public class NamedArgumentMapping extends ArgumentMapping {
+public class IndexedArgumentMapping extends ArgumentMapping {
 
-    private final String _name;
+    private final int _idx;
 
-    public String getName() {
-        return this._name;
+    public int getIndex() {
+        return this._idx;
     }
 
-    public NamedArgumentMapping(
+    public IndexedArgumentMapping(
+            final String type,
+            final int index
+    ) throws InvalidArgumentException {
+        super(type);
+        this._idx = index;
+    }
+
+    public IndexedArgumentMapping(
             final ArgumentFrom from,
             final String type,
-            final String name
+            final int index
     ) throws InvalidArgumentException {
         super(from, type);
-        ArgumentChecker.required(name, "name");
-        this._name = name;
+        this._idx = index;
     }
 
     @Override
     protected String propertiesString() {
-        return StringHelper.makeString("{},name={}", super.propertiesString(), this._name);
+        return StringHelper.makeString("{},index={}", super.propertiesString(), this._idx);
     }
 }

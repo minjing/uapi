@@ -284,7 +284,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                             .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                             .addModifier(Modifier.PUBLIC)
                                             .setName("getMethodHttpMethodInfos")
-                                            .setReturnTypeName("java.util.Map<uapi.service.ServiceMeta, java.util.List<uapi.service.web.HttpMethod>>")
+                                            .setReturnTypeName("java.util.Map<uapi.service.ServiceMeta, java.util.List<uapi.web.HttpMethod>>")
                                             .addCodeBuilder(CodeMeta.builder()
                                                     .setModel(modelMethodToHttp)
                                                     .setTemplate(tempGetMethodHttpInfos)));

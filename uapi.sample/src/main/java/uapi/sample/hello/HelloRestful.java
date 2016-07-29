@@ -12,7 +12,7 @@ package uapi.sample.hello;
 import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.service.web.HttpMethod;
+import uapi.web.HttpMethod;
 import uapi.web.annotation.FromParam;
 import uapi.web.annotation.FromUri;
 import uapi.web.annotation.Restful;

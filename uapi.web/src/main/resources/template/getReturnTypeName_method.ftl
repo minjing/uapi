@@ -1,5 +1,5 @@
 <#list model?keys as key>
-        if (method == uapi.service.web.HttpMethod.${key}) {
+        if (method == uapi.web.HttpMethod.${key}) {
             return "${model[key].returnTypeName}";
         }
 </#list>
