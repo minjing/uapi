@@ -16,7 +16,7 @@ import uapi.service.ArgumentMeta;
 import uapi.service.ServiceInterfaceMeta;
 import uapi.service.ServiceMeta;
 import uapi.service.annotation.Service;
-import uapi.service.web.ArgumentMapping;
+import uapi.web.ArgumentMapping;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

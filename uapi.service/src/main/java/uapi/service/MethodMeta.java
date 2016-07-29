@@ -3,9 +3,8 @@ package uapi.service;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.StringHelper;
-import uapi.service.web.ArgumentMapping;
+import uapi.web.ArgumentMapping;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 

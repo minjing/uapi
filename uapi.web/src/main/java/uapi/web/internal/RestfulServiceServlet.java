@@ -20,7 +20,6 @@ import uapi.rx.Looper;
 import uapi.service.*;
 import uapi.service.annotation.*;
 import uapi.service.annotation.Optional;
-import uapi.service.web.*;
 import uapi.web.*;
 
 import javax.servlet.ServletException;

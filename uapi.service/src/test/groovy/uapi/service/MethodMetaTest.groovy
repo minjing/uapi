@@ -10,7 +10,7 @@
 package uapi.service
 
 import spock.lang.Specification
-import uapi.service.web.ArgumentMapping
+import uapi.web.ArgumentMapping
 import uapi.web.IndexedArgumentMapping
 
 /**

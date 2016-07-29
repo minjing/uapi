@@ -19,11 +19,7 @@ import uapi.service.*;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.*;
-import uapi.service.web.*;
-import uapi.web.HttpMethod;
-import uapi.web.IndexedArgumentMapping;
-import uapi.web.JsonStringCodec;
-import uapi.web.NamedArgumentMapping;
+import uapi.web.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

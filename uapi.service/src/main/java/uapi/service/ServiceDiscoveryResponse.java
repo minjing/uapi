@@ -10,7 +10,7 @@
 package uapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import uapi.service.web.ArgumentFrom;
+import uapi.web.ArgumentFrom;
 import uapi.web.HttpMethod;
 
 import java.util.List;

@@ -12,8 +12,6 @@ package uapi.web;
 import uapi.InvalidArgumentException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
-import uapi.service.web.ArgumentFrom;
-import uapi.service.web.ArgumentMapping;
 
 /**
  * Created by xquan on 5/3/2016.

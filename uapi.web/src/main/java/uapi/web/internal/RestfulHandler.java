@@ -20,7 +20,6 @@ import uapi.helper.*;
 import uapi.service.*;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.service.web.*;
 import uapi.web.*;
 import uapi.web.annotation.FromHeader;
 import uapi.web.annotation.FromParam;
@@ -213,7 +212,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                     .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                     .addModifier(Modifier.PUBLIC)
                                     .setName("getMethodArgumentsInfo")
-                                    .setReturnTypeName("uapi.service.web.ArgumentMapping[]")
+                                    .setReturnTypeName("uapi.web.ArgumentMapping[]")
                                     .addParameterBuilder(ParameterMeta.builder()
                                             .setName("method")
                                             .setType(HttpMethod.class.getCanonicalName()))

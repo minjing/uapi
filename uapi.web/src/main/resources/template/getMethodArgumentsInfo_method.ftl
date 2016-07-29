@@ -1,12 +1,12 @@
-uapi.service.web.ArgumentMapping[] argMappings;
+uapi.web.ArgumentMapping[] argMappings;
 <#list model?keys as key>
         if (method == uapi.web.HttpMethod.${key}) {
-            argMappings = new uapi.service.web.ArgumentMapping[${model[key].argumentMappings?size}];
+            argMappings = new uapi.web.ArgumentMapping[${model[key].argumentMappings?size}];
     <#list model[key].argumentMappings as argMapping>
         <#if "uapi.web.IndexedArgumentMapping" == argMapping.class.name>
-            argMappings[${argMapping?index}] = new uapi.web.IndexedArgumentMapping(uapi.service.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", ${argMapping.index});
+            argMappings[${argMapping?index}] = new uapi.web.IndexedArgumentMapping(uapi.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", ${argMapping.index});
         <#elseif "uapi.web.NamedArgumentMapping" == argMapping.class.name>
-            argMappings[${argMapping?index}] = new uapi.web.NamedArgumentMapping(uapi.service.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", "${argMapping.name}");
+            argMappings[${argMapping?index}] = new uapi.web.NamedArgumentMapping(uapi.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", "${argMapping.name}");
         </#if>
     </#list>
             return argMappings;

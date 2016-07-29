@@ -10,7 +10,6 @@
 package uapi.web;
 
 import uapi.IIdentifiable;
-import uapi.service.web.ArgumentMapping;
 
 import java.util.List;
 
