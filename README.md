@@ -19,12 +19,11 @@ Welcome to UAPI project!
 The UAPI project will provide a generic platform/framework and some basic facilities to make build application easier and faster.
 
 It contains below components:
-* Kernel - The core framework core, it contains a extensible code generation framework based on java APT and a service injection library.
+* Kernel - The framework core, it contains a extensible code generation framework based on java APT to support DI.
 * Service - Support Spring bean, remote service injection.
 * Config - The configuration framework
 * Log - The log framework
-* Job - The multiple thread handling framework
-* Flow - The generic work flow framework
+* Event/Behavior - A event driven behavior framework
 * Web - The web framework to support RESTful service
 
 *This framework is still under developing, most features are unstable and the APIs may be changed frequently, welcome to evaluate and give me the feedback*
@@ -325,27 +324,27 @@ The the HelloClient can invoke the service like local service.
 
 ## Version History
 * Featured
-  1. Asynchronous service invocation.
-  1. Event support, decide using 3rd library or implement it self.
-  1. Behavior(actions) definition.
-  1. Event based behavior(actions) execution.
+  - [ ] Asynchronous service invocation.
+  - [ ] Event support, decide using 3rd library or implement it self.
+  - [ ] Behavior(actions) definition.
+  - [ ] Event based behavior(actions) execution.
 
 * v0.3 - in working
-  1. A profile to indicate which service can be registered or not.
-  1. Support custom service parameter and return type.
-  1. Support register service to Consul.
+  - [ ] A profile to indicate which service can be registered or not.
+  - [ ] Support custom service parameter and return type.
+  - [ ] Support register service to Consul.
 
 * v0.2
-  1. Remote service injection which is interface based.
-  1. Generate remote service proxy based on specific interface.
-  1. Implement restful remote proxy.
-  1. Multiple restful services can be aggregated with a interface and can be exposed to a restful service.
+  - [x] Remote service injection which is interface based.
+  - [x] Generate remote service proxy based on specific interface.
+  - [x] Implement restful remote proxy.
+  - [x] Multiple restful services can be aggregated with a interface and can be exposed to a restful service.
 
 * v0.1
-  1. Enhance service class at build time and based on customized annotation.
-  1. Support local service injection.
-  1. Support Spring service injection.
-  1. Annotation based configuration.
-  1. A simple log service provider which is Logback based.
-  1. Embedded web server which is Jetty based.
-  1. Support a simple restful service register to embedded web service based on annotation.
+  - [x] Enhance service class at build time and based on customized annotation.
+  - [x] Support local service injection.
+  - [x] Support Spring service injection.
+  - [x] Annotation based configuration.
+  - [x] A simple log service provider which is Logback based.
+  - [x] Embedded web server which is Jetty based.
+  - [x] Support a simple restful service register to embedded web service based on annotation.
