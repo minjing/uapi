@@ -1,0 +1,13 @@
+dependencies {
+    compile project(':uapi.kernel')
+    compile project(':uapi.service')
+    compile project(':uapi.config')
+
+    compile (
+            "io.netty:netty-all:${netty_version}",
+    )
+}
+
+jar {
+    manifest.attributes
+}
