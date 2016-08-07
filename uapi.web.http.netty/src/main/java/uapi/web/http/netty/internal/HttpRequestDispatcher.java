@@ -12,11 +12,15 @@ package uapi.web.http.netty.internal;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.DecoderResult;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import uapi.helper.StringHelper;
+import uapi.log.ILogger;
 import uapi.rx.Looper;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +28,11 @@ import java.util.Map;
 /**
  * Created by xquan on 8/5/2016.
  */
+@Service
 class HttpRequestDispatcher extends SimpleChannelInboundHandler {
+
+    @Inject
+    ILogger _logger;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -49,6 +57,9 @@ class HttpRequestDispatcher extends SimpleChannelInboundHandler {
             if (result.isSuccess()) {
                 return;
             }
+        }
+        if (msg instanceof HttpContent) {
+            this._logger.error("Unsupported HttpContent branch");
         }
     }
 }
