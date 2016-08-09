@@ -1,0 +1,13 @@
+server:
+  http:
+    host: 127.0.0.1
+    port: 8080
+    idle-timeout: 5000
+
+restful:
+  codec: JSON
+  encoder: JSON
+  uri-prefix: rest
+
+launcher:
+  app: NettyHttpServer

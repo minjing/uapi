@@ -74,7 +74,7 @@ public class NettyHttpServer implements IHttpServer {
             ChannelPipeline pipeline = channel.pipeline();
             pipeline.addLast(new HttpRequestDecoder());
             pipeline.addLast(new HttpResponseEncoder());
-            pipeline.addLast(new HttpRequestDispatcher());
+            pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger));
         }
     }
 }

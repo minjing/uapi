@@ -9,6 +9,7 @@ dependencies {
     compile project(':uapi.config')
     compile project(':uapi.app')
     compile project(':uapi.web')
+    runtime project(':uapi.web.http.netty')
 }
 
 jar {
