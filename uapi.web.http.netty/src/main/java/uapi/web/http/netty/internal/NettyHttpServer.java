@@ -10,10 +10,7 @@
 package uapi.web.http.netty.internal;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -42,29 +39,49 @@ public class NettyHttpServer implements IHttpServer {
     @Inject
     ILogger _logger;
 
+    private EventLoopGroup _bossGroup;
+    private EventLoopGroup _workerGroup;
+    private ChannelFuture _channel;
+
     @Override
     public void start() throws ServerException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        this._bossGroup = new NioEventLoopGroup(1);
+        this._workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap.group(bossGroup, workerGroup)
+            bootstrap.group(this._bossGroup, this._workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpServerInitializer());
-            Channel channel = bootstrap.bind(this._host, this._port).sync().channel();
+            this._channel = bootstrap.bind(this._host, this._port).sync();
             this._logger.info("Http server listener on {}:{}", this._host, this._port);
-            channel.closeFuture().sync();
+//            this._channel.closeFuture().sync();
         } catch (InterruptedException ex) {
+            stop();
             throw new ServerException(ex);
         } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
+//            this._bossGroup.shutdownGracefully();
+//            this._workerGroup.shutdownGracefully();
+//            stop();
         }
     }
 
     @Override
     public void stop() throws ServerException {
+        if (this._bossGroup != null) {
+            this._bossGroup.shutdownGracefully();
+        }
+        if (this._workerGroup != null) {
+            this._workerGroup.shutdownGracefully();
+        }
 
+        try {
+            if (this._channel != null) {
+                this._channel.channel().closeFuture().sync();
+            }
+        } catch (InterruptedException ex) {
+            // do nothing
+        }
+        this._logger.info("Http server is shutdown on {}:{}", this._host, this._port);
     }
 
     private class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
