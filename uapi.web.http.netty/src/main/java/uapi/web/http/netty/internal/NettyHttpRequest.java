@@ -11,14 +11,17 @@ package uapi.web.http.netty.internal;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
+import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.rx.Looper;
-import uapi.web.http.IHttpRequest;
+import uapi.web.http.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ class NettyHttpRequest implements IHttpRequest {
     private final Map<String, List<String>> _params = new HashMap<>();
     private String _uri;
     private Object _jsonObj;
+    private uapi.web.http.HttpMethod _method;
+    private uapi.web.http.HttpVersion _version;
 
     NettyHttpRequest(final HttpMessage msg) {
         if (msg == null) {
@@ -47,7 +52,7 @@ class NettyHttpRequest implements IHttpRequest {
 
             HttpHeaders headers = request.headers();
             Looper.from(headers.iteratorAsString())
-                    .foreach(entry -> this._headers.put(entry.getKey(), entry.getValue()));
+                    .foreach(entry -> this._headers.put(entry.getKey().toLowerCase(), entry.getValue()));
 
             this._uri = request.uri();
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(this._uri);
@@ -55,8 +60,34 @@ class NettyHttpRequest implements IHttpRequest {
             Looper.from(params.entrySet())
                     .foreach(entry -> this._params.put(entry.getKey(), entry.getValue()));
 
+            HttpVersion version = request.protocolVersion();
+            if (HttpVersion.HTTP_1_0.equals(version)) {
+                this._version = uapi.web.http.HttpVersion.V_1_0;
+            } else if (HttpVersion.HTTP_1_1.equals(version)) {
+                this._version = uapi.web.http.HttpVersion.V_1_1;
+            } else {
+                throw new KernelException("Unsupported Http version - {}", version);
+            }
+
+            HttpMethod method = request.method();
+            if (HttpMethod.GET.equals(method)) {
+                this._method = uapi.web.http.HttpMethod.GET;
+            } else if (HttpMethod.PUT.equals(method)) {
+                this._method = uapi.web.http.HttpMethod.PUT;
+            } else if (HttpMethod.POST.equals(method)) {
+                this._method = uapi.web.http.HttpMethod.POST;
+            } else if (HttpMethod.DELETE.equals(method)) {
+                this._method = uapi.web.http.HttpMethod.DELETE;
+            } else {
+                throw new KernelException("Unsupported http method {}", method.toString());
+            }
+
             HttpMethod httpMethod = request.method();
             if (httpMethod.equals(HttpMethod.POST)) {
+                String contentTypeStr = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString());
+                if (ArgumentChecker.isEmpty(contentTypeStr)) {
+                    throw new KernelException("The {} must be specified in POST request", HttpHeaderNames.CONTENT_TYPE.toString());
+                }
                 String[] contentTypes = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString()).split(";");
                 String contentType;
                 if (contentTypes.length < 0) {
@@ -107,6 +138,16 @@ class NettyHttpRequest implements IHttpRequest {
         return this._uri;
     }
 
+    @Override
+    public uapi.web.http.HttpVersion version() {
+        return this._version;
+    }
+
+    @Override
+    public uapi.web.http.HttpMethod method() {
+        return this._method;
+    }
+
     public Object jsonObject() {
         return this._jsonObj;
     }
@@ -124,8 +165,8 @@ class NettyHttpRequest implements IHttpRequest {
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("URI:\n");
-        buffer.append("\t").append(this._uri).append("\n");
+        buffer.append("URI: ").append(this._uri).append("\n");
+        buffer.append("METHOD: ").append(this._method).append("\n");
         buffer.append("HEADERS: \n");
         Looper.from(this._headers.entrySet())
                 .map(entry -> StringHelper.makeString("\t{} = {}\n", entry.getKey(), entry.getValue()))

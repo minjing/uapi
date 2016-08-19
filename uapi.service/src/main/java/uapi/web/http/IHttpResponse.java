@@ -14,6 +14,10 @@ package uapi.web.http;
  */
 public interface IHttpResponse {
 
+    void setVersion(HttpVersion httpVersion);
+
+    void setStatus(HttpResponseStatus responseStatus);
+
     void setHeader(String key, String value);
 
     void setHeader(String key, Object value);

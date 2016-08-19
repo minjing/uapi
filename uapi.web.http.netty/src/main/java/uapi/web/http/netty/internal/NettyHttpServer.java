@@ -18,11 +18,18 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import uapi.config.annotation.Config;
 import uapi.log.ILogger;
+import uapi.rx.Looper;
 import uapi.server.ServerException;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.web.http.IHttpConfigurableKey;
+import uapi.web.http.IHttpHandler;
 import uapi.web.http.IHttpServer;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xquan on 8/5/2016.
@@ -39,9 +46,16 @@ public class NettyHttpServer implements IHttpServer {
     @Inject
     ILogger _logger;
 
+    @Inject
+    Map<String, IHttpHandler> _handlers = new HashMap<>();
+
     private EventLoopGroup _bossGroup;
     private EventLoopGroup _workerGroup;
     private ChannelFuture _channel;
+
+    public void init() {
+        // TODO: order handlers
+    }
 
     @Override
     public void start() throws ServerException {
@@ -86,12 +100,18 @@ public class NettyHttpServer implements IHttpServer {
 
     private class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
 
+        /**
+         * Invoked when channel is created
+         *
+         * @param channel
+         * @throws Exception
+         */
         @Override
         protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline pipeline = channel.pipeline();
             pipeline.addLast(new HttpRequestDecoder());
             pipeline.addLast(new HttpResponseEncoder());
-            pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger));
+            pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger, NettyHttpServer.this._handlers));
         }
     }
 }

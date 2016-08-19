@@ -9,23 +9,10 @@
 
 package uapi.web.http;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * Created by xquan on 8/18/2016.
+ * Created by xquan on 8/19/2016.
  */
-public interface IHttpRequest {
+public enum HttpMethod {
 
-    boolean isKeepAlive();
-
-    Map<String, String> headers();
-
-    String uri();
-
-    HttpMethod method();
-
-    HttpVersion version();
-
-    Map<String, List<String>> params();
+    GET, PUT, POST, DELETE
 }
