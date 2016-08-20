@@ -14,8 +14,10 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.HttpServerCodec;
 import uapi.config.annotation.Config;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
@@ -109,8 +111,8 @@ public class NettyHttpServer implements IHttpServer {
         @Override
         protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline pipeline = channel.pipeline();
-            pipeline.addLast(new HttpRequestDecoder());
-            pipeline.addLast(new HttpResponseEncoder());
+            pipeline.addLast(new HttpServerCodec());
+//            pipeline.addLast(new HttpObjectAggregator(1024 * 1024)); // 1M
             pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger, NettyHttpServer.this._handlers));
         }
     }

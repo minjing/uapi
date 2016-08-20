@@ -9,11 +9,14 @@
 
 package uapi.web.http.netty.internal;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import uapi.KernelException;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
@@ -30,12 +33,8 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
     private final Map<String, IHttpHandler> _handlers;
 
-//    private HttpRequest _request;
-//    private final StringBuilder _buffer = new StringBuilder();
-
-//    HttpRequestDispatcher(ILogger logger) {
-//        this._logger = logger;
-//    }
+    private NettyHttpRequest _request;
+    private NettyHttpResponse _response;
 
     HttpRequestDispatcher(ILogger logger, Map<String, IHttpHandler> handlers) {
         this._logger = logger;
@@ -50,39 +49,49 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
-            if (msg instanceof HttpMessage) {
-                NettyHttpRequest request = new NettyHttpRequest((HttpMessage) msg);
-                NettyHttpResponse response = new NettyHttpResponse(ctx, request);
-
-                Looper.from(this._handlers.entrySet())
-                        .map(Map.Entry::getValue)
-                        .foreach(handler -> {
-                            switch (request.method()) {
-                                case GET:
-                                    handler.get(request, response);
-                                    break;
-                                case PUT:
-                                    handler.put(request, response);
-                                    break;
-                                case POST:
-                                    handler.post(request, response);
-                                    break;
-                                case DELETE:
-                                    handler.delete(request, response);
-                                    break;
-                                default:
-                                    throw new KernelException("Unsupported http method {}", request.method());
-                            }
-                        });
-//                response.setHeader(HttpHeaderNames.CONTENT_TYPE.toString(), "text/plain; charset=UTF-8");
-//                response.write(request.toString());
-                response.flush();
-            } else {
-                super.channelRead(ctx, msg);
+            if (msg instanceof HttpRequest) {
+                if (this._request == null) {
+                    this._request = new NettyHttpRequest(this._logger, (HttpRequest) msg);
+                }
+                if (this._response == null) {
+                    this._response = new NettyHttpResponse(ctx, this._request);
+                }
             }
-//            if (msg instanceof HttpContent) {
-//                this._logger.error("Unsupported HttpContent branch");
-//            }
+            if (msg instanceof HttpContent) {
+                this._request.appendBodyPart((HttpContent) msg);
+
+                if (msg instanceof LastHttpContent) {
+                    this._request.addTrailer((LastHttpContent) msg);
+
+                    Looper.from(this._handlers.entrySet())
+                            .map(Map.Entry::getValue)
+                            .foreach(handler -> {
+                                switch (this._request.method()) {
+                                    case GET:
+                                        handler.get(this._request, this._response);
+                                        break;
+                                    case PUT:
+                                        handler.put(this._request, this._response);
+                                        break;
+                                    case POST:
+                                        handler.post(this._request, this._response);
+                                        break;
+                                    case DELETE:
+                                        handler.delete(this._request, this._response);
+                                        break;
+                                    default:
+                                        throw new KernelException("Unsupported http method {}", this._request.method());
+                                }
+                            });
+                    
+                    this._response.flush();
+
+                    if (! this._request.isKeepAlive()) {
+                        // If keep-alive is off, close the connection once the content is fully written.
+                        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+                    }
+                }
+            }
         } catch (Exception ex) {
             this._logger.error(ex);
             FullHttpMessage response = new DefaultFullHttpResponse(
@@ -91,6 +100,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
                     Unpooled.copiedBuffer(ex.toString(), CharsetUtil.UTF_8));
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
             ctx.writeAndFlush(response);
+            ReferenceCountUtil.release(msg);
         }
     }
 
