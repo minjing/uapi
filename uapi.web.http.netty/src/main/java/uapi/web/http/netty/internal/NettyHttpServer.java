@@ -112,7 +112,7 @@ public class NettyHttpServer implements IHttpServer {
         protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline pipeline = channel.pipeline();
             pipeline.addLast(new HttpServerCodec());
-//            pipeline.addLast(new HttpObjectAggregator(1024 * 1024)); // 1M
+            pipeline.addLast(new HttpObjectAggregator(1024 * 1024)); // 1M
             pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger, NettyHttpServer.this._handlers));
         }
     }

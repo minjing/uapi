@@ -122,6 +122,14 @@ abstract class Operator<T> implements IOperator<T> {
     }
 
     @Override
+    public T sum() {
+        SumOperator<T> operator = new SumOperator<>(this);
+        T result = operator.getItem();
+        operator.done();
+        return result;
+    }
+
+    @Override
     public List<T> toList() {
         ToListOperator<T> operator = new ToListOperator<>(this);
         List<T> result = operator.getItem();

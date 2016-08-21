@@ -97,8 +97,10 @@ public interface IOperator<T> {
      */
     T single(T defaultValue) throws MoreItemException;
 
+    T sum() throws NoItemException;
+
     /**
-     * Return all element to a list
+     * Return all element to a list, empty list will be returned if no element
      *
      * @return  A list contains all element
      */

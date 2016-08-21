@@ -59,8 +59,13 @@ public class JettyHttpServer implements IHttpServer {
     private Server _server;
     private ServletHandler _servletHandler;
 
-    @Init
-    public void init() {
+//    @Init
+//    public void init() {
+//
+//    }
+
+    @Override
+    public void start() throws ServerException {
         this._server = new Server();
 
         ServerConnector serverConnector = new ServerConnector(this._server);
@@ -77,10 +82,7 @@ public class JettyHttpServer implements IHttpServer {
                     ServletHolder holder = new ServletHolder(servlet);
                     this._servletHandler.addServletWithMapping(holder, servlet.getPathPattern());
                 });
-    }
 
-    @Override
-    public void start() throws ServerException {
         try {
             this._server.start();
             this._server.join();

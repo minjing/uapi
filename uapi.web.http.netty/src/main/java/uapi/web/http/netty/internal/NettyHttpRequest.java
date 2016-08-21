@@ -47,7 +47,7 @@ class NettyHttpRequest implements IHttpRequest {
     private uapi.web.http.HttpMethod _method;
     private uapi.web.http.HttpVersion _version;
     private List<ByteBuf> _bodyParts = new ArrayList<>();
-    private boolean lastBodyPart = true;
+    private boolean _lastBodyPart = true;
 
     NettyHttpRequest(final ILogger logger, final HttpRequest httpRequest) {
         this._logger = logger;
@@ -179,6 +179,7 @@ class NettyHttpRequest implements IHttpRequest {
                         }
                     });
         }
+        this._lastBodyPart = true;
     }
 
     void appendBodyPart(HttpContent httpContent) {
@@ -188,6 +189,15 @@ class NettyHttpRequest implements IHttpRequest {
         } else {
             this._logger.error("The body buffer is not readable.");
         }
+    }
+
+    int getBodySize() {
+        if (this._bodyParts.size() == 0) {
+            return 0;
+        }
+        return Looper.from(this._bodyParts)
+                .map(ByteBuf::readableBytes)
+                .sum();
     }
 
     @Override
