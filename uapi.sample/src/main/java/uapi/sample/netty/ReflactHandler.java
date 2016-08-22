@@ -22,7 +22,7 @@ public class ReflactHandler implements IHttpHandler {
 
     @Override
     public Object getId() {
-        return "/";
+        return "/a";
     }
 
     @Override
@@ -51,6 +51,8 @@ public class ReflactHandler implements IHttpHandler {
     }
 
     private void handle(IHttpRequest request, IHttpResponse response) {
+        request.params();
+        request.textParam();
         response.write(request.toString());
     }
 }

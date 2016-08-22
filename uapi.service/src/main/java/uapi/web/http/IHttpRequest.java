@@ -9,6 +9,7 @@
 
 package uapi.web.http;
 
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -28,4 +29,10 @@ public interface IHttpRequest {
     HttpVersion version();
 
     Map<String, List<String>> params();
+
+    <T> T objectParam(Class<T> objectType);
+
+    String textParam();
+
+    void saveBody(OutputStream outputStream);
 }

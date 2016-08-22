@@ -14,18 +14,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import uapi.InvalidArgumentException;
+import io.netty.util.CharsetUtil;
 import uapi.KernelException;
-import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.web.http.*;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,12 +40,16 @@ class NettyHttpRequest implements IHttpRequest {
     private final Map<String, String> _headers = new HashMap<>();
     private final Map<String, List<String>> _trailers = new HashMap<>();
     private final Map<String, List<String>> _params = new HashMap<>();
+    private Object _objParam;
+    private String _textParam;
     private String _uri;
-    private Object _jsonObj;
     private uapi.web.http.HttpMethod _method;
     private uapi.web.http.HttpVersion _version;
     private List<ByteBuf> _bodyParts = new ArrayList<>();
     private boolean _lastBodyPart = true;
+
+    private final ContentType _conentType;
+    private final Charset _charset;
 
     NettyHttpRequest(final ILogger logger, final HttpRequest httpRequest) {
         this._logger = logger;
@@ -85,47 +87,28 @@ class NettyHttpRequest implements IHttpRequest {
             throw new KernelException("Unsupported http method {}", method.toString());
         }
 
-        HttpMethod httpMethod = this._request.method();
-        if (httpMethod.equals(HttpMethod.POST)) {
-            String contentTypeStr = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString());
-            if (ArgumentChecker.isEmpty(contentTypeStr)) {
-                throw new KernelException("The {} must be specified in POST request", HttpHeaderNames.CONTENT_TYPE.toString());
-            }
-            String[] contentTypes = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString()).split(";");
-            String contentType;
-            if (contentTypes.length < 0) {
-                throw new KernelException("No content type was specific");
+        // Decode content type
+        String conentTypeString = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString());
+        if (conentTypeString == null) {
+            this._conentType = ContentType.TEXT;
+            this._charset = Charset.forName("UTF-8");
+        } else {
+            String[] contentTypeInfo = conentTypeString.split(";");
+            if (contentTypeInfo.length < 0) {
+                this._conentType = ContentType.TEXT;
+                this._charset = CharsetUtil.UTF_8;
+            } else if (contentTypeInfo.length == 1) {
+                this._conentType = ContentType.parse(contentTypeInfo[0]);
+                this._charset = CharsetUtil.UTF_8;
             } else {
-                contentType = contentTypes[0];
-            }
-            if (contentType.equals("application/json")) {
-                FullHttpRequest fullHttpRequest = (FullHttpRequest) this._request;
-                String jsonStr = fullHttpRequest.content().toString();
-                try {
-                    this._jsonObj = JSON.std.anyFrom(jsonStr);
-                } catch (IOException ex) {
-                    throw new KernelException(ex);
-                }
-            } else if (contentType.equals("application/x-www-form-urlencoded")) {
-                HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(this._request);
-                List<InterfaceHttpData> datas = decoder.getBodyHttpDatas();
-                Looper.from(datas)
-                        .filter(data -> data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute)
-                        .map(data -> (Attribute) data)
-                        .foreach(attr -> {
-                            List<String> values = this._params.get(attr.getName());
-                            if (values == null) {
-                                values = new ArrayList<>();
-                                this._params.put(attr.getName(), values);
-                            }
-                            try {
-                                values.add(attr.getValue());
-                            } catch (IOException ex) {
-                                throw new KernelException(ex);
-                            }
-                        });
-            } else {
-                throw new KernelException("Unsupported content type {}", contentType);
+                this._conentType = ContentType.parse(contentTypeInfo[0]);
+                this._charset = Looper.from(contentTypeInfo)
+                        .map(info -> info.split("="))
+                        .filter(kv -> kv.length == 2)
+                        .filter(kv -> kv[0].trim().equalsIgnoreCase("charset"))
+                        .map(kv -> kv[1])
+                        .map(Charset::forName)
+                        .first(CharsetUtil.UTF_8);
             }
         }
     }
@@ -150,10 +133,6 @@ class NettyHttpRequest implements IHttpRequest {
         return this._method;
     }
 
-    public Object jsonObject() {
-        return this._jsonObj;
-    }
-
     @Override
     public Map<String, String> headers() {
         return this._headers;
@@ -161,7 +140,94 @@ class NettyHttpRequest implements IHttpRequest {
 
     @Override
     public Map<String, List<String>> params() {
+        decodeFormBody();
         return this._params;
+    }
+
+    @Override
+    public <T> T objectParam(Class<T> objectType) {
+        decodeObjectBody(objectType);
+        return (T) this._objParam;
+    }
+
+    @Override
+    public String textParam() {
+        decodeTextBody();
+        return this._textParam;
+    }
+
+    @Override
+    public void saveBody(OutputStream outputStream) {
+        //TODO: save body to a file
+    }
+
+    private void decodeTextBody() {
+        if (this._bodyParts.size() == 0) {
+            return;
+        }
+        if (this._conentType != ContentType.TEXT) {
+            return;
+        }
+
+        this._textParam = getBodyString();
+    }
+
+    private void decodeFormBody() {
+        if (this._bodyParts.size() == 0) {
+            return;
+        }
+        if (this._conentType != ContentType.FORM_URLENCODED) {
+            return;
+        }
+
+        String formString = getBodyString();
+        if (formString.length() == 0) {
+            return;
+        }
+        String[] items = formString.split("&");
+        Looper.from(items)
+                .map(item -> item.split("="))
+                .foreach(kv -> putParam(kv[0], kv[1]));
+    }
+
+    private void decodeObjectBody(Class<?> objectType) {
+        if (this._bodyParts.size() == 0) {
+            return;
+        }
+
+        if (this._conentType != ContentType.JSON) {
+            return;
+        }
+
+        try {
+            this._objParam = JSON.std.beanFrom(objectType, getBodyString());
+        } catch (IOException ex) {
+            throw new KernelException(ex);
+        }
+    }
+
+    private void putParam(String key, String value) {
+        List<String> values = this._params.get(key);
+        if (values == null) {
+            values = new ArrayList<>();
+            this._params.put(key, values);
+        }
+        values.add(value);
+    }
+
+    private String getBodyString() {
+        if (!this._lastBodyPart) {
+            throw new KernelException("Can't decode http body before last body part is not reached");
+        }
+
+        StringBuilder buffer = new StringBuilder();
+        Looper.from(this._bodyParts)
+                .foreach(part -> {
+                    buffer.append(part.toString(this._charset));
+                    part.release();
+                });
+        this._bodyParts.clear();
+        return buffer.toString();
     }
 
     void addTrailer(LastHttpContent httpContent) {
@@ -213,9 +279,8 @@ class NettyHttpRequest implements IHttpRequest {
         Looper.from(this._params.entrySet())
                 .map(entry -> StringHelper.makeString("\t{} = {}\n", entry.getKey(), entry.getValue()))
                 .foreach(buffer::append);
-        if (this._jsonObj != null) {
-            buffer.append("JSON OBJECT:\n").append("\t").append(this._jsonObj.toString()).append("\n");
-        }
+        buffer.append("TEXT PARAM: ").append(this._textParam).append("\n");
+        buffer.append("OBJECT PARAM: ").append(this._objParam).append("\n");
         return buffer.toString();
     }
 }

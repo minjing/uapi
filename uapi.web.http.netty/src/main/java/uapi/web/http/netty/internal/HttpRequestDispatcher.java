@@ -9,7 +9,6 @@
 
 package uapi.web.http.netty.internal;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by xquan on 8/5/2016.
+ * The HttpRequestDispatcher dispatch http request to specific http handler.
  */
 class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
@@ -43,6 +42,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     private NettyHttpResponse _response;
 
     private IHttpHandler _handler;
+    private boolean _failed = false;
 
     HttpRequestDispatcher(ILogger logger, Map<String, IHttpHandler> handlers) {
         this._logger = logger;
@@ -56,6 +56,10 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (this._failed) {
+            ReferenceCountUtil.release(msg);
+            return;
+        }
         try {
             if (msg instanceof HttpRequest) {
                 if (this._request == null) {
@@ -149,6 +153,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
             ctx.writeAndFlush(response);
             ReferenceCountUtil.release(msg);
+            this._failed = true;
         }
     }
 
