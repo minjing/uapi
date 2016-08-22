@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by xquan on 8/5/2016.
+ * The HTTP server implemented by Netty
  */
 @Service(IHttpServer.class)
 public class NettyHttpServer implements IHttpServer {
@@ -51,12 +51,18 @@ public class NettyHttpServer implements IHttpServer {
     @Inject
     Map<String, IHttpHandler> _handlers = new HashMap<>();
 
+    private boolean _started = false;
+
     private EventLoopGroup _bossGroup;
     private EventLoopGroup _workerGroup;
     private ChannelFuture _channel;
 
     public void init() {
         // TODO: order handlers
+    }
+
+    boolean isStarted() {
+        return this._started;
     }
 
     @Override
@@ -69,16 +75,12 @@ public class NettyHttpServer implements IHttpServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpServerInitializer());
             this._channel = bootstrap.bind(this._host, this._port).sync();
-            this._logger.info("Http server listener on {}:{}", this._host, this._port);
-//            this._channel.closeFuture().sync();
         } catch (InterruptedException ex) {
             stop();
             throw new ServerException(ex);
-        } finally {
-//            this._bossGroup.shutdownGracefully();
-//            this._workerGroup.shutdownGracefully();
-//            stop();
         }
+        this._started = true;
+        this._logger.info("Http server listener on {}:{}", this._host, this._port);
     }
 
     @Override
@@ -97,6 +99,7 @@ public class NettyHttpServer implements IHttpServer {
         } catch (InterruptedException ex) {
             // do nothing
         }
+        this._started = false;
         this._logger.info("Http server is shutdown on {}:{}", this._host, this._port);
     }
 
@@ -112,7 +115,6 @@ public class NettyHttpServer implements IHttpServer {
         protected void initChannel(SocketChannel channel) throws Exception {
             ChannelPipeline pipeline = channel.pipeline();
             pipeline.addLast(new HttpServerCodec());
-//            pipeline.addLast(new HttpObjectAggregator(1024 * 1024)); // 1M
             pipeline.addLast(new HttpRequestDispatcher(NettyHttpServer.this._logger, NettyHttpServer.this._handlers));
         }
     }
