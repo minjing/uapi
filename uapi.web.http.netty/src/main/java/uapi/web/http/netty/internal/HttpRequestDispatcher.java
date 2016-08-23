@@ -34,7 +34,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
     private final ILogger _logger;
 
-    private final Map<String, IHttpHandler> _handlers;
+    private final List<IHttpHandler> _handlers;
 
     private final int _maxBufferSize = DEFAULT_BUFFER_SIZE;
 
@@ -44,7 +44,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     private IHttpHandler _handler;
     private boolean _failed = false;
 
-    HttpRequestDispatcher(ILogger logger, Map<String, IHttpHandler> handlers) {
+    HttpRequestDispatcher(ILogger logger, List<IHttpHandler> handlers) {
         this._logger = logger;
         this._handlers = handlers;
     }
@@ -72,9 +72,8 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
             // Find out mapped handler
             if (this._handler == null) {
-                List<IHttpHandler> handlers = Looper.from(this._handlers.entrySet())
-                        .filter(entry -> this._request.uri().startsWith(entry.getKey()))
-                        .map(Map.Entry::getValue)
+                List<IHttpHandler> handlers = Looper.from(this._handlers)
+                        .filter(handler -> this._request.uri().startsWith(handler.getUriMapping()))
                         .toList();
                 if (handlers.size() == 0) {
                     throw new KernelException("No handler is mapped to uri {}", this._request.uri());
@@ -84,9 +83,13 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
                     for (int i = 1; i < handlers.size(); i++) {
                         if (handlers.get(i).getUriMapping().length() > this._handler.getUriMapping().length()) {
                             this._handler = handlers.get(i);
+                            break;
                         }
                     }
                 }
+            }
+            if (this._handler == null) {
+                throw new KernelException("No handler is mapped to uri - ", this._request.uri());
             }
 
             if (this._handler instanceof ILargeHttpHandler) {

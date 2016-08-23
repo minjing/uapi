@@ -14,7 +14,7 @@ import uapi.IIdentifiable;
 /**
  * Created by xquan on 8/19/2016.
  */
-public interface IHttpHandler extends IIdentifiable {
+public interface IHttpHandler {
 
     String getUriMapping();
 

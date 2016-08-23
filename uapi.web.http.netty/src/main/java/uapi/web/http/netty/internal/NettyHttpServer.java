@@ -49,7 +49,7 @@ public class NettyHttpServer implements IHttpServer {
     ILogger _logger;
 
     @Inject
-    Map<String, IHttpHandler> _handlers = new HashMap<>();
+    List<IHttpHandler> _handlers = new ArrayList<>();
 
     private boolean _started = false;
 

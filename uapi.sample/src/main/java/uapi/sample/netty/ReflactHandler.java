@@ -21,13 +21,8 @@ import uapi.web.http.IHttpResponse;
 public class ReflactHandler implements IHttpHandler {
 
     @Override
-    public Object getId() {
-        return "/a";
-    }
-
-    @Override
     public String getUriMapping() {
-        return getId().toString();
+        return "/a";
     }
 
     @Override

@@ -88,25 +88,25 @@ class NettyHttpRequest implements IHttpRequest {
         }
 
         // Decode content type
-        String conentTypeString = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString());
-        if (conentTypeString == null) {
+        String contentTypeString = this._headers.get(HttpHeaderNames.CONTENT_TYPE.toString());
+        if (contentTypeString == null) {
             this._conentType = ContentType.TEXT;
             this._charset = Charset.forName("UTF-8");
         } else {
-            String[] contentTypeInfo = conentTypeString.split(";");
+            String[] contentTypeInfo = contentTypeString.split(";");
             if (contentTypeInfo.length < 0) {
                 this._conentType = ContentType.TEXT;
                 this._charset = CharsetUtil.UTF_8;
             } else if (contentTypeInfo.length == 1) {
-                this._conentType = ContentType.parse(contentTypeInfo[0]);
+                this._conentType = ContentType.parse(contentTypeInfo[0].trim());
                 this._charset = CharsetUtil.UTF_8;
             } else {
-                this._conentType = ContentType.parse(contentTypeInfo[0]);
+                this._conentType = ContentType.parse(contentTypeInfo[0].trim());
                 this._charset = Looper.from(contentTypeInfo)
                         .map(info -> info.split("="))
                         .filter(kv -> kv.length == 2)
                         .filter(kv -> kv[0].trim().equalsIgnoreCase("charset"))
-                        .map(kv -> kv[1])
+                        .map(kv -> kv[1].trim())
                         .map(Charset::forName)
                         .first(CharsetUtil.UTF_8);
             }
@@ -136,6 +136,14 @@ class NettyHttpRequest implements IHttpRequest {
     @Override
     public Map<String, String> headers() {
         return this._headers;
+    }
+
+    ContentType contentType() {
+        return this._conentType;
+    }
+
+    Charset charset() {
+        return this._charset;
     }
 
     @Override
