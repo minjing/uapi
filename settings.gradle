@@ -1,5 +1,5 @@
 include 'uapi.kernel'
 include 'uapi.test', 'uapi.log', 'uapi.config', 'uapi.task', 'uapi.flow', 'uapi.service', 'uapi.service.spring', 'uapi.service.remote'
-include 'uapi.web', 'uapi.web.http.netty'
+include 'uapi.web', 'uapi.web.http.netty', 'uapi.web.restful'
 include 'uapi.app'
 include 'uapi.sample'

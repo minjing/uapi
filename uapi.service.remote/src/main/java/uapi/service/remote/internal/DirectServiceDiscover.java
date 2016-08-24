@@ -20,6 +20,7 @@ import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.*;
 import uapi.web.*;
+import uapi.web.JsonStringCodec;
 
 import java.util.ArrayList;
 import java.util.HashMap;

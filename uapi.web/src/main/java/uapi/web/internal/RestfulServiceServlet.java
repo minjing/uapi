@@ -21,6 +21,7 @@ import uapi.service.*;
 import uapi.service.annotation.*;
 import uapi.service.annotation.Optional;
 import uapi.web.*;
+import uapi.web.IStringCodec;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
