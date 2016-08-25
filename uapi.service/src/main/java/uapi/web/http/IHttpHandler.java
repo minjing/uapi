@@ -9,8 +9,6 @@
 
 package uapi.web.http;
 
-import uapi.IIdentifiable;
-
 /**
  * Created by xquan on 8/19/2016.
  */
@@ -18,11 +16,13 @@ public interface IHttpHandler {
 
     String getUriMapping();
 
+    void post(IHttpRequest request, IHttpResponse response);
+
     void get(IHttpRequest request, IHttpResponse response);
 
     void put(IHttpRequest request, IHttpResponse response);
 
-    void post(IHttpRequest request, IHttpResponse response);
+    void patch(IHttpRequest request, IHttpResponse response);
 
     void delete(IHttpRequest request, IHttpResponse response);
 }

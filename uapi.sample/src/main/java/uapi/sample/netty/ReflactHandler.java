@@ -36,6 +36,11 @@ public class ReflactHandler implements IHttpHandler {
     }
 
     @Override
+    public void patch(IHttpRequest request, IHttpResponse response) {
+        handle(request, response);
+    }
+
+    @Override
     public void post(IHttpRequest request, IHttpResponse response) {
         handle(request, response);
     }

@@ -191,7 +191,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                         svcMeta.host = this._host;
                         svcMeta.port = this._port;
                         svcMeta.context = this._context;
-                        svcMeta.methods = entry.getValue();//.toArray(new HttpMethod[entry.getValue().size()]);
+//                        svcMeta.methods = entry.getValue();//.toArray(new HttpMethod[entry.getValue().size()]);
                         List<ArgumentMeta> argMappings = svcInfo.getArgumentMappings();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
@@ -205,7 +205,7 @@ public class RestfulServiceServlet extends MappableHttpServlet {
                                         IndexedArgumentMapping iArgMapping = (IndexedArgumentMapping) argMapping;
                                         argMeta.index = iArgMapping.getIndex();
                                     }
-                                    argMeta.from = argMapping.getFrom();
+//                                    argMeta.from = argMapping.getFrom();
                                     argMeta.typeName = argMapping.getType();
                                     svcMeta.argumentMetas[argIdx] = argMeta;
                                 });

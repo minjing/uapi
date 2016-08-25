@@ -10,20 +10,22 @@
 package uapi.service.remote.internal;
 
 import okhttp3.*;
+import okhttp3.Response;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.Triple;
 import uapi.log.ILogger;
-import uapi.service.ArgumentMeta;
-import uapi.service.RestfulServiceMeta;
-import uapi.service.TypeMapper;
+import uapi.service.*;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
-import uapi.service.ServiceMeta;
-import uapi.web.*;
+import uapi.web.http.HttpMethod;
+import uapi.web.restful.ArgumentFrom;
+import uapi.web.restful.ArgumentMapping;
+import uapi.web.restful.IndexedArgumentMapping;
+import uapi.web.restful.NamedArgumentMapping;
 
 import java.io.IOException;
 import java.util.ArrayList;

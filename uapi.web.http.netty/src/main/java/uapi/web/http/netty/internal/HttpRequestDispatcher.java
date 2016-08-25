@@ -100,6 +100,9 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
                     case PUT:
                         this._handler.put(this._request, this._response);
                         break;
+                    case PATCH:
+                        this._handler.patch(this._request, this._response);
+                        break;
                     case POST:
                         this._handler.post(this._request, this._response);
                         break;

@@ -14,5 +14,5 @@ package uapi.web.http;
  */
 public enum HttpMethod {
 
-    GET, PUT, POST, DELETE
+    GET, PUT, PATCH, POST, DELETE
 }

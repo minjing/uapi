@@ -81,6 +81,8 @@ class NettyHttpRequest implements IHttpRequest {
             this._method = uapi.web.http.HttpMethod.PUT;
         } else if (HttpMethod.POST.equals(method)) {
             this._method = uapi.web.http.HttpMethod.POST;
+        } else if (HttpMethod.PATCH.equals(method)) {
+            this._method = uapi.web.http.HttpMethod.PATCH;
         } else if (HttpMethod.DELETE.equals(method)) {
             this._method = uapi.web.http.HttpMethod.DELETE;
         } else {

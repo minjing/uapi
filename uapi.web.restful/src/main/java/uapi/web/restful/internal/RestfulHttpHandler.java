@@ -13,17 +13,25 @@ import com.google.common.base.Strings;
 import uapi.KernelException;
 import uapi.Type;
 import uapi.config.annotation.Config;
+import uapi.helper.CollectionHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
+import uapi.service.*;
 import uapi.service.IStringCodec;
-import uapi.service.TypeMapper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
+import uapi.web.*;
+import uapi.web.http.HttpMethod;
 import uapi.web.http.IHttpHandler;
 import uapi.web.http.IHttpRequest;
 import uapi.web.http.IHttpResponse;
 import uapi.web.restful.*;
+import uapi.web.restful.ArgumentFrom;
+import uapi.web.restful.ArgumentMapping;
+import uapi.web.restful.Constant;
+import uapi.web.restful.IndexedArgumentMapping;
+import uapi.web.restful.NamedArgumentMapping;
 
 import java.util.*;
 
@@ -70,6 +78,14 @@ public class RestfulHttpHandler implements IHttpHandler {
         return this._context;
     }
 
+    /**
+     * Query data.
+     * Success: return 200(OK) and attach the response in the body
+     * FAILURE: return 404(Not Found) if no such data can be returned
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void get(IHttpRequest request, IHttpResponse response) {
         UriInfo uriInfo = parseUri(request);
@@ -81,18 +97,58 @@ public class RestfulHttpHandler implements IHttpHandler {
         }
     }
 
+    /**
+     * Update whole data.
+     * Success: return 200(OK)
+     * FAILURE: return 404(Not Found) if no such data can be updated
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void put(IHttpRequest request, IHttpResponse response) {
         UriInfo uriInfo = parseUri(request);
         handleRequest(request, response, uriInfo);
     }
 
+    /**
+     * Create data.
+     * Success: return 200(OK)
+     * FAILURE: return 400(Bad Request) if the modified data is not valid
+     *          return 409(Conflict) if created data is conflict with existing data
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void post(IHttpRequest request, IHttpResponse response) {
         UriInfo uriInfo = parseUri(request);
         handleRequest(request, response, uriInfo);
     }
 
+    /**
+     * Update party of data.
+     * Success: return 200(OK)
+     * Failure: return 400(Bad Request) if the modified data is not valid
+     *          return 404(Not Found) if no such data can be updated
+     *
+     * @param request
+     * @param response
+     */
+    @Override
+    public void patch(IHttpRequest request, IHttpResponse response) {
+        UriInfo uriInfo = parseUri(request);
+        handleRequest(request, response, uriInfo);
+    }
+
+    /**
+     * Delete data.
+     * Success: return 200(OK)
+     * Failure: return 404(Not Found) if data can be found
+     *
+     * @param request
+     * @param response
+     */
     @Override
     public void delete(IHttpRequest request, IHttpResponse response) {
         UriInfo uriInfo = parseUri(request);
@@ -136,7 +192,66 @@ public class RestfulHttpHandler implements IHttpHandler {
     }
 
     private void handleDiscoverRequest(IHttpRequest request, IHttpResponse response, UriInfo uriInfo) {
-        // TODO
+        List<String> intfNames = request.params().get(PARAM_INTERFACE);
+        if (intfNames == null || intfNames.size() != 1) {
+            throw new KernelException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
+        }
+        String intfName = intfNames.get(0);
+        if (Strings.isNullOrEmpty(intfName)) {
+            throw new KernelException("The queried restful service type can't be empty");
+        }
+        List<IRestfulInterface> matchedIntfs = Looper.from(this._restIntfs)
+                .filter(restIntf -> restIntf.getInterfaceId().equals(intfName))
+                .toList();
+        ServiceDiscoveryResponse resp = new ServiceDiscoveryResponse();
+        if (matchedIntfs.size() != 1) {
+            resp.code = CommonResponseCode.FAILURE;
+        } else {
+            resp.code = CommonResponseCode.SUCCESS;
+            IRestfulInterface restfulIntf = matchedIntfs.get(0);
+            resp.data = new ServiceDiscoveryResponse.Data();
+            resp.data.communication = Constants.COMMUNICATION_RESTFUL;
+            resp.data.interfaceId = restfulIntf.getInterfaceId();
+            Map<ServiceMeta, List<HttpMethod>> methodHttpMethodMappings = restfulIntf.getMethodHttpMethodInfos();
+            resp.data.serviceMetas = new ArrayList<>();
+            Looper.from(methodHttpMethodMappings.entrySet())
+                    .foreachWithIndex((index, entry) -> {
+                        ServiceMeta svcInfo = entry.getKey();
+                        ServiceDiscoveryResponse.ServiceMeta svcMeta = new ServiceDiscoveryResponse.ServiceMeta();
+                        svcMeta.id = svcInfo.getId();
+                        svcMeta.name = svcInfo.getName();
+                        svcMeta.returnTypeName = svcInfo.getReturnTypeName();
+                        svcMeta.codec = this._codecName;
+                        svcMeta.host = this._host;
+                        svcMeta.port = this._port;
+                        svcMeta.context = this._context;
+                        svcMeta.methods = entry.getValue();
+                        List<ArgumentMeta> argMappings = svcInfo.getArgumentMappings();
+                        svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
+                        Looper.from(argMappings)
+                                .map(argMapping -> (uapi.web.restful.ArgumentMapping) argMapping)
+                                .foreachWithIndex((argIdx, argMapping) -> {
+                                    ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
+                                    if (argMapping instanceof uapi.web.restful.NamedArgumentMapping) {
+                                        uapi.web.restful.NamedArgumentMapping nArgMapping = (uapi.web.restful.NamedArgumentMapping) argMapping;
+                                        argMeta.name = nArgMapping.getName();
+                                    } else if (argMapping instanceof uapi.web.restful.IndexedArgumentMapping) {
+                                        uapi.web.restful.IndexedArgumentMapping iArgMapping = (uapi.web.restful.IndexedArgumentMapping) argMapping;
+                                        argMeta.index = iArgMapping.getIndex();
+                                    }
+                                    argMeta.from = argMapping.getFrom();
+                                    argMeta.typeName = argMapping.getType();
+                                    svcMeta.argumentMetas[argIdx] = argMeta;
+                                });
+                        resp.data.serviceMetas.add(svcMeta);
+                    });
+        }
+        IStringCodec codec = this._codecs.get(this._codecName);
+        if (codec == null) {
+            throw new KernelException("The response codec was not found - {}", this._codecName);
+        }
+        response.write(codec.decode(resp, ServiceDiscoveryResponse.class));
+        response.flush();
     }
 
     private Object parseValue(String value, String type) {
@@ -205,6 +320,5 @@ public class RestfulHttpHandler implements IHttpHandler {
 
         private String serviceName;
         private List<String> uriParams = new ArrayList<>();
-//        private Map<String, String[]> queryParams = new HashMap<>();
     }
 }
