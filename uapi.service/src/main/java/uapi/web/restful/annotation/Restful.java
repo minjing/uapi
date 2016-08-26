@@ -9,6 +9,8 @@
 
 package uapi.web.restful.annotation;
 
+import uapi.web.http.HttpMethod;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -28,7 +30,9 @@ public @interface Restful {
      *
      * @return  Supported http methods
      */
-    int value();
+//    int value();
+
+    HttpMethod[] value();
 
 //    /**
 //     * The uri prefix of this restful

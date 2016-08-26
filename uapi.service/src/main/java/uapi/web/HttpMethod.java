@@ -84,6 +84,7 @@ public enum HttpMethod {
         }
     }
 
+    private String _aaa;
     private final int _value;
 
     HttpMethod(int value) {
@@ -93,5 +94,18 @@ public enum HttpMethod {
     @JsonValue
     public int getValue() {
         return this._value;
+    }
+
+    public void setAA(String bbb) {
+        this._aaa = bbb;
+    }
+
+    public class AA {
+
+        public void test() {
+            HttpMethod method = HttpMethod.GET;
+            method.setAA("bb");
+
+        }
     }
 }

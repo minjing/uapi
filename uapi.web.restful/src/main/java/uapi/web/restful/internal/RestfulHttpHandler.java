@@ -21,11 +21,7 @@ import uapi.service.IStringCodec;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
-import uapi.web.*;
-import uapi.web.http.HttpMethod;
-import uapi.web.http.IHttpHandler;
-import uapi.web.http.IHttpRequest;
-import uapi.web.http.IHttpResponse;
+import uapi.web.http.*;
 import uapi.web.restful.*;
 import uapi.web.restful.ArgumentFrom;
 import uapi.web.restful.ArgumentMapping;
@@ -159,7 +155,7 @@ public class RestfulHttpHandler implements IHttpHandler {
         String svcName = uriInfo.serviceName;
         IRestfulService matchedSvc = this._restSvcs.get(svcName);
         if (matchedSvc == null) {
-            throw new KernelException("No restful service is matched name with {}", svcName);
+            throw new BadRequestException("No restful service is matched name with {}", svcName);
         }
         ArgumentMapping[] argMappings = matchedSvc.getMethodArgumentsInfo(request.method());
         List<Object> argValues = new ArrayList<>();
@@ -172,20 +168,25 @@ public class RestfulHttpHandler implements IHttpHandler {
                     } else if (from == ArgumentFrom.Uri) {
                         value = uriInfo.uriParams.get(((IndexedArgumentMapping) argMapping).getIndex());
                     } else if (from == ArgumentFrom.Param) {
-                        value = request.params().get(((NamedArgumentMapping) argMapping).getName()).get(0);
+                        String paramName = ((NamedArgumentMapping) argMapping).getName();
+                        List<String> params = request.params().get(paramName);
+                        if (params == null || params.size() == 0) {
+                            throw new BadRequestException(paramName);
+                        }
+                        value = params.get(0);
                     } else {
-                        throw new KernelException("Unsupported from indication {}", from);
+                        throw new InternalServerException("Unsupported from indication {}", from);
                     }
                     argValues.add(parseValue(value, argMapping.getType()));
                 });
         Object result = matchedSvc.invoke(request.method(), argValues);
         IStringCodec codec = this._codecs.get(this._codecName);
         if (codec == null) {
-            throw new KernelException("The response codec was not found - {}", this._codecName);
+            throw new InternalServerException("The response codec was not found - {}", this._codecName);
         }
         Class<?> type = this._typeMapper.getType(matchedSvc.getReturnTypeName(request.method()));
         if (type == null) {
-            throw new KernelException("Unsupported typ - {}", matchedSvc.getReturnTypeName(request.method()));
+            throw new InternalServerException("Unsupported typ - {}", matchedSvc.getReturnTypeName(request.method()));
         }
         response.write(codec.decode(result, type));
         response.flush();
@@ -194,18 +195,18 @@ public class RestfulHttpHandler implements IHttpHandler {
     private void handleDiscoverRequest(IHttpRequest request, IHttpResponse response, UriInfo uriInfo) {
         List<String> intfNames = request.params().get(PARAM_INTERFACE);
         if (intfNames == null || intfNames.size() != 1) {
-            throw new KernelException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
+            throw new BadRequestException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
         }
         String intfName = intfNames.get(0);
         if (Strings.isNullOrEmpty(intfName)) {
-            throw new KernelException("The queried restful service type can't be empty");
+            throw new BadRequestException("The queried restful service type can't be empty");
         }
         List<IRestfulInterface> matchedIntfs = Looper.from(this._restIntfs)
                 .filter(restIntf -> restIntf.getInterfaceId().equals(intfName))
                 .toList();
         ServiceDiscoveryResponse resp = new ServiceDiscoveryResponse();
         if (matchedIntfs.size() != 1) {
-            resp.code = CommonResponseCode.FAILURE;
+            throw new NotFoundException(intfName);
         } else {
             resp.code = CommonResponseCode.SUCCESS;
             IRestfulInterface restfulIntf = matchedIntfs.get(0);
@@ -248,7 +249,7 @@ public class RestfulHttpHandler implements IHttpHandler {
         }
         IStringCodec codec = this._codecs.get(this._codecName);
         if (codec == null) {
-            throw new KernelException("The response codec was not found - {}", this._codecName);
+            throw new InternalServerException("The response codec was not found - {}", this._codecName);
         }
         response.write(codec.decode(resp, ServiceDiscoveryResponse.class));
         response.flush();
@@ -273,13 +274,13 @@ public class RestfulHttpHandler implements IHttpHandler {
         if (Type.Q_DOUBLE.equals(type)) {
             return Double.parseDouble(value);
         }
-        throw new KernelException("Unknown type name {}", type);
+        throw new InternalServerException("Unknown type name {}", type);
     }
 
     private UriInfo parseUri(IHttpRequest request) {
         String uri = request.uri();
         if (uri.indexOf(this._context) != 0) {
-            throw new KernelException("The request URI {} is not prefixed by {}", uri, this._context);
+            throw new BadRequestException("The request URI {} is not prefixed by {}", uri, this._context);
         }
         String[] pathAndQuery = uri.split(SEPARATOR_URI_QUERY_PARAM);
 

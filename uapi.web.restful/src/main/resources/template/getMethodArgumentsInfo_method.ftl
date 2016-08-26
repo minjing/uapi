@@ -1,12 +1,12 @@
-uapi.web.ArgumentMapping[] argMappings;
+uapi.web.restful.ArgumentMapping[] argMappings;
 <#list model?keys as key>
         if (method == uapi.web.http.HttpMethod.${key}) {
-            argMappings = new uapi.web.ArgumentMapping[${model[key].argumentMappings?size}];
+            argMappings = new uapi.web.restful.ArgumentMapping[${model[key].argumentMappings?size}];
     <#list model[key].argumentMappings as argMapping>
-        <#if "uapi.web.IndexedArgumentMapping" == argMapping.class.name>
-            argMappings[${argMapping?index}] = new uapi.web.IndexedArgumentMapping(uapi.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", ${argMapping.index});
-        <#elseif "uapi.web.NamedArgumentMapping" == argMapping.class.name>
-            argMappings[${argMapping?index}] = new uapi.web.NamedArgumentMapping(uapi.web.ArgumentFrom.${argMapping.from}, "${argMapping.type}", "${argMapping.name}");
+        <#if "uapi.web.restful.IndexedArgumentMapping" == argMapping.class.name>
+            argMappings[${argMapping?index}] = new uapi.web.restful.IndexedArgumentMapping(uapi.web.restful.ArgumentFrom.${argMapping.from}, "${argMapping.type}", ${argMapping.index});
+        <#elseif "uapi.web.restful.NamedArgumentMapping" == argMapping.class.name>
+            argMappings[${argMapping?index}] = new uapi.web.restful.NamedArgumentMapping(uapi.web.restful.ArgumentFrom.${argMapping.from}, "${argMapping.type}", "${argMapping.name}");
         </#if>
     </#list>
             return argMappings;

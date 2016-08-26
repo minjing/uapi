@@ -262,8 +262,6 @@ class NettyHttpRequest implements IHttpRequest {
         ByteBuf buffer = httpContent.content();
         if (buffer.isReadable()) {
             this._bodyParts.add(buffer);
-        } else {
-            this._logger.error("The body buffer is not readable.");
         }
     }
 

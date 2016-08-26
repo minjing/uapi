@@ -14,13 +14,15 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import uapi.KernelException;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
-import uapi.web.http.IHttpHandler;
-import uapi.web.http.ILargeHttpHandler;
+import uapi.web.http.*;
+import uapi.web.http.HttpMethod;
 
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     private NettyHttpResponse _response;
 
     private IHttpHandler _handler;
-    private boolean _failed = false;
+//    private boolean _failed = false;
 
     HttpRequestDispatcher(ILogger logger, List<IHttpHandler> handlers) {
         this._logger = logger;
@@ -51,57 +53,81 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
     @Override
     public boolean isSharable() {
-        return true;
+        return false;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (this._failed) {
-            ReferenceCountUtil.release(msg);
-            return;
-        }
-        try {
-            if (msg instanceof HttpRequest) {
-                if (this._request == null) {
-                    this._request = new NettyHttpRequest(this._logger, (HttpRequest) msg);
-                }
-                if (this._response == null) {
-                    this._response = new NettyHttpResponse(ctx, this._request);
-                }
+        if (msg instanceof HttpRequest) {
+            if (this._request == null) {
+                this._request = new NettyHttpRequest(this._logger, (HttpRequest) msg);
             }
+            if (this._response == null) {
+                this._response = new NettyHttpResponse(ctx, this._request);
+            }
+        }
 
-            // Find out mapped handler
-            if (this._handler == null) {
-                List<IHttpHandler> handlers = Looper.from(this._handlers)
-                        .filter(handler -> this._request.uri().startsWith(handler.getUriMapping()))
-                        .toList();
-                if (handlers.size() == 0) {
-                    throw new KernelException("No handler is mapped to uri {}", this._request.uri());
-                }
-                this._handler = handlers.get(0);
-                if (handlers.size() > 1) {
-                    for (int i = 1; i < handlers.size(); i++) {
-                        if (handlers.get(i).getUriMapping().length() > this._handler.getUriMapping().length()) {
-                            this._handler = handlers.get(i);
-                            break;
-                        }
+        // Find out mapped handler
+        if (this._handler == null) {
+            List<IHttpHandler> handlers = Looper.from(this._handlers)
+                    .filter(handler -> this._request.uri().startsWith(handler.getUriMapping()))
+                    .toList();
+            if (handlers.size() == 0) {
+                throw new NotFoundException("No handler is mapped to uri - {}", this._request.uri());
+            }
+            this._handler = handlers.get(0);
+            if (handlers.size() > 1) {
+                for (int i = 1; i < handlers.size(); i++) {
+                    if (handlers.get(i).getUriMapping().length() > this._handler.getUriMapping().length()) {
+                        this._handler = handlers.get(i);
+                        break;
                     }
                 }
             }
-            if (this._handler == null) {
-                throw new KernelException("No handler is mapped to uri - ", this._request.uri());
+        }
+        if (this._handler == null) {
+            throw new NotFoundException("No handler is mapped to uri - {}", this._request.uri());
+        }
+
+        if (this._handler instanceof ILargeHttpHandler) {
+            switch (this._request.method()) {
+                case GET:
+                    this._handler.get(this._request, this._response);
+                    break;
+                case PUT:
+                    this._handler.put(this._request, this._response);
+                    break;
+                case PATCH:
+                    this._handler.patch(this._request, this._response);
+                    break;
+                case POST:
+                    this._handler.post(this._request, this._response);
+                    break;
+                case DELETE:
+                    this._handler.delete(this._request, this._response);
+                    break;
+                default:
+                    throw new BadRequestException("Unsupported http method - {}", this._request.method());
+            }
+        }
+
+        if (msg instanceof HttpContent) {
+            this._request.appendBodyPart((HttpContent) msg);
+
+            // Check body size
+            if (this._request.getBodySize() > this._maxBufferSize) {
+                throw new InternalServerException("The max buffer size has been reached - {}", this._maxBufferSize);
             }
 
-            if (this._handler instanceof ILargeHttpHandler) {
+            if (msg instanceof LastHttpContent) {
+                this._request.addTrailer((LastHttpContent) msg);
+
                 switch (this._request.method()) {
                     case GET:
                         this._handler.get(this._request, this._response);
                         break;
                     case PUT:
                         this._handler.put(this._request, this._response);
-                        break;
-                    case PATCH:
-                        this._handler.patch(this._request, this._response);
                         break;
                     case POST:
                         this._handler.post(this._request, this._response);
@@ -110,61 +136,58 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
                         this._handler.delete(this._request, this._response);
                         break;
                     default:
-                        throw new KernelException("Unsupported http method {}", this._request.method());
+                        throw new BadRequestException("Unsupported http method {}", this._request.method());
+                }
+
+                this._response.flush();
+
+                if (!this._request.isKeepAlive()) {
+                    // If keep-alive is off, close the connection once the content is fully written.
+                    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }
             }
-
-            if (msg instanceof HttpContent) {
-                this._request.appendBodyPart((HttpContent) msg);
-
-                // Check body size
-                if (this._request.getBodySize() > this._maxBufferSize) {
-                    throw new KernelException("The max buffer size has been reached - {}", this._maxBufferSize);
-                }
-
-                if (msg instanceof LastHttpContent) {
-                    this._request.addTrailer((LastHttpContent) msg);
-
-                    switch (this._request.method()) {
-                        case GET:
-                            this._handler.get(this._request, this._response);
-                            break;
-                        case PUT:
-                            this._handler.put(this._request, this._response);
-                            break;
-                        case POST:
-                            this._handler.post(this._request, this._response);
-                            break;
-                        case DELETE:
-                            this._handler.delete(this._request, this._response);
-                            break;
-                        default:
-                            throw new KernelException("Unsupported http method {}", this._request.method());
-                    }
-
-                    this._response.flush();
-
-                    if (! this._request.isKeepAlive()) {
-                        // If keep-alive is off, close the connection once the content is fully written.
-                        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            this._logger.error(ex);
-            FullHttpMessage response = new DefaultFullHttpResponse(
-                    HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                    Unpooled.copiedBuffer(ex.toString(), CharsetUtil.UTF_8));
-            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-            ctx.writeAndFlush(response);
-            ReferenceCountUtil.release(msg);
-            this._failed = true;
         }
+        ReferenceCountUtil.release(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
+        ctx.close();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        this._logger.error(cause);
+
+        if (cause instanceof BadRequestException) {
+            outputError(ctx, (BadRequestException) cause);
+        } else if (cause instanceof NotFoundException) {
+            outputError(ctx, (NotFoundException) cause);
+        } else {
+            outputError(ctx, new InternalServerException(cause));
+        }
+
+        ctx.close();
+    }
+
+    private void outputError(ChannelHandlerContext ctx, HttpException ex) {
+        HttpResponseStatus resStatus;
+        switch (ex.getStatus()) {
+            case BAD_REQUEST:
+                resStatus = HttpResponseStatus.BAD_REQUEST;
+                break;
+            case NOT_FOUND:
+                resStatus = HttpResponseStatus.NOT_FOUND;
+                break;
+            default:
+                resStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+                break;
+        }
+        FullHttpMessage response = new DefaultFullHttpResponse(
+                HttpVersion.HTTP_1_1, resStatus,
+                Unpooled.copiedBuffer(ex.toString(), CharsetUtil.UTF_8));
+        response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        ctx.writeAndFlush(response);
     }
 }

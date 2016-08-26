@@ -20,9 +20,8 @@ import uapi.service.IServiceHandlerHelper;
 import uapi.service.ServiceMeta;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.web.*;
-import uapi.web.restful.IRestfulInterface;
-import uapi.web.restful.IRestfulService;
+import uapi.web.http.HttpMethod;
+import uapi.web.restful.*;
 import uapi.web.restful.annotation.FromHeader;
 import uapi.web.restful.annotation.FromParam;
 import uapi.web.restful.annotation.FromUri;
@@ -88,7 +87,7 @@ public class RestfulHandler extends AnnotationsHandler {
             String methodName = methodElement.getSimpleName().toString();
             String returnTypeName = ((ExecutableElement) methodElement).getReturnType().toString();
             Restful restful = methodElement.getAnnotation(Restful.class);
-            HttpMethod[] httpMethods = HttpMethod.parse(restful.value());
+            HttpMethod[] httpMethods = restful.value();
 
             Map<String, uapi.service.MethodMeta> httpMethodArgMappings =
                     clsBuilder.createTransienceIfAbsent(HTTP_TO_METHOD_ARGS_MAPPING, HashMap::new);
@@ -214,7 +213,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                     .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                     .addModifier(Modifier.PUBLIC)
                                     .setName("getMethodArgumentsInfo")
-                                    .setReturnTypeName("uapi.web.ArgumentMapping[]")
+                                    .setReturnTypeName("uapi.web.restful.ArgumentMapping[]")
                                     .addParameterBuilder(ParameterMeta.builder()
                                             .setName("method")
                                             .setType(HttpMethod.class.getCanonicalName()))
@@ -285,7 +284,7 @@ public class RestfulHandler extends AnnotationsHandler {
                                             .addAnnotationBuilder(AnnotationMeta.builder().setName(AnnotationMeta.OVERRIDE))
                                             .addModifier(Modifier.PUBLIC)
                                             .setName("getMethodHttpMethodInfos")
-                                            .setReturnTypeName("java.util.Map<uapi.service.ServiceMeta, java.util.List<uapi.web.HttpMethod>>")
+                                            .setReturnTypeName("java.util.Map<uapi.service.ServiceMeta, java.util.List<uapi.web.http.HttpMethod>>")
                                             .addCodeBuilder(CodeMeta.builder()
                                                     .setModel(modelMethodToHttp)
                                                     .setTemplate(tempGetMethodHttpInfos)));

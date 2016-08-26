@@ -16,7 +16,7 @@ import uapi.service.annotation.Service;
 /**
  * A string formatter for string.
  */
-@Service(IStringCodec.class)
+//@Service(IStringCodec.class)
 public class StringCodec implements IStringCodec {
 
     public static final String NAME = "String";

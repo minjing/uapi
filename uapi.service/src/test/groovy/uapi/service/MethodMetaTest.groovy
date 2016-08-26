@@ -10,8 +10,8 @@
 package uapi.service
 
 import spock.lang.Specification
-import uapi.web.ArgumentMapping
-import uapi.web.IndexedArgumentMapping
+import uapi.web.restful.ArgumentMapping
+import uapi.web.restful.IndexedArgumentMapping
 
 /**
  * Test case for MethodMeta

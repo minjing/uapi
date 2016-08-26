@@ -12,10 +12,10 @@ package uapi.sample.hello;
 import uapi.helper.StringHelper;
 import uapi.service.annotation.Exposure;
 import uapi.service.annotation.Service;
-import uapi.web.HttpMethod;
-import uapi.web.annotation.FromParam;
-import uapi.web.annotation.FromUri;
-import uapi.web.annotation.Restful;
+import uapi.web.http.HttpMethod;
+import uapi.web.restful.annotation.FromParam;
+import uapi.web.restful.annotation.FromUri;
+import uapi.web.restful.annotation.Restful;
 
 /**
  * The restful service for hello
@@ -25,7 +25,7 @@ import uapi.web.annotation.Restful;
 public class HelloRestful implements IHello {
 
     @Override
-    @Restful(HttpMethod.Get)
+    @Restful(HttpMethod.GET)
     public String sayHello(
             @FromUri(0) String name,
             @FromParam("title") String title

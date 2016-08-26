@@ -14,7 +14,7 @@ import uapi.sample.ConfigurableService;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
-import uapi.web.IHttpServer;
+import uapi.web.http.IHttpServer;
 
 /**
  * Created by xquan on 4/5/2016.

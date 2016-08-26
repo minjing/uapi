@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * A string formatter for JSON
  */
-@Service(IStringCodec.class)
+//@Service(IStringCodec.class)
 public class JsonStringCodec implements IStringCodec {
 
     public static final String NAME = "JSON";
