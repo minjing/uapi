@@ -37,7 +37,6 @@ import java.util.*;
 public class RestfulHttpHandler implements IHttpHandler {
 
     private static final String SEPARATOR_URI_QUERY_PARAM       = "\\?";
-    private static final char SEPARATOR_QUERY_PARAM_KEY_VALUE   = '=';
     private static final String PARAM_INTERFACE                 = "interface";
 
     @Config(path=IRestfulConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
