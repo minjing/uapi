@@ -85,7 +85,7 @@ public class ProxyBuilder {
             if (! methodMeta.getName().equals(method.getName())) {
                 return false;
             }
-            List<ArgumentMeta> argMetas = methodMeta.getArgumentMappings();
+            List<ArgumentMeta> argMetas = methodMeta.getArgumentMetas();
             Parameter[] params = method.getParameters();
             if (argMetas.size() != params.length) {
                 return false;

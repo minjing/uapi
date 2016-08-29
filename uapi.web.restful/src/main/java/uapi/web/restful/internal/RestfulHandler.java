@@ -100,7 +100,7 @@ public class RestfulHandler extends AnnotationsHandler {
             ServiceMeta svcMethodArgMapping = new ServiceMeta(methodName, returnTypeName);
             Observable.from(execElem.getParameters())
                     .map(this::handleFromAnnotation)
-                    .subscribe(svcMethodArgMapping::addArgumentMapping);
+                    .subscribe(svcMethodArgMapping::addArgumentMeta);
             Observable.from(httpMethods)
                     .subscribe(httpMethod -> httpMethodArgMappings.put(httpMethod.toString(), svcMethodArgMapping));
             svcMethodArgMapping.setId(exposedName);

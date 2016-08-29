@@ -3,7 +3,7 @@ java.util.Map<uapi.service.ServiceMeta, java.util.List<uapi.web.http.HttpMethod>
         java.util.List<uapi.web.http.HttpMethod> httpMethods = null;
 <#list model?keys as svcMethodMeta>
             argMappings = new java.util.LinkedList<>();
-    <#list svcMethodMeta.argumentMappings as argMapping>
+    <#list svcMethodMeta.argumentMetas as argMapping>
         <#if "uapi.web.restful.IndexedArgumentMapping" == argMapping.class.name>
             argMappings.add(new uapi.web.restful.IndexedArgumentMapping(uapi.web.restful.ArgumentFrom.${argMapping.from}, "${argMapping.type}", ${argMapping.index}));
         <#elseif "uapi.web.restful.NamedArgumentMapping" == argMapping.class.name>

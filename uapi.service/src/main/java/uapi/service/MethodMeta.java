@@ -15,7 +15,7 @@ public class MethodMeta {
 
     private final String _name;
     private final String _returnTypeName;
-    private List<ArgumentMeta> _argMappings;
+    private List<ArgumentMeta> _argMetas;
 
     public MethodMeta(
             final String name,
@@ -32,9 +32,9 @@ public class MethodMeta {
         ArgumentChecker.required(returnTypeName, "valueParserName");
         this._name = name;
         this._returnTypeName = returnTypeName;
-        this._argMappings = new LinkedList<>();
+        this._argMetas = new LinkedList<>();
         if (argMappings != null) {
-            this._argMappings.addAll(argMappings);
+            this._argMetas.addAll(argMappings);
         }
     }
 
@@ -46,15 +46,15 @@ public class MethodMeta {
         return this._returnTypeName;
     }
 
-    public void addArgumentMapping(
-            final ArgumentMapping argMapping
+    public void addArgumentMeta(
+            final ArgumentMeta argMeta
     ) {
-        ArgumentChecker.required(argMapping, "argMapping");
-        this._argMappings.add(argMapping);
+        ArgumentChecker.required(argMeta, "argMeta");
+        this._argMetas.add(argMeta);
     }
 
-    public List<ArgumentMeta> getArgumentMappings() {
-        return this._argMappings;
+    public List<ArgumentMeta> getArgumentMetas() {
+        return this._argMetas;
     }
 
     public boolean isSame(MethodMeta other) {
@@ -67,11 +67,11 @@ public class MethodMeta {
         if (! this._returnTypeName.equals(other._returnTypeName)) {
             return false;
         }
-        if (this._argMappings.size() != other._argMappings.size()) {
+        if (this._argMetas.size() != other._argMetas.size()) {
             return false;
         }
-        for (int i = 0; i < this._argMappings.size(); i++) {
-            if (! this._argMappings.get(i).isSameType(other._argMappings.get(i))) {
+        for (int i = 0; i < this._argMetas.size(); i++) {
+            if (! this._argMetas.get(i).isSameType(other._argMetas.get(i))) {
                 return false;
             }
         }
@@ -88,7 +88,7 @@ public class MethodMeta {
         if (_name != null ? !_name.equals(that._name) : that._name != null) return false;
         if (_returnTypeName != null ? !_returnTypeName.equals(that._returnTypeName) : that._returnTypeName != null)
             return false;
-        return _argMappings != null ? _argMappings.equals(that._argMappings) : that._argMappings == null;
+        return _argMetas != null ? _argMetas.equals(that._argMetas) : that._argMetas == null;
 
     }
 
@@ -96,7 +96,7 @@ public class MethodMeta {
     public int hashCode() {
         int result = _name != null ? _name.hashCode() : 0;
         result = 31 * result + (_returnTypeName != null ? _returnTypeName.hashCode() : 0);
-        result = 31 * result + (_argMappings != null ? _argMappings.hashCode() : 0);
+        result = 31 * result + (_argMetas != null ? _argMetas.hashCode() : 0);
         return result;
     }
 
@@ -107,6 +107,6 @@ public class MethodMeta {
 
     public String propertiesString() {
         return StringHelper.makeString("name={},returnTypeName={},arguments={}",
-                this._name, this._returnTypeName, CollectionHelper.asString(this._argMappings));
+                this._name, this._returnTypeName, CollectionHelper.asString(this._argMetas));
     }
 }

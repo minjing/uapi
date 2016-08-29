@@ -50,7 +50,7 @@ public class RestfulServiceMeta extends ServiceMeta {
         this._host = host;
         this._port = port;
         this._ctx = context;
-        this._uri = StringHelper.makeString("http://{}:{}/{}", host, port, context);
+        this._uri = StringHelper.makeString("http://{}:{}{}", host, port, context);
         this._methods = httpMethods;
         this._codec = codec;
     }

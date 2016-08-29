@@ -22,6 +22,7 @@ import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;
 import uapi.web.http.HttpMethod;
+import uapi.web.http.HttpResponseStatus;
 import uapi.web.restful.ArgumentFrom;
 import uapi.web.restful.ArgumentMapping;
 import uapi.web.restful.IndexedArgumentMapping;
@@ -66,7 +67,7 @@ public class RestfulCommunicator implements ICommunicator {
             throw new KernelException("The {} can't handle : {}", this.getClass().getName(), serviceMeta.getClass().getName());
         }
         RestfulServiceMeta restfulSvcMeta = (RestfulServiceMeta) serviceMeta;
-        List<ArgumentMeta> argMappings = restfulSvcMeta.getArgumentMappings();
+        List<ArgumentMeta> argMappings = restfulSvcMeta.getArgumentMetas();
         if (argMappings.size() != args.length) {
             throw new KernelException("Found unmatched service {} argument size {}, expect {}",
                     serviceMeta.getName(), argMappings.size(), args.length);
@@ -139,8 +140,12 @@ public class RestfulCommunicator implements ICommunicator {
         this._logger.info("Request url is {}", request.toString());
         try {
             Response response = httpClient.newCall(request).execute();
-            if (response.code() != 200) {
-                throw new KernelException("Request for {} got a non 200 response: {}", response.body().string());
+            if (reqMethod == HttpMethod.POST && response.code() != HttpResponseStatus.CREATED.getCode()) {
+                throw new KernelException("POST for {} got a non {} response: {}",
+                        request.url(), HttpResponseStatus.CREATED.getCode(), response.body().string());
+            } else if (response.code() != HttpResponseStatus.OK.getCode()) {
+                throw new KernelException("Request for {} got a non {} response: {}",
+                        request.url(), HttpResponseStatus.OK.getCode(), response.body().string());
             }
             return decodeResponse(new Triple<>(
                     restfulSvcMeta.getReturnTypeName(), restfulSvcMeta.getCodec(), response.body().string()));

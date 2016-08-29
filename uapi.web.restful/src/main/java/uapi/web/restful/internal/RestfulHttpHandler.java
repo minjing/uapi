@@ -10,7 +10,6 @@
 package uapi.web.restful.internal;
 
 import com.google.common.base.Strings;
-import uapi.KernelException;
 import uapi.Type;
 import uapi.config.annotation.Config;
 import uapi.helper.CollectionHelper;
@@ -227,7 +226,7 @@ public class RestfulHttpHandler implements IHttpHandler {
                         svcMeta.port = this._port;
                         svcMeta.context = this._context;
                         svcMeta.methods = entry.getValue();
-                        List<ArgumentMeta> argMappings = svcInfo.getArgumentMappings();
+                        List<ArgumentMeta> argMappings = svcInfo.getArgumentMetas();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
                                 .map(argMapping -> (uapi.web.restful.ArgumentMapping) argMapping)

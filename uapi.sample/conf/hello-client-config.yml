@@ -13,4 +13,4 @@ service:
       communicator: Restful
       host: 127.0.0.1
       port: 8080
-      uri_prefix: rest
+      uri_prefix: /rest

@@ -20,10 +20,6 @@ import java.util.List;
  */
 public class ServiceMeta extends MethodMeta {
 
-//    private final String _name;
-//    private final String _returnTypeName;
-//    private List<ArgumentMeta> _argMappings;
-//
     private String _id;
 
     public ServiceMeta(
@@ -48,43 +44,10 @@ public class ServiceMeta extends MethodMeta {
         ArgumentChecker.required(id, "id");
         this._id = id;
     }
-//
-//    public String getName() {
-//        return this._name;
-//    }
-//
-//    public String getReturnTypeName() {
-//        return this._returnTypeName;
-//    }
-//
-//    public List<ArgumentMeta> getArgumentMappings() {
-//        return this._argMappings;
-//    }
-//
-//    public boolean isSame(ServiceMeta other) {
-//        if (other == null) {
-//            return false;
-//        }
-//        if (! this._name.equals(other._name)) {
-//            return false;
-//        }
-//        if (! this._returnTypeName.equals(other._name)) {
-//            return false;
-//        }
-//        if (this._argMappings.size() != other._argMappings.size()) {
-//            return false;
-//        }
-//        for (int i = 0; i < this._argMappings.size(); i++) {
-//            if (! this._argMappings.get(i).isSameType(other._argMappings.get(i))) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
 
     @Override
     public String toString() {
         return StringHelper.makeString("name={},returnTypeName={},argMappings={}",
-                getName(), getReturnTypeName(), CollectionHelper.asString(getArgumentMappings()));
+                getName(), getReturnTypeName(), CollectionHelper.asString(getArgumentMetas()));
     }
 }

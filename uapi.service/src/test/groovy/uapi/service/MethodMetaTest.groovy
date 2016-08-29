@@ -29,9 +29,9 @@ class MethodMetaTest extends Specification {
             return true
         }
         def MethodMeta methodMeta1 = new MethodMeta(name1, returnType1)
-        methodMeta1.addArgumentMapping(mockArgMapping)
+        methodMeta1.addArgumentMeta(mockArgMapping)
         def MethodMeta methodMeta2 = new MethodMeta(name2, returntype2)
-        methodMeta2.addArgumentMapping(mockIdxArg)
+        methodMeta2.addArgumentMeta(mockIdxArg)
 
         then:
         methodMeta1.isSame(methodMeta2)
