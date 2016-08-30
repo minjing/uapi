@@ -1,5 +1,4 @@
 plugins {
-    id 'jacoco'
     id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 

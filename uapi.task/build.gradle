@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.kt3k.coveralls' version '2.6.3'
+}
+
 dependencies {
     compile (
         project(':uapi.kernel')
