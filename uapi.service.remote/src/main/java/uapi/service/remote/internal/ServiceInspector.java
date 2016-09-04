@@ -16,7 +16,6 @@ import uapi.service.ArgumentMeta;
 import uapi.service.ServiceInterfaceMeta;
 import uapi.service.ServiceMeta;
 import uapi.service.annotation.Service;
-import uapi.web.ArgumentMapping;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -46,13 +45,13 @@ class ServiceInspector {
         String name = method.getName();
         String returnType = method.getReturnType().getCanonicalName();
         List<ArgumentMeta> argMappings = Observable.from(method.getParameters())
-                .map(parameter -> (ArgumentMeta) parseArgumentMeta(parameter))
+                .map(parameter -> parseArgumentMeta(parameter))
                 .toList().toBlocking().first();
         return new ServiceMeta(name, returnType, argMappings);
     }
 
-    public ArgumentMapping parseArgumentMeta(Parameter parameter) {
+    public ArgumentMeta parseArgumentMeta(Parameter parameter) {
         String paramType = parameter.getType().getCanonicalName();
-        return new ArgumentMapping(paramType);
+        return new ArgumentMeta(paramType);
     }
 }

@@ -19,7 +19,7 @@ import uapi.service.*;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.*;
-import uapi.web.JsonStringCodec;
+import uapi.service.JsonStringCodec;
 import uapi.web.http.HttpMethod;
 import uapi.web.restful.ArgumentFrom;
 import uapi.web.restful.IndexedArgumentMapping;

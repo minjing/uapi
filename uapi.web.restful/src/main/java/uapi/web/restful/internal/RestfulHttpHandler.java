@@ -186,7 +186,9 @@ public class RestfulHttpHandler implements IHttpHandler {
         if (type == null) {
             throw new InternalServerException("Unsupported typ - {}", matchedSvc.getReturnTypeName(request.method()));
         }
-        response.write(codec.decode(result, type));
+        String resTxt = codec.decode(result, type);
+        this._logger.debug("Response text -> {}", resTxt);
+        response.write(resTxt);
         response.flush();
     }
 

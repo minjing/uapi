@@ -22,7 +22,7 @@ class NettyHttpServerTest extends Specification {
     def setup() {
         server = new NettyHttpServer();
         server._host = 'localhost'
-        server._port = 8080
+        server._port = 12345
         server._logger = Mock(ILogger)
     }
 

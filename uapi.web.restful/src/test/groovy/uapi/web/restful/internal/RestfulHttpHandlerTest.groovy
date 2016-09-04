@@ -10,6 +10,7 @@
 package uapi.web.restful.internal
 
 import spock.lang.Specification
+import uapi.log.ILogger
 import uapi.service.ArgumentMeta
 import uapi.service.IStringCodec
 import uapi.service.ServiceMeta
@@ -109,9 +110,11 @@ class RestfulHttpHandlerTest extends Specification {
             1 * write(_)
             1 * flush()
         }
+        def logger = Mock(ILogger)
 
         when:
         RestfulHttpHandler restfulHandler = new RestfulHttpHandler()
+        restfulHandler._logger = logger
         restfulHandler._host = host
         restfulHandler._port = port
         restfulHandler._codecName = codec
@@ -159,9 +162,11 @@ class RestfulHttpHandlerTest extends Specification {
             1 * write(_)
             1 * flush()
         }
+        def logger = Mock(ILogger)
 
         when:
         RestfulHttpHandler restfulHandler = new RestfulHttpHandler()
+        restfulHandler._logger = logger
         restfulHandler._host = host
         restfulHandler._port = port
         restfulHandler._codecName = codec
@@ -221,9 +226,11 @@ class RestfulHttpHandlerTest extends Specification {
             1 * write(result)
             1 * flush()
         }
+        def logger = Mock(ILogger)
 
         when:
         RestfulHttpHandler restfulHandler = new RestfulHttpHandler()
+        restfulHandler._logger = logger
         restfulHandler._host = host
         restfulHandler._port = port
         restfulHandler._codecName = codec
