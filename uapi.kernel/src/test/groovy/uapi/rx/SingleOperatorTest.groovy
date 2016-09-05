@@ -29,4 +29,78 @@ class SingleOperatorTest extends Specification {
         opt.getItem() == "1"
         ! opt.hasItem()
     }
+
+    def 'Test Get Item with default'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >> false
+            getItem() >> {throw new NoItemException()}
+        }
+
+        given:
+        SingleOperator opt = new SingleOperator(preOpt, 0)
+
+        expect:
+        opt.getItem() == 0
+    }
+
+    def 'Test Get Item no item'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >> false
+            getItem() >> {throw new NoItemException()}
+        }
+
+        given:
+        SingleOperator opt = new SingleOperator(preOpt)
+
+        when:
+        opt.getItem()
+
+        then:
+        thrown(NoItemException)
+    }
+
+    def 'Test Get Item no item2'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >> true
+            getItem() >> {throw new NoItemException()}
+        }
+
+        given:
+        SingleOperator opt = new SingleOperator(preOpt)
+
+        when:
+        opt.getItem()
+
+        then:
+        thrown(NoItemException)
+    }
+
+    def 'Test Get Item no item3'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >> true
+            getItem() >> {throw new NoItemException()}
+        }
+
+        given:
+        SingleOperator opt = new SingleOperator(preOpt, 0)
+
+        expect:
+        opt.getItem() == 0
+    }
+
+    def 'Test Get Item more item'() {
+        def Operator<String> preOpt = Mock(Operator) {
+            hasItem() >>> [true, true]
+            getItem() >>> ["1", "2"]
+        }
+
+        given:
+        SingleOperator opt = new SingleOperator(preOpt)
+
+        when:
+        opt.getItem()
+
+        then:
+        thrown(MoreItemException)
+    }
 }

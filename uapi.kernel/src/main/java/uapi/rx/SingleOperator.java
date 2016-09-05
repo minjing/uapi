@@ -36,9 +36,9 @@ class SingleOperator<T> extends TerminatedOperator<T> {
             if (this._itemSet) {
                 throw new MoreItemException();
             }
-            this._itemSet = true;
             try {
                 this._item = (T) getPreviously().getItem();
+                this._itemSet = true;
             } catch (NoItemException ex) {
                 if (this._itemSet) {
                     return this._item;

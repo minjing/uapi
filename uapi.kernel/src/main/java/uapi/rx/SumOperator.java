@@ -11,6 +11,8 @@ package uapi.rx;
 
 import uapi.KernelException;
 
+import java.math.BigDecimal;
+
 /**
  * Created by min on 16/8/21.
  */
@@ -18,10 +20,7 @@ public class SumOperator<T> extends TerminatedOperator<T> {
 
     private SupportedType _type;
 
-    private Integer _intSum = 0;
-    private Float _floatSum = 0.0F;
-    private Double _doubleSum = 0.0D;
-    private Long _longSum = 0L;
+    private BigDecimal _sum = new BigDecimal("0");
 
     SumOperator(Operator<T> previously) {
         super(previously);
@@ -34,32 +33,29 @@ public class SumOperator<T> extends TerminatedOperator<T> {
                 T item = (T) getPreviously().getItem();
                 if (item instanceof Integer) {
                     checkType(SupportedType.INT);
-                    this._intSum += (Integer) item;
                 } else if (item instanceof Float) {
                     checkType(SupportedType.FLOAT);
-                    this._floatSum += (Float) item;
                 } else if (item instanceof Double) {
                     checkType(SupportedType.DOUBLE);
-                    this._doubleSum += (Double) item;
                 } else if (item instanceof Long) {
                     checkType(SupportedType.LONG);
-                    this._longSum += (Long) item;
                 } else {
-                    throw new KernelException("Unsupported type - {}", item);
+                    throw new KernelException("Unsupported type - {}", item.getClass().getName());
                 }
+                this._sum = this._sum.add(new BigDecimal(item.toString()));
             } catch (NoItemException ex) {
-                // do nothing
+                break;
             }
         }
         switch (this._type) {
             case INT:
-                return (T) this._intSum;
+                return (T) new Integer(this._sum.intValue());
             case FLOAT:
-                return (T) this._floatSum;
+                return (T) new Float(this._sum.floatValue());
             case DOUBLE:
-                return (T) this._doubleSum;
+                return (T) new Double(this._sum.doubleValue());
             case LONG:
-                return (T) this._longSum;
+                return (T) new Long(this._sum.longValue());
             default:
                 throw new KernelException("Unsupported type - {}", this._type);
 

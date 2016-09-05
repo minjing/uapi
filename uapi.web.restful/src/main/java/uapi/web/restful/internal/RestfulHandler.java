@@ -16,6 +16,7 @@ import uapi.KernelException;
 import uapi.Type;
 import uapi.annotation.*;
 import uapi.helper.*;
+import uapi.rx.Looper;
 import uapi.service.IServiceHandlerHelper;
 import uapi.service.ServiceMeta;
 import uapi.service.annotation.Exposure;
@@ -64,49 +65,56 @@ public class RestfulHandler extends AnnotationsHandler {
     ) throws KernelException {
         ArgumentChecker.notNull(annotationType, "annotationType");
 
-        Observable.from(elements).subscribe(methodElement -> {
-            if (methodElement.getKind() != ElementKind.METHOD) {
-                throw new KernelException(
-                        "The Restful annotation only can be applied on field",
-                        methodElement.getSimpleName().toString());
-            }
-            Element classElement = methodElement.getEnclosingElement();
-            checkAnnotations(classElement, Service.class);
+//        Observable.from(elements).subscribe(methodElement -> {
+        try {
+            Looper.from(elements).foreach(methodElement -> {
+                if (methodElement.getKind() != ElementKind.METHOD) {
+                    throw new KernelException(
+                            "The Restful annotation only can be applied on field",
+                            methodElement.getSimpleName().toString());
+                }
+                Element classElement = methodElement.getEnclosingElement();
+                checkAnnotations(classElement, Service.class);
 
-            builderCtx.checkModifiers(methodElement, Restful.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
-            Element classElemt = methodElement.getEnclosingElement();
-            builderCtx.checkModifiers(classElemt, Restful.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+                builderCtx.checkModifiers(methodElement, Restful.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+                Element classElemt = methodElement.getEnclosingElement();
+                builderCtx.checkModifiers(classElemt, Restful.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
-            ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
+                ClassMeta.Builder clsBuilder = builderCtx.findClassBuilder(classElemt);
 
-            Exposure exposure = classElement.getAnnotation(Exposure.class);
-            String exposedName = exposure == null ? classElement.getSimpleName().toString() : exposure.value();
-            ArgumentChecker.notEmpty(exposedName, "exposedName");
-            clsBuilder.putTransience(EXPOSED_NAME, exposedName);
+                Exposure exposure = classElement.getAnnotation(Exposure.class);
+                String exposedName = exposure == null ? classElement.getSimpleName().toString() : exposure.value();
+                ArgumentChecker.notEmpty(exposedName, "exposedName");
+                clsBuilder.putTransience(EXPOSED_NAME, exposedName);
 
-            String methodName = methodElement.getSimpleName().toString();
-            String returnTypeName = ((ExecutableElement) methodElement).getReturnType().toString();
-            Restful restful = methodElement.getAnnotation(Restful.class);
-            HttpMethod[] httpMethods = restful.value();
+                String methodName = methodElement.getSimpleName().toString();
+                String returnTypeName = ((ExecutableElement) methodElement).getReturnType().toString();
+                Restful restful = methodElement.getAnnotation(Restful.class);
+                HttpMethod[] httpMethods = restful.value();
 
-            Map<String, uapi.service.MethodMeta> httpMethodArgMappings =
-                    clsBuilder.createTransienceIfAbsent(HTTP_TO_METHOD_ARGS_MAPPING, HashMap::new);
-            HttpMethod found = MapHelper.findKey(httpMethodArgMappings, httpMethods);
-            if (found != null) {
-                throw new KernelException("Found multiple methods are mapped to same http method: {}", found);
-            }
+                Map<String, uapi.service.MethodMeta> httpMethodArgMappings =
+                        clsBuilder.createTransienceIfAbsent(HTTP_TO_METHOD_ARGS_MAPPING, HashMap::new);
+                HttpMethod found = MapHelper.findKey(httpMethodArgMappings, httpMethods);
+                if (found != null) {
+                    throw new KernelException("Found multiple methods are mapped to same http method: {}", found);
+                }
 
-            ExecutableElement execElem = (ExecutableElement) methodElement;
-            ServiceMeta svcMethodArgMapping = new ServiceMeta(methodName, returnTypeName);
-            Observable.from(execElem.getParameters())
-                    .map(this::handleFromAnnotation)
-                    .subscribe(svcMethodArgMapping::addArgumentMeta);
-            Observable.from(httpMethods)
-                    .subscribe(httpMethod -> httpMethodArgMappings.put(httpMethod.toString(), svcMethodArgMapping));
-            svcMethodArgMapping.setId(exposedName);
+                ExecutableElement execElem = (ExecutableElement) methodElement;
+                ServiceMeta svcMethodArgMapping = new ServiceMeta(methodName, returnTypeName);
+                Observable.from(execElem.getParameters())
+                        .map(this::handleFromAnnotation)
+                        .subscribe(svcMethodArgMapping::addArgumentMeta);
+                Observable.from(httpMethods)
+                        .subscribe(httpMethod -> httpMethodArgMappings.put(httpMethod.toString(), svcMethodArgMapping));
+                svcMethodArgMapping.setId(exposedName);
 
-            scanImplementation((TypeElement) classElement, svcMethodArgMapping, clsBuilder, builderCtx);
-        }, t -> builderCtx.getLogger().error(t));
+                scanImplementation((TypeElement) classElement, svcMethodArgMapping, clsBuilder, builderCtx);
+            });
+        } catch (Exception ex) {
+            builderCtx.getLogger().error(ex);
+            return;
+        }
+//        }, t -> builderCtx.getLogger().error(t));
 
         implementIRestfulService(builderCtx);
     }
