@@ -11,7 +11,6 @@
 
 [![Build Status](https://travis-ci.org/minjing/uapi.svg?branch=master)](https://travis-ci.org/minjing/uapi)
 [![Code Coverage](http://codecov.io/github/minjing/uapi/coverage.svg?branch=master)](https://codecov.io/github/minjing/uapi?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/minjing/uapi/badge.svg?branch=feature%2Frestful-refactor)](https://coveralls.io/github/minjing/uapi?branch=feature%2Frestful-refactor)
 
 ## Introduction
 
