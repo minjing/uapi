@@ -71,7 +71,7 @@ class RestfulHttpHandlerTest extends Specification {
         }
         def response = Mock(IHttpResponse) {
             1 * write(_)
-            1 * flush()
+            0 * flush()
         }
 
         when:
@@ -83,6 +83,7 @@ class RestfulHttpHandlerTest extends Specification {
             1 * decode(_, _)
         })
         restfulHandler._restIntfs.add(restIntf)
+        restfulHandler._logger = Mock(ILogger)
 
         then:
         restfulHandler.get(request, response)
@@ -108,7 +109,7 @@ class RestfulHttpHandlerTest extends Specification {
         }
         def response = Mock(IHttpResponse) {
             1 * write(_)
-            1 * flush()
+            0 * flush()
         }
         def logger = Mock(ILogger)
 
@@ -160,7 +161,7 @@ class RestfulHttpHandlerTest extends Specification {
         }
         def response = Mock(IHttpResponse) {
             1 * write(_)
-            1 * flush()
+            0 * flush()
         }
         def logger = Mock(ILogger)
 
@@ -224,7 +225,7 @@ class RestfulHttpHandlerTest extends Specification {
         }
         def response = Mock(IHttpResponse) {
             1 * write(result)
-            1 * flush()
+            0 * flush()
         }
         def logger = Mock(ILogger)
 

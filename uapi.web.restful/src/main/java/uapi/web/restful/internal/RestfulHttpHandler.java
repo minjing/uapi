@@ -189,7 +189,7 @@ public class RestfulHttpHandler implements IHttpHandler {
         String resTxt = codec.decode(result, type);
         this._logger.debug("Response text -> {}", resTxt);
         response.write(resTxt);
-        response.flush();
+//        response.flush();
     }
 
     private void handleDiscoverRequest(IHttpRequest request, IHttpResponse response, UriInfo uriInfo) {
@@ -251,8 +251,10 @@ public class RestfulHttpHandler implements IHttpHandler {
         if (codec == null) {
             throw new InternalServerException("The response codec was not found - {}", this._codecName);
         }
-        response.write(codec.decode(resp, ServiceDiscoveryResponse.class));
-        response.flush();
+        String resTxt = codec.decode(resp, ServiceDiscoveryResponse.class);
+        this._logger.debug("Response text -> {}", resTxt);
+        response.write(resTxt);
+//        response.flush();
     }
 
     private Object parseValue(String value, String type) {

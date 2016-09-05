@@ -35,6 +35,7 @@ class NettyHttpResponse implements IHttpResponse {
 
     private uapi.web.http.HttpResponseStatus _responseStatus;
     private uapi.web.http.HttpVersion _version;
+    private boolean _flashed = false;
 
     NettyHttpResponse(ChannelHandlerContext ctx, NettyHttpRequest request) {
         if (ctx == null) {
@@ -89,6 +90,10 @@ class NettyHttpResponse implements IHttpResponse {
 
     @Override
     public void flush() {
+        // TODO: need support flush multiple time to support large data response
+        if (this._flashed) {
+            throw new KernelException("The flash method must be invoked only once");
+        }
         HttpVersion httpVer;
         if (this._version == uapi.web.http.HttpVersion.V_1_0) {
             httpVer = HttpVersion.HTTP_1_0;
@@ -114,5 +119,6 @@ class NettyHttpResponse implements IHttpResponse {
         this._buffer.delete(0, this._buffer.length());
 
         this._ctx.writeAndFlush(response);
+        this._flashed = true;
     }
 }
