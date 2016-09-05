@@ -9,6 +9,7 @@
 
 package uapi.app.internal
 
+import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.app.IAppLifecycle
 import uapi.log.ILogger
@@ -21,6 +22,7 @@ class LauncherTest extends Specification {
 
     def Launcher launcher
 
+    @Ignore
     def 'Test launch'() {
         given:
         launcher = new Launcher()
