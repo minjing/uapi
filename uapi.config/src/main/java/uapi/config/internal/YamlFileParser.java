@@ -15,6 +15,7 @@ import uapi.helper.Functionals;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.io.File;
 import java.io.FileReader;
@@ -25,6 +26,7 @@ import java.util.Map;
  * The parser used to parse YAML format file
  */
 @Service({ IConfigFileParser.class })
+@Tag("Config")
 public class YamlFileParser implements IConfigFileParser {
 
     private static final String YML_FILE_EXT    = "yml";

@@ -12,11 +12,13 @@ package uapi.config.internal;
 import uapi.config.IConfigValueParser;
 import uapi.helper.CollectionHelper;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 /**
  * The parser used to parse config value which can be convert to Float
  */
 @Service(IConfigValueParser.class)
+@Tag("Config")
 public class FloatValueParser implements IConfigValueParser {
 
     private static final String[] supportTypesIn = new String[] {

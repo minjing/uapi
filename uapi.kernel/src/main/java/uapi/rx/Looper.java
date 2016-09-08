@@ -52,4 +52,8 @@ public class Looper {
         ArgumentChecker.required(iterator, "iterator");
         return new IteratorSource<>(iterator);
     }
+
+    public static <T> IOperator<T> from(Iterable<T> iterable) {
+        return from(iterable.iterator());
+    }
 }

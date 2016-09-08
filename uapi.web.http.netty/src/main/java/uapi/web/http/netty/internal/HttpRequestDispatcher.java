@@ -44,7 +44,6 @@ class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     private NettyHttpResponse _response;
 
     private IHttpHandler _handler;
-//    private boolean _failed = false;
 
     HttpRequestDispatcher(ILogger logger, List<IHttpHandler> handlers) {
         this._logger = logger;

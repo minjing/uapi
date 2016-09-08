@@ -19,11 +19,13 @@ import uapi.helper.Functionals;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 /**
  * The parser used to parse JSON format file
  */
 @Service({ IConfigFileParser.class })
+@Tag("Config")
 public class JsonFileParser
     implements IConfigFileParser {
 

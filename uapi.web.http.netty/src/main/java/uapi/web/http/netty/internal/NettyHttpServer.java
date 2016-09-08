@@ -24,6 +24,7 @@ import uapi.rx.Looper;
 import uapi.server.ServerException;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 import uapi.web.http.IHttpConfigurableKey;
 import uapi.web.http.IHttpHandler;
 import uapi.web.http.IHttpServer;
@@ -37,6 +38,7 @@ import java.util.Map;
  * The HTTP server implemented by Netty
  */
 @Service(IHttpServer.class)
+@Tag({ "Http", "Netty" })
 public class NettyHttpServer implements IHttpServer {
 
     @Config(path= IHttpConfigurableKey.SERVER_HTTP_HOST)

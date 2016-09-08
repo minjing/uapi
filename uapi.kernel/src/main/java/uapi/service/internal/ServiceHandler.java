@@ -62,7 +62,7 @@ public final class ServiceHandler extends AnnotationsHandler {
         elements.forEach(classElement -> {
             if (classElement.getKind() != ElementKind.CLASS) {
                 throw new KernelException(
-                        "The Service annotation only can be applied on class",
+                        "The Service annotation only can be applied on class - {}",
                         classElement.getSimpleName().toString());
             }
             builderCtx.checkModifiers(classElement, Service.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
@@ -88,8 +88,6 @@ public final class ServiceHandler extends AnnotationsHandler {
             }
             Template tempGetIds = builderCtx.loadTemplate(TEMPLATE_GET_IDS);
             this._helper.addServiceId(classBuilder, serviceIds);
-//            Map<String, Object> tempModelGetIds = classBuilder.createTransienceIfAbsent(MODEL_GET_IDS, HashMap::new);
-//            tempModelGetIds.put(VAR_SVC_IDS, serviceIds);
 
             // Build class builder
             classBuilder
@@ -109,12 +107,6 @@ public final class ServiceHandler extends AnnotationsHandler {
                             .addCodeBuilder(CodeMeta.builder()
                                     .setTemplate(tempGetIds)
                                     .setModel(classBuilder.getTransience(MODEL_GET_IDS))));
-
-            // Put model to the class builder to make other handler can modify it by helper
-//            classBuilder.putTransience(MODEL_GET_IDS, tempModelGetIds);
-            // Add helper
-//            ServiceBuilderHelper helper = new ServiceBuilderHelper(tempModelGetIds);
-//            classBuilder.putTransience(IServiceHandlerHelper.key, helper);
         });
     }
 

@@ -24,8 +24,10 @@ import uapi.log.ILogger;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 @Service
+@Tag("Config")
 public class FileBasedConfigProvider implements IConfigurable {
 
     static final String CFG_FILE_PATH  = "cli.config";
@@ -53,7 +55,10 @@ public class FileBasedConfigProvider implements IConfigurable {
 
     @Override
     public boolean isOptionalConfig(String path) {
-        return false;
+        if (CFG_FILE_PATH.equals(path)) {
+            return false;
+        }
+        throw new KernelException("Unsupported configuration path {} for service {}", path, FileBasedConfigProvider.class.getName());
     }
 
     @Override

@@ -17,6 +17,7 @@ import uapi.service.ISatisfyHook;
 import uapi.service.IServiceReference;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import java.util.Map;
  * set configuration into related configurable service.
  */
 @Service({ ISatisfyHook.class, IConfigTracer.class })
+@Tag("Config")
 class Configurator implements ISatisfyHook, IConfigTracer {
 
     private final Configuration _rootConfig;

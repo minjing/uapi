@@ -13,6 +13,7 @@ import uapi.Type;
 import uapi.config.IConfigValueParser;
 import uapi.helper.CollectionHelper;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,6 +23,7 @@ import java.util.List;
  * A configuration value parser for string list
  */
 @Service({ IConfigValueParser.class })
+@Tag("Config")
 public class StringListValueParser implements IConfigValueParser {
 
     private static final String[] supportedTypesIn = new String[] {

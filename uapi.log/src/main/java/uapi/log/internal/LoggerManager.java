@@ -16,8 +16,10 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 import uapi.log.ILogger;
 import uapi.service.*;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 @Service
+@Tag("Log")
 public class LoggerManager implements IServiceFactory<ILogger> {
 
     @Override

@@ -19,6 +19,7 @@ import uapi.helper.StringHelper;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
  * "-xtrf" : x, t, r, f option which boolean value which always set to true
  */
 @Service({ ICliConfigProvider.class })
+@Tag("Config")
 public class CliConfigProvider implements ICliConfigProvider {
 
     public static final String QUALIFY                         = "cli.";
