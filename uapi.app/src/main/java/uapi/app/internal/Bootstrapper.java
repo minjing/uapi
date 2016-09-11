@@ -85,6 +85,9 @@ public class Bootstrapper {
         svcRegistry.start();
 
         Launcher launcher = svcRegistry.findService(Launcher.class);
+        if (launcher == null) {
+            throw new KernelException("The Launcher was not initialized");
+        }
         launcher.launch(startTime);
     }
 }

@@ -28,7 +28,7 @@ class ProfileManager {
     @Config(path="cli.profile", optional=true)
     String _usedProfile;
 
-    @Config(path="profiles", parser=ProfileParser.class, optional=true)
+    @Config(path="profiles", parser=ProfilesParser.class, optional=true)
     Map<String, IProfile> _profiles;
 
     @Init
