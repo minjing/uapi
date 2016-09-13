@@ -1,5 +1,5 @@
-launcher:
-  app: ProfileEnabledApp
+app:
+  name: ProfileEnabledApp
 
 profiles:
   - name: 1

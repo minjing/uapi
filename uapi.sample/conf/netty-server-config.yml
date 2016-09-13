@@ -9,5 +9,5 @@ restful:
   encoder: JSON
   uri-prefix: rest
 
-launcher:
-  app: NettyHttpServer
+app:
+  name: NettyHttpServer

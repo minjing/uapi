@@ -115,6 +115,57 @@ public final class CollectionHelper {
     }
 
     /**
+     * Check whether the collection contains all of specified elements and
+     * return true if all element is matching or false if it is not all elements are matched
+     *
+     * @param   collection
+     *          The collection which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  True means all elements are matched or otherwise false
+     */
+    public static <T> boolean isContainsAll(final Collection<T> collection, T... elements) {
+        ArgumentChecker.notNull(collection, "collection");
+        for (T element : elements) {
+            if (! collection.contains(element)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check whether the array contains contains all of specified elements and
+     * return true if all element is matching or false if it is not all elements are matched
+     *
+     * @param   array
+     *          The array which will be checked
+     * @param   elements
+     *          The elements
+     * @param   <T>
+     *          The element type
+     * @return  Matched element of null if nothing is matched
+     */
+    public static <T> boolean isContainsAll(final T[] array, final T... elements) {
+        ArgumentChecker.notNull(array, "array");
+        for (T element : elements) {
+            boolean found = false;
+            for (T item : array) {
+                if (item.equals(element)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (! found) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Check whether the collection contains one of specified elements and
      * return matched element or null if nothing is matched
      * The method using strict matching which mean using compared object must

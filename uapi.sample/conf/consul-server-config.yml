@@ -14,7 +14,7 @@ restful:
       host: 127.0.0.1
       port: 8888
 
-launcher:
-  app: ConsulAppServer
+app:
+  name: ConsulAppServer
   ignored-services:
     - uapi.sample.hello.IHello

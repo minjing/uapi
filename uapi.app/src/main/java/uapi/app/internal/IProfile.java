@@ -12,9 +12,16 @@ package uapi.app.internal;
 import uapi.service.IService;
 
 /**
- * Created by xquan on 9/8/2016.
+ * A profile to control which service is allowed to load into application
  */
 interface IProfile {
 
+    /**
+     * Check specified service can be loaded to application
+     *
+     * @param   service
+     *          The service which need to be check
+     * @return  True means the service is allowed otherwise denied
+     */
     boolean isAllow(IService service);
 }

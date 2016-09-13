@@ -131,4 +131,26 @@ class CollectionHelperTest extends Specification {
         ["1", "2"]              | "1,2"
         ["1", null]             | "1,null"
     }
+
+    def 'Test isContains on collection'() {
+        expect:
+        CollectionHelper.isContainsAll(collection, elements) == result
+
+        where:
+        collection          | elements                      | result
+        ["1", "2", "3"]     | ["1", "2", "3"] as String[]   | true
+        ["1", "2", "3"]     | ["1", "2"] as String[]        | true
+        ["1", "2", "3"]     | ["1", "4"] as String[]        | false
+    }
+
+    def 'Test isContains on array'() {
+        expect:
+        CollectionHelper.isContainsAll(array, elements) == result
+
+        where:
+        array                       | elements                      | result
+        ['1', '2', '3'] as String[] | ['1', '2', '3'] as String[]   | true
+        ['1', '2', '3'] as String[] | ['1', '3'] as String[]        | true
+        ['1', '2', '3'] as String[] | ['5', '3'] as String[]        | false
+    }
 }

@@ -11,10 +11,12 @@ package uapi.app.internal;
 
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
+import uapi.helper.CollectionHelper;
 import uapi.service.IService;
+import uapi.service.ITagged;
 
 /**
- * Created by xquan on 9/8/2016.
+ * A profile implementation
  */
 class Profile implements IProfile {
 
@@ -53,11 +55,41 @@ class Profile implements IProfile {
 
     @Override
     public boolean isAllow(IService service) {
-        return false;
+        String[] tags = new String[0];
+        if (service instanceof ITagged) {
+            tags = ((ITagged) service).getTags();
+
+        }
+
+        if (this._model == Model.INCLUDE) {
+            if (this._matching == Matching.SATISFY_ALL) {
+                return CollectionHelper.isContainsAll(tags, this._tags);
+            } else if (this._matching == Matching.SATISFY_ANY) {
+                return CollectionHelper.isContains(tags, this._tags);
+            } else {
+                throw new KernelException("Unsupported matching - {}", this._matching);
+            }
+        } else if (this._model == Model.EXCLUDE) {
+            if (this._matching == Matching.SATISFY_ALL) {
+                return ! CollectionHelper.isContainsAll(tags, this._tags);
+            } else if (this._matching == Matching.SATISFY_ANY) {
+                return ! CollectionHelper.isContains(tags, this._tags);
+            } else {
+                throw new KernelException("Unsupported matching - {}", this._matching);
+            }
+        } else {
+            throw new KernelException("Unsupported model - {}", this._model);
+        }
     }
 
     public enum Model {
+        /**
+         * Include all satisfied services
+         */
         INCLUDE("include"),
+        /**
+         * Exclude all satisfied services
+         */
         EXCLUDE("exclude");
 
         private String _value;
@@ -78,16 +110,22 @@ class Profile implements IProfile {
     }
 
     public enum Matching {
-        SATISFY_ALL("satisfy_all"),
-        SATISFI_ANY("satisfy_any");
+        /**
+         * All tags must be satisfied
+         */
+        SATISFY_ALL("satisfy-all"),
+        /**
+         * One of tags must be satisfied
+         */
+        SATISFY_ANY("satisfy-any");
 
         public static Matching parse(String value) {
             if (SATISFY_ALL._value.equalsIgnoreCase(value)) {
                 return SATISFY_ALL;
-            } else if (SATISFI_ANY._value.equalsIgnoreCase(value)) {
-                return SATISFI_ANY;
+            } else if (SATISFY_ANY._value.equalsIgnoreCase(value)) {
+                return SATISFY_ANY;
             } else {
-                throw new KernelException("The value {} can't be parsed as Matching enum");
+                throw new KernelException("The value {} can't be parsed as Matching enum", value);
             }
         }
 

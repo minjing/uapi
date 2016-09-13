@@ -2,8 +2,8 @@ restful:
   codec: JSON
   encoder: JSON
 
-launcher:
-  app: HelloAppClient
+app:
+  name: HelloAppClient
 
 service:
   remote:

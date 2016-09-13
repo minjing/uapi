@@ -9,7 +9,7 @@ restful:
   encoder: JSON
   uri-prefix: /rest
 
-launcher:
-  app: HelloAppServer
+app:
+  name: HelloAppServer
   ignored-services:
     - uapi.sample.hello.IHello
