@@ -27,11 +27,15 @@ class ForeachOperator<T> extends TerminatedOperator<T> {
 
     @Override
     T getItem() {
-        boolean hasItem = hasItem();
-        while (hasItem) {
-            Object item = getPreviously().getItem();
-            this._action.accept(item);
-            hasItem = hasItem();
+        try {
+            boolean hasItem = hasItem();
+            while (hasItem) {
+                Object item = getPreviously().getItem();
+                this._action.accept(item);
+                hasItem = hasItem();
+            }
+        } catch (NoItemException ex) {
+            // do nothing
         }
         return null;
     }

@@ -14,6 +14,7 @@ import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 import uapi.service.IServiceReference;
 import uapi.service.internal.QualifiedServiceId;
 
@@ -121,20 +122,28 @@ public class Configuration {
         }
         this._value = value;
 
-        Observable.from(this._configuableSvcs.values())
+        Looper.from(this._configuableSvcs.values())
                 .filter(ref -> ref.get() != null)
                 .map(WeakReference::get)
-                .doOnNext(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
-                .subscribe(IServiceReference::notifySatisfied, t -> t.printStackTrace());
+                .next(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
+                .foreach(IServiceReference::notifySatisfied);
+//        Observable.from(this._configuableSvcs.values())
+//                .filter(ref -> ref.get() != null)
+//                .map(WeakReference::get)
+//                .doOnNext(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
+//                .subscribe(IServiceReference::notifySatisfied, t -> t.printStackTrace());
         cleanNullReference();
     }
 
     public void setValue(final Map<String, Object> configMap) {
         ArgumentChecker.notNull(configMap, "configMap");
 
-        Observable.from(configMap.entrySet()).subscribe(entry -> {
+        Looper.from(configMap.entrySet()).foreach(entry -> {
             Configuration config = getOrCreateChild(entry.getKey());
             config.setValue(entry.getValue());
+//        Observable.from(configMap.entrySet()).subscribe(entry -> {
+//            Configuration config = getOrCreateChild(entry.getKey());
+//            config.setValue(entry.getValue());
         });
     }
 

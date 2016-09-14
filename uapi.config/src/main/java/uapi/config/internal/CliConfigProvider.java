@@ -17,6 +17,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
 import uapi.helper.StringHelper;
 import uapi.log.ILogger;
+import uapi.rx.Looper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.annotation.Tag;
@@ -60,24 +61,42 @@ public class CliConfigProvider implements ICliConfigProvider {
         if (args == null || args.length == 0) {
             return;
         }
-        Observable.from(args)
+        Looper.from(args)
                 .filter(option -> ! Strings.isNullOrEmpty(option))
                 .filter(option -> option.startsWith(this._optionPrefix))
                 .map(option -> option.substring(this._optionPrefix.length()))
                 .map(option -> Pair.splitTo(option, this._optionValueSeparator))
-                .flatMap(pair -> {
+                .flatmap(pair -> {
                     if (Strings.isNullOrEmpty(pair.getRightValue())) {
                         List<Pair<String, String>> pairs = new ArrayList<>();
                         for (char c : pair.getLeftValue().toCharArray()) {
                             pairs.add(new Pair<>(String.valueOf(c), Boolean.TRUE.toString()));
                         }
-                        return Observable.from(pairs);
+                        return Looper.from(pairs);
                     } else {
-                        return Observable.just(pair);
+                        return Looper.from(pair);
                     }
                 })
-                .subscribe(
-                        pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
-                        throwable -> this._logger.error(throwable, "Unknown error"));
+                .foreach(
+                        pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()));
+//        Observable.from(args)
+//                .filter(option -> ! Strings.isNullOrEmpty(option))
+//                .filter(option -> option.startsWith(this._optionPrefix))
+//                .map(option -> option.substring(this._optionPrefix.length()))
+//                .map(option -> Pair.splitTo(option, this._optionValueSeparator))
+//                .flatMap(pair -> {
+//                    if (Strings.isNullOrEmpty(pair.getRightValue())) {
+//                        List<Pair<String, String>> pairs = new ArrayList<>();
+//                        for (char c : pair.getLeftValue().toCharArray()) {
+//                            pairs.add(new Pair<>(String.valueOf(c), Boolean.TRUE.toString()));
+//                        }
+//                        return Observable.from(pairs);
+//                    } else {
+//                        return Observable.just(pair);
+//                    }
+//                })
+//                .subscribe(
+//                        pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
+//                        throwable -> this._logger.error(throwable, "Unknown error"));
     }
 }

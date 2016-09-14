@@ -36,7 +36,9 @@ import java.util.stream.Stream;
  */
 @ThreadSafe
 @AutoService(IService.class)
-public class Registry implements IRegistry, IService, IInjectable {
+public class Registry implements IRegistry, IService, ITagged, IInjectable {
+
+    private static final String[] tags = new String[] { "Registry" };
 
     private final Lock _svcRepoLock;
     private final SatisfyDecider _satisfyDecider;
@@ -146,7 +148,7 @@ public class Registry implements IRegistry, IService, IInjectable {
                     .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                     .filter(ServiceHolder::tryInitService)
                     .map(ServiceHolder::getService)
-                    .subscribe(svcHolder -> resolvedSvcs.add((T) svcHolder))
+                    .subscribe(svcHolder -> resolvedSvcs.add((T) svcHolder), throwable -> { throw new KernelException(throwable); })
         );
         return resolvedSvcs;
     }
@@ -169,6 +171,11 @@ public class Registry implements IRegistry, IService, IInjectable {
             return found.get(0);
         }
         throw new KernelException("Find multiple service by service id {}@{}", serviceId, serviceFrom);
+    }
+
+    @Override
+    public String[] getTags() {
+        return tags;
     }
 
     public void start() {

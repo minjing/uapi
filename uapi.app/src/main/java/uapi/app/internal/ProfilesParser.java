@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Parse profile configuration list to profile
  */
-@Service
+@Service(IConfigValueParser.class)
 @Tag("Profile")
 public class ProfilesParser implements IConfigValueParser {
 

@@ -14,6 +14,7 @@ import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
  * The service hold one or more than one parsers
  */
 @Service
+@Tag("Config")
 public class ConfigValueParsers {
 
     @Inject

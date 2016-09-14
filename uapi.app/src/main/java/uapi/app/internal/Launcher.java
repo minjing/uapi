@@ -24,6 +24,7 @@ import uapi.service.IService;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.concurrent.Semaphore;
  * The UAPI application entry point
  */
 @Service
+@Tag("Launcher")
 public class Launcher implements ILauncher {
 
     public static void main(String[] args) {
@@ -75,11 +77,8 @@ public class Launcher implements ILauncher {
     @Optional
     List<IAppLifecycle> _lifecycles;
 
-    @Config(path="launcher.app", optional=true)
+    @Config(path="app.name", optional=true)
     String _appName;
-
-//    @Config(path="launcher.ignored-services", optional=true)
-//    List<String> _ignoredSvcs = Collections.EMPTY_LIST;
 
     private final Semaphore _semaphore;
 
@@ -95,10 +94,9 @@ public class Launcher implements ILauncher {
 
     @Override
     public void launch(long startTime) {
-//        this._registry.loadExternalServices(this._ignoredSvcs);
-
         if (Strings.isNullOrEmpty(this._appName)) {
-            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
+            Looper.from(this._lifecycles).foreach(IAppLifecycle::onStarted);
+//            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
         } else {
             IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
                     .filter(lifecycle -> lifecycle.getAppName().equals(this._appName))

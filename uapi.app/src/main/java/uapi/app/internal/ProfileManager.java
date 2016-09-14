@@ -25,24 +25,33 @@ import java.util.Map;
 @Tag("Profile")
 class ProfileManager {
 
+    private static final IProfile DEFAULT_PROFILE   = new EmptyProfile();
+
     @Config(path="cli.profile", optional=true)
     String _usedProfile;
 
     @Config(path="profiles", parser=ProfilesParser.class, optional=true)
     Map<String, IProfile> _profiles;
 
-    @Init
-    void init() {
-        if (Strings.isNullOrEmpty(this._usedProfile)) {
-            this._usedProfile = EmptyProfile.NAME;
-        }
-        if (this._profiles == null) {
-            this._profiles = new HashMap<>();
-        }
-        this._profiles.put(EmptyProfile.NAME, new EmptyProfile());
-    }
+//    @Init
+//    void init() {
+//        if (Strings.isNullOrEmpty(this._usedProfile)) {
+//            this._usedProfile = EmptyProfile.NAME;
+//        }
+//        if (this._profiles == null) {
+//            this._profiles = new HashMap<>();
+//        }
+//        this._profiles.put(EmptyProfile.NAME, new EmptyProfile());
+//    }
 
     IProfile getActiveProfile() {
-        return this._profiles.get(this._usedProfile);
+        if (Strings.isNullOrEmpty(this._usedProfile)) {
+            return DEFAULT_PROFILE;
+        }
+        IProfile profile = this._profiles.get(this._usedProfile);
+        if (profile == null) {
+            profile = DEFAULT_PROFILE;
+        }
+        return profile;
     }
 }

@@ -10,7 +10,9 @@
 package uapi.app.internal;
 
 import uapi.KernelException;
+import uapi.config.ConfigValueParsers;
 import uapi.config.ICliConfigProvider;
+import uapi.config.IConfigValueParser;
 import uapi.helper.CollectionHelper;
 import uapi.rx.Looper;
 import uapi.service.IRegistry;
@@ -27,7 +29,7 @@ import java.util.ServiceLoader;
 public class Bootstrapper {
 
     private static final String[] basicSvcTags = new String[] {
-        "Config", "Profile", "Log"
+        "Launcher", "Registry", "Config", "Profile", "Log"
     };
 
     public static void main(String[] args) {
@@ -41,7 +43,8 @@ public class Bootstrapper {
                 .foreach(svc -> {
                     if (svc instanceof IRegistry) {
                         svcRegistries.add((IRegistry) svc);
-                    } else if (svc instanceof ITagged) {
+                    }
+                    if (svc instanceof ITagged) {
                         ITagged taggedSvc = (ITagged) svc;
                         String[] tags = taggedSvc.getTags();
                         if (CollectionHelper.contains(tags, basicSvcTags) != null) {
@@ -68,7 +71,7 @@ public class Bootstrapper {
         if (svcRegistry == null) {
             throw new KernelException("The service repository can't be satisfied");
         }
-
+        ConfigValueParsers parsers = svcRegistry.findService(ConfigValueParsers.class);
         // Parse command line parameters
         ICliConfigProvider cliCfgProvider = svcRegistry.findService(ICliConfigProvider.class);
         cliCfgProvider.parse(args);

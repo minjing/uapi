@@ -338,10 +338,10 @@ class ServiceHolder implements IServiceReference {
 
             if (ServiceHolder.this._dependencies.size() > 0) {
                 if (ServiceHolder.this._svc instanceof IInjectable) {
-                    Observable.from(ServiceHolder.this._dependencies.values())
-                            .filter(ServiceHolder::isInited)
+                    Looper.from(ServiceHolder.this._dependencies.values())
                             .filter(dependency -> dependency != null)
-                            .subscribe(dependency -> {
+                            .filter(ServiceHolder::isInited)
+                            .foreach(dependency -> {
                                 // if the service was injected before, it is not necessary to inject again
                                 if (CollectionHelper.isStrictContains(this._injectedSvcs, dependency)) {
                                     return;
@@ -353,9 +353,25 @@ class ServiceHolder implements IServiceReference {
                                 }
                                 ((IInjectable) ServiceHolder.this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
                                 this._injectedSvcs.add(dependency);
-                            }, throwable -> {
-                                throw new KernelException(throwable);
                             });
+//                    Observable.from(ServiceHolder.this._dependencies.values())
+//                            .filter(ServiceHolder::isInited)
+//                            .filter(dependency -> dependency != null)
+//                            .subscribe(dependency -> {
+//                                // if the service was injected before, it is not necessary to inject again
+//                                if (CollectionHelper.isStrictContains(this._injectedSvcs, dependency)) {
+//                                    return;
+//                                }
+//                                Object injectedSvc = dependency.getService();
+//                                if (injectedSvc instanceof IServiceFactory) {
+//                                    // Create service from service factory
+//                                    injectedSvc = ((IServiceFactory) injectedSvc).createService(ServiceHolder.this._svc);
+//                                }
+//                                ((IInjectable) ServiceHolder.this._svc).injectObject(new Injection(dependency.getId(), injectedSvc));
+//                                this._injectedSvcs.add(dependency);
+//                            }, throwable -> {
+//                                throw new KernelException(throwable);
+//                            });
                 } else {
                     throw new KernelException("The service {} does not implement IInjectable interface so it can't inject any dependencies");
                 }

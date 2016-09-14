@@ -1,0 +1,16 @@
+app:
+  name: Profile1EnabledApp
+
+profiles:
+  - name: profile1
+    model: exclude
+    matching: satisfy-all
+    tags:
+      - p1
+      - p2
+  - name: profile2
+    model: include
+    matching: satisfy-any
+    tags:
+      - p2
+      - p3
