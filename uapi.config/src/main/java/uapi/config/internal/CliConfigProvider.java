@@ -79,24 +79,5 @@ public class CliConfigProvider implements ICliConfigProvider {
                 })
                 .foreach(
                         pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()));
-//        Observable.from(args)
-//                .filter(option -> ! Strings.isNullOrEmpty(option))
-//                .filter(option -> option.startsWith(this._optionPrefix))
-//                .map(option -> option.substring(this._optionPrefix.length()))
-//                .map(option -> Pair.splitTo(option, this._optionValueSeparator))
-//                .flatMap(pair -> {
-//                    if (Strings.isNullOrEmpty(pair.getRightValue())) {
-//                        List<Pair<String, String>> pairs = new ArrayList<>();
-//                        for (char c : pair.getLeftValue().toCharArray()) {
-//                            pairs.add(new Pair<>(String.valueOf(c), Boolean.TRUE.toString()));
-//                        }
-//                        return Observable.from(pairs);
-//                    } else {
-//                        return Observable.just(pair);
-//                    }
-//                })
-//                .subscribe(
-//                        pair -> this._configTracer.onChange(QUALIFY + pair.getLeftValue(), pair.getRightValue()),
-//                        throwable -> this._logger.error(throwable, "Unknown error"));
     }
 }

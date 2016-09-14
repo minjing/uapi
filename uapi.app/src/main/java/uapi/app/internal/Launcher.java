@@ -96,7 +96,6 @@ public class Launcher implements ILauncher {
     public void launch(long startTime) {
         if (Strings.isNullOrEmpty(this._appName)) {
             Looper.from(this._lifecycles).foreach(IAppLifecycle::onStarted);
-//            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStarted);
         } else {
             IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
                     .filter(lifecycle -> lifecycle.getAppName().equals(this._appName))

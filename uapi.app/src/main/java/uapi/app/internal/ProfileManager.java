@@ -33,17 +33,6 @@ class ProfileManager {
     @Config(path="profiles", parser=ProfilesParser.class, optional=true)
     Map<String, IProfile> _profiles;
 
-//    @Init
-//    void init() {
-//        if (Strings.isNullOrEmpty(this._usedProfile)) {
-//            this._usedProfile = EmptyProfile.NAME;
-//        }
-//        if (this._profiles == null) {
-//            this._profiles = new HashMap<>();
-//        }
-//        this._profiles.put(EmptyProfile.NAME, new EmptyProfile());
-//    }
-
     IProfile getActiveProfile() {
         if (Strings.isNullOrEmpty(this._usedProfile)) {
             return DEFAULT_PROFILE;

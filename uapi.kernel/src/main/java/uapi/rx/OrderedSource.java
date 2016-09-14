@@ -11,6 +11,7 @@ package uapi.rx;
 
 import uapi.helper.ArgumentChecker;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,6 +26,12 @@ class OrderedSource<T> extends Operator<T> {
     OrderedSource(final List<T> items) {
         ArgumentChecker.required(items, "items");
         this._items = items;
+    }
+
+    OrderedSource(final T item) {
+        ArgumentChecker.required(item, "items");
+        this._items = new ArrayList<>(1);
+        this._items.add(item);
     }
 
     OrderedSource(final T... items) {

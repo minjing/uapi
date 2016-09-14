@@ -127,11 +127,6 @@ public class Configuration {
                 .map(WeakReference::get)
                 .next(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
                 .foreach(IServiceReference::notifySatisfied);
-//        Observable.from(this._configuableSvcs.values())
-//                .filter(ref -> ref.get() != null)
-//                .map(WeakReference::get)
-//                .doOnNext(svcRef -> ((IConfigurable) svcRef.getService()).config(getFullPath(), value))
-//                .subscribe(IServiceReference::notifySatisfied, t -> t.printStackTrace());
         cleanNullReference();
     }
 
@@ -141,9 +136,6 @@ public class Configuration {
         Looper.from(configMap.entrySet()).foreach(entry -> {
             Configuration config = getOrCreateChild(entry.getKey());
             config.setValue(entry.getValue());
-//        Observable.from(configMap.entrySet()).subscribe(entry -> {
-//            Configuration config = getOrCreateChild(entry.getKey());
-//            config.setValue(entry.getValue());
         });
     }
 

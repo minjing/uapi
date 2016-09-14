@@ -12,6 +12,7 @@ package uapi.rx;
 import uapi.helper.ArgumentChecker;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -19,6 +20,11 @@ import java.util.Iterator;
  * IOperator is a abstract handler for input data, more then one operator can be combined.
  */
 public class Looper {
+
+    public static <T> IOperator<T> from(final T item) {
+        ArgumentChecker.required(item, "item");
+        return new OrderedSource<>(item);
+    }
 
     /**
      * Construct IOperator from data array.
