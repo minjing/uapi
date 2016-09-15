@@ -18,34 +18,44 @@ import uapi.service.IRegistry
 /**
  * Test case for Launch
  */
-class LauncherTest extends Specification {
+class ApplicationTest extends Specification {
 
-    def Launcher launcher
+    def Application app
 
-    @Ignore
     def 'Test launch'() {
         given:
-        launcher = new Launcher()
         ILogger logger = Mock(ILogger)
-        IAppLifecycle appLife = Mock(IAppLifecycle)
+        IAppLifecycle appLife = Mock(IAppLifecycle) {
+            getAppName() >> 'Test'
+        }
         IRegistry registry = Mock(IRegistry)
-        launcher._logger = logger;
-        launcher._lifecycles.add(appLife)
-        launcher._registry = registry
+        app = new Application()
+        app._appName = 'Test'
+        app._logger = logger
+        app._lifecycles.add(appLife)
+        app._registry = registry
 
         when:
         new Thread(new Runnable() {
             @Override
             void run() {
-                launcher.launch(System.currentTimeMillis())
+                app.startup(System.currentTimeMillis())
             }
         }).start()
-        Thread.sleep(100)
-        launcher.stop()
-        Thread.sleep(200)
+        while(true) {
+            if (app.state() == Application.AppState.STARTED) {
+                break;
+            }
+            Thread.sleep(100)
+        }
+        app.stop()
+        while (true) {
+            if (app.state() == Application.AppState.STOPPED) {
+                break;
+            }
+        }
 
         then:
-        1 * registry.loadExternalServices(_)
         1 * appLife.onStarted()
         1 * appLife.onStopped()
     }

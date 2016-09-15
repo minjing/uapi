@@ -10,9 +10,7 @@
 package uapi.app.internal;
 
 import uapi.KernelException;
-import uapi.config.ConfigValueParsers;
 import uapi.config.ICliConfigProvider;
-import uapi.config.IConfigValueParser;
 import uapi.helper.CollectionHelper;
 import uapi.rx.Looper;
 import uapi.service.IRegistry;
@@ -24,12 +22,14 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 /**
- * Bootstrap whole application
+ * The UAPI application entry point
+ * The Bootstrapper's responsibility is load basic services and all other services is loaded by
+ * profile definition
  */
 public class Bootstrapper {
 
     private static final String[] basicSvcTags = new String[] {
-        "Launcher", "Registry", "Config", "Profile", "Log"
+        "Application", "Registry", "Config", "Profile", "Log"
     };
 
     public static void main(String[] args) {
@@ -71,7 +71,7 @@ public class Bootstrapper {
         if (svcRegistry == null) {
             throw new KernelException("The service repository can't be satisfied");
         }
-        ConfigValueParsers parsers = svcRegistry.findService(ConfigValueParsers.class);
+
         // Parse command line parameters
         ICliConfigProvider cliCfgProvider = svcRegistry.findService(ICliConfigProvider.class);
         cliCfgProvider.parse(args);
@@ -87,10 +87,10 @@ public class Bootstrapper {
 
         svcRegistry.start();
 
-        Launcher launcher = svcRegistry.findService(Launcher.class);
-        if (launcher == null) {
-            throw new KernelException("The Launcher was not initialized");
+        Application app = svcRegistry.findService(Application.class);
+        if (app == null) {
+            throw new KernelException("The Application was not initialized");
         }
-        launcher.launch(startTime);
+        app.startup(startTime);
     }
 }

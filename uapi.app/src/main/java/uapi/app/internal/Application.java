@@ -13,7 +13,7 @@ import com.google.common.base.Strings;
 import rx.Observable;
 import uapi.KernelException;
 import uapi.app.IAppLifecycle;
-import uapi.app.ILauncher;
+import uapi.app.IApplication;
 import uapi.config.ICliConfigProvider;
 import uapi.config.annotation.Config;
 import uapi.helper.TimeHelper;
@@ -35,37 +35,8 @@ import java.util.concurrent.Semaphore;
  * The UAPI application entry point
  */
 @Service
-@Tag("Launcher")
-public class Launcher implements ILauncher {
-
-    public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
-
-        ServiceLoader<IService> svcLoaders = ServiceLoader.load(IService.class);
-        List<IRegistry> svcRegistries = new ArrayList<>();
-        List<IService> svcs = new ArrayList<>();
-        Observable.from(svcLoaders)
-                .doOnNext(svcs::add)
-                .filter(svc -> svc instanceof IRegistry)
-                .subscribe(svc -> svcRegistries.add((IRegistry) svc));
-        if (svcRegistries.size() == 0) {
-            throw new KernelException("A IRegistry must be provided");
-        }
-        if (svcRegistries.size() > 1) {
-            throw new KernelException("Found multiple IRegistry instance {}", svcRegistries);
-        }
-        IRegistry svcRegistry = svcRegistries.get(0);
-        svcRegistry.register(svcs.toArray(new IService[svcs.size()]));
-        svcRegistry = svcRegistry.findService(IRegistry.class);
-
-        ICliConfigProvider cliCfgProvider = svcRegistry.findService(ICliConfigProvider.class);
-        cliCfgProvider.parse(args);
-
-        svcRegistry.start();
-
-        Launcher launcher = svcRegistry.findService(Launcher.class);
-        launcher.launch(startTime);
-    }
+@Tag("Application")
+public class Application implements IApplication {
 
     @Inject
     IRegistry _registry;
@@ -82,7 +53,9 @@ public class Launcher implements ILauncher {
 
     private final Semaphore _semaphore;
 
-    public Launcher() {
+    private AppState _state = AppState.STOPPED;
+
+    public Application() {
         this._lifecycles = new ArrayList<>();
         this._semaphore = new Semaphore(0);
     }
@@ -93,14 +66,18 @@ public class Launcher implements ILauncher {
     }
 
     @Override
-    public void launch(long startTime) {
+    public void startup(long startTime) {
+        this._state = AppState.STARTING;
+        IAppLifecycle appLifecycle = null;
         if (Strings.isNullOrEmpty(this._appName)) {
-            Looper.from(this._lifecycles).foreach(IAppLifecycle::onStarted);
+            this._logger.info("app.name was not specified");
         } else {
-            IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
+            appLifecycle = Looper.from(this._lifecycles)
                     .filter(lifecycle -> lifecycle.getAppName().equals(this._appName))
                     .first(null);
-            if (appLifecycle != null) {
+            if (appLifecycle == null) {
+                this._logger.warn("No IAppLifecycle is named - {}", this._appName);
+            } else {
                 appLifecycle.onStarted();
             }
         }
@@ -112,30 +89,41 @@ public class Launcher implements ILauncher {
         this._logger.info("System launched, expend {}.{}s", expendSecond, expendMs);
         try {
             Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
+            this._state = AppState.STARTED;
             this._semaphore.acquire();
         } catch (InterruptedException e) {
             this._logger.warn("Encounter an InterruptedException when acquire the semaphore, system will exit.");
         }
 
-        if (Strings.isNullOrEmpty(this._appName)) {
-            Observable.from(this._lifecycles).subscribe(IAppLifecycle::onStopped);
-        } else {
-            IAppLifecycle appLifecycle = Looper.from(this._lifecycles)
-                    .filter(lifecycle -> lifecycle.getAppName().equals(this._appName))
-                    .first(null);
-            if (appLifecycle != null) {
-                appLifecycle.onStopped();
-            }
+        this._state = AppState.STOPPING;
+        if (appLifecycle != null) {
+            appLifecycle.onStopped();
         }
+
         this._logger.info("The system is shutdown.");
+        this._state = AppState.STOPPED;
+    }
+
+    @Override
+    public void shutdown() {
+        this._logger.info("The system is going to shutdown by self ...");
+        this._semaphore.release();
+    }
+
+    AppState state() {
+        return this._state;
     }
 
     private final class ShutdownHook implements Runnable {
 
         @Override
         public void run() {
-            Launcher.this._logger.info("The system is going to shutdown by user ...");
-            Launcher.this._semaphore.release();
+            Application.this._logger.info("The system is going to shutdown by user ...");
+            Application.this._semaphore.release();
         }
+    }
+
+    enum AppState {
+        STARTING, STARTED, STOPPING, STOPPED
     }
 }

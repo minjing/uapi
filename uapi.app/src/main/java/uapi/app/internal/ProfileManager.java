@@ -11,11 +11,12 @@ package uapi.app.internal;
 
 import com.google.common.base.Strings;
 import uapi.config.annotation.Config;
-import uapi.service.annotation.Init;
+import uapi.log.ILogger;
+import uapi.service.IService;
+import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.annotation.Tag;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Map;
 @Tag("Profile")
 class ProfileManager {
 
-    private static final IProfile DEFAULT_PROFILE   = new EmptyProfile();
+    static final IProfile DEFAULT_PROFILE   = new IncludeAllProfile();
 
     @Config(path="cli.profile", optional=true)
     String _usedProfile;
@@ -33,14 +34,26 @@ class ProfileManager {
     @Config(path="profiles", parser=ProfilesParser.class, optional=true)
     Map<String, IProfile> _profiles;
 
+    @Inject
+    ILogger _logger;
+
     IProfile getActiveProfile() {
         if (Strings.isNullOrEmpty(this._usedProfile)) {
             return DEFAULT_PROFILE;
         }
         IProfile profile = this._profiles.get(this._usedProfile);
         if (profile == null) {
+            this._logger.warn("No profile is named {}, using default profile instead of", this._usedProfile);
             profile = DEFAULT_PROFILE;
         }
         return profile;
+    }
+
+    private static final class IncludeAllProfile implements IProfile {
+
+        @Override
+        public boolean isAllow(IService service) {
+            return true;
+        }
     }
 }
