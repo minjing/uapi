@@ -69,6 +69,7 @@ public class Application implements IApplication {
     public void startup(long startTime) {
         this._state = AppState.STARTING;
         IAppLifecycle appLifecycle = null;
+
         if (Strings.isNullOrEmpty(this._appName)) {
             this._logger.info("app.name was not specified");
         } else {

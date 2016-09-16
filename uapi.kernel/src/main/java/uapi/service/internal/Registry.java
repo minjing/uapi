@@ -173,13 +173,105 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
                 .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
                 .toList();
 
-//        checkCycleDependency(unresolvedSvcs);
+        checkCycleDependency(unresolvedSvcs);
 
         if (this._svcLoaders.size() > 0) {
             this._orderedSvcLoaders.addAll(this._svcLoaders.values());
         }
 
+        loadExternalServices(unresolvedSvcs);
+
         this._started = true;
+    }
+
+    private void checkCycleDependency(List<Dependency> unresolvedSvcs) {
+        // TODO: Check cycle dependency
+    }
+
+    private void loadExternalServices(List<Dependency> unresolvedSvcs) {
+        try {
+            Looper.from(unresolvedSvcs).foreach(this::loadExternalService);
+//            Looper.from(unresolvedSvcs).foreach(dependency -> {
+//                QualifiedServiceId qSvcId = dependency.getServiceId();
+//                String from = qSvcId.getFrom();
+//                if (from.equals(QualifiedServiceId.FROM_ANY)) {
+//                    // Search from any loader
+//                    Iterator<IServiceLoader> svcLoadersIte = this._orderedSvcLoaders.iterator();
+//                    boolean loaded = false;
+//                    while (svcLoadersIte.hasNext()) {
+//                        IServiceLoader svcLoader = svcLoadersIte.next();
+//                        Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+//                        if (svc == null) {
+//                            continue;
+//                        }
+//                        loaded = true;
+//                        registerService(from, svc, new String[]{qSvcId.getId()}, new Dependency[0]);
+//                        if (dependency.isSingle()) {
+//                            break;
+//                        }
+//                    }
+//                    if (!loaded) {
+//                        this._logger.error("No any service loader can load service {}", qSvcId);
+//                    }
+//                } else {
+//                    // Search specific service loader
+//                    IServiceLoader svcLoader = this._svcLoaders.get(from);
+//                    if (svcLoader == null) {
+//                        this._logger.error("Can't found service {}", qSvcId);
+//                        return;
+//                    }
+//                    Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+//                    if (svc == null) {
+//                        this._logger.error("Load service {} from location {} failed", qSvcId, from);
+//                        return;
+//                    }
+//                    registerService(from, svc, new String[]{qSvcId.getId()}, new Dependency[0]);
+//                }
+//            });
+        } catch (Exception ex) {
+            this._logger.error(ex);
+        }
+    }
+
+    private Object loadExternalService(Dependency dependency) {
+        QualifiedServiceId qSvcId = dependency.getServiceId();
+        String from = qSvcId.getFrom();
+        if (from.equals(QualifiedServiceId.FROM_ANY)) {
+            // Search from any loader
+            Iterator<IServiceLoader> svcLoadersIte = this._orderedSvcLoaders.iterator();
+            boolean loaded = false;
+            Object svc = null;
+            while (svcLoadersIte.hasNext()) {
+                IServiceLoader svcLoader = svcLoadersIte.next();
+                svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+                if (svc == null) {
+                    continue;
+                }
+                loaded = true;
+                registerService(from, svc, new String[]{qSvcId.getId()}, new Dependency[0]);
+                if (dependency.isSingle()) {
+                    break;
+                }
+            }
+            if (!loaded) {
+                this._logger.error("No any service loader can load service {}", qSvcId);
+            }
+            return svc;
+        } else {
+            // Search specific service loader
+            IServiceLoader svcLoader = this._svcLoaders.get(from);
+            if (svcLoader == null) {
+                this._logger.error("Can't found service {}", qSvcId);
+                return null;
+            }
+            Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
+            if (svc == null) {
+                this._logger.error("Load service {} from location {} failed", qSvcId, from);
+                return null;
+            }
+            registerService(from, svc, new String[]{qSvcId.getId()}, new Dependency[0]);
+            return svc;
+        }
     }
 
     int getCount() {

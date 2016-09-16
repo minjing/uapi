@@ -140,5 +140,5 @@ public interface IRegistry {
 
 //    void registerServiceLoader(IServiceLoader serviceLoader);
 
-//    void loadExternalServices(final List<String> ignoredServices);
+//    void loadExternalServices();
 }
