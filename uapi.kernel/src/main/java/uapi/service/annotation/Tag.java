@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * The Tag annotation indicate bundle multiple services
  */
 @Target(ElementType.TYPE)
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Tag {
 
     String[] value();
