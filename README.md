@@ -331,8 +331,8 @@ The the HelloClient can invoke the service like local service.
 
 * v0.3 - in working
   - [x] Using Netty to provide HTTP service
-  - [ ] Generic Restful service based on consistent HTTP service API
-  - [ ] A profile to indicate which service can be registered or not.
+  - [x] Generic Restful service based on consistent HTTP service API
+  - [x] A profile to indicate which service can be registered or not.
   - [ ] Support custom service parameter and return type.
   - [ ] Support register service to Consul.
 

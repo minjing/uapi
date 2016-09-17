@@ -1,0 +1,13 @@
+profiles:
+  - name: 1
+    model: exclude
+    matching: satisfy-all
+    tags:
+      - a
+      - b
+  - name: 1
+    model: include
+    matching: satisfy-any
+    tags:
+      - e
+      - f

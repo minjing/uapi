@@ -2,6 +2,7 @@ package uapi.app.internal
 
 import com.esotericsoftware.yamlbeans.YamlReader
 import spock.lang.Specification
+import uapi.KernelException
 
 /**
  * Test case for ProfileParser
@@ -48,5 +49,26 @@ class ProfileParserTest extends Specification {
         where:
         profileCount    | profile1Name  | profile2Name  | profile1Model         | profile2Model         | profile1Matching              | profile2Matching              | profile1TagCount  | profile2TagCount  | p1t1  | p1t2  | p2t1  | p2t2
         2               | '1'           | '2'           | Profile.Model.EXCLUDE | Profile.Model.INCLUDE | Profile.Matching.SATISFY_ALL  | Profile.Matching.SATISFY_ANY  | 2                 | 2                 | 'a'   | 'b'   | 'e'   | 'f'
+    }
+
+    def 'Test parse duplicated profile'() {
+        given:
+        YamlReader reader = null;
+        Map config;
+        try {
+            reader = new YamlReader(new FileReader('src/test/resources/duplicated-profiles.yaml'));
+            config = reader.read()
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        when:
+        ProfilesParser parser = new ProfilesParser()
+        parser.parse(config.get('profiles'))
+
+        then:
+        thrown(KernelException)
     }
 }

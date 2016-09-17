@@ -69,6 +69,9 @@ public class ProfilesParser implements IConfigValueParser {
                     List<String> tagList = (List<String>) tagsObj;
                     String[] tags = tagList.toArray(new String[tagList.size()]);
                     Profile profile = new Profile(name, model, matching, tags);
+                    if (profiles.containsKey(name)) {
+                        throw new KernelException("Found Duplicated profile name - {}", name);
+                    }
                     profiles.put(name, profile);
                 });
         return profiles;
