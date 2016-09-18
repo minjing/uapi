@@ -10,6 +10,7 @@
 package uapi.service.internal;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Guarder;
 import uapi.rx.Looper;
@@ -17,14 +18,18 @@ import uapi.service.IAsyncCallback;
 import uapi.service.IAsyncServiceBuilder;
 import uapi.service.IAsyncServiceFactory;
 import uapi.service.IService;
+import uapi.service.annotation.Init;
 import uapi.service.annotation.Service;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,20 +43,36 @@ public class AsyncServiceFactory implements IAsyncServiceFactory {
     private static final String CHECKER_THREAD_NAME_PATTERN     = "AsyncServiceChecker-%d";
 
     private final ExecutorService _svcExecutor;
-    private final ExecutorService _svcChecker;
+    private final ScheduledExecutorService _svcChecker;
     private final List<WeakReference<AsyncService>> _asyncSvcs;
     private final Lock _lock;
+
+    @Config(path="service.async.time-of-check")
+    int _timeOfCheck;
 
     public AsyncServiceFactory() {
         this._svcExecutor = Executors.newCachedThreadPool(
                 new ThreadFactoryBuilder().setNameFormat(EXECUTOR_THREAD_NAME_PATTERN).build());
-        this._svcChecker = Executors.newSingleThreadExecutor(
+        this._svcChecker = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat(CHECKER_THREAD_NAME_PATTERN).build());
         this._asyncSvcs = new LinkedList<>();
         this._lock = new ReentrantLock();
-        this._svcChecker.submit(() -> {
+    }
 
-        });
+    @Init
+    public void init() {
+        this._svcChecker.scheduleAtFixedRate(() -> {
+            Iterator<WeakReference<AsyncService>> it = this._asyncSvcs.iterator();
+            while(it.hasNext()) {
+                WeakReference<AsyncService> asyncSvcRef = it.next();
+                AsyncService asyncSvc = asyncSvcRef.get();
+                if (asyncSvc == null) {
+                    it.remove();
+                    continue;
+                }
+                asyncSvc.CheckCallFutures();
+            }
+        }, 0, this._timeOfCheck, TimeUnit.MILLISECONDS);
     }
 
     @Override
