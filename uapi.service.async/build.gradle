@@ -1,0 +1,13 @@
+plugins {
+    id 'com.github.kt3k.coveralls' version '2.6.3'
+}
+
+dependencies {
+    compile project(':uapi.kernel')
+    compile project(':uapi.config')
+    compile project(':uapi.service')
+}
+
+jar {
+    manifest.attributes
+}
