@@ -13,6 +13,7 @@ import com.google.common.base.Strings;
 import rx.Observable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
+import uapi.rx.Looper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -141,5 +142,10 @@ public final class StringHelper {
             }
         }
         return line == null ? StringHelper.EMPTY : line;
+    }
+
+    public static void clear(StringBuilder... buffers) {
+        ArgumentChecker.required(buffers, "buffers");
+        Looper.from(buffers).foreach(buffer -> buffer.delete(0, buffer.length()));
     }
 }

@@ -47,6 +47,9 @@ public class AsyncServiceFactory implements IAsyncServiceFactory {
     private final List<WeakReference<AsyncService>> _asyncSvcs;
     private final Lock _lock;
 
+    /**
+     * time of checking, unit is ms
+     */
     @Config(path="service.async.time-of-check")
     int _timeOfCheck;
 

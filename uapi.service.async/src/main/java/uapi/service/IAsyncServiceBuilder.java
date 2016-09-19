@@ -10,15 +10,41 @@
 package uapi.service;
 
 /**
- * Created by xquan on 9/18/2016.
+ * The builder for async service
  */
 public interface IAsyncServiceBuilder<T extends IService> {
 
+    /**
+     * Indicate which service is delegated by async service
+     *
+     * @param   service
+     *          The service instance
+     * @return  The async service builder
+     */
     IAsyncServiceBuilder<T> on(T service);
 
+    /**
+     * Indicate the callback instance which used in async service invocation life cycle.
+     *
+     * @param   callback
+     *          The async service call back instance
+     * @return  The async service builder
+     */
     IAsyncServiceBuilder<T> with(IAsyncCallback callback);
 
+    /**
+     * Set the timeout time of the async service invocation
+     *
+     * @param   time
+     *          The timeout time, if less than 1 which means no time out
+     * @return  The async service builder
+     */
     IAsyncServiceBuilder<T> timeout(int time);
 
+    /**
+     * Build a async service for specific service
+     *
+     * @return  Async service instance
+     */
     T build();
 }

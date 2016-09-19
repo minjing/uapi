@@ -44,8 +44,35 @@ public class ArgumentChecker {
      */
     public static void checkInt(int arg, String argName, int minValue, int maxValue) {
         if (arg < minValue || arg > maxValue) {
-            throw new InvalidArgumentException(argName,
+            throw new InvalidArgumentException(
+                    argName,
                     "The argument must be more than {} and less than {}",
+                    minValue, maxValue);
+        }
+    }
+
+    /**
+     * Check the long argument value should between min value and max value
+     * The min value and max value should be included.
+     * An {@code InvalidArgumentException} will be thrown when the argument value
+     * is not between min value and max value
+     *
+     * @param   arg
+     *          The long argument which will be checked
+     * @param   argName
+     *          The checked argument name
+     * @param   minValue
+     *          The min value
+     * @param   maxValue
+     *          The max value
+     * @throws  InvalidArgumentException
+     *          The checked argument value is not between min value and max value
+     */
+    public static void checkLong(long arg, String argName, long minValue, long maxValue) {
+        if (arg < minValue || arg > maxValue) {
+            throw new InvalidArgumentException(
+                    argName,
+                    "The argument mut be more than {} and less than {}",
                     minValue, maxValue);
         }
     }

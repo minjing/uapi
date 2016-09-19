@@ -32,6 +32,21 @@ class ArgumentCheckerTest extends Specification {
         -3                      | "test"    | -2                | -1                | InvalidArgumentException
     }
 
+    def 'Test check long'() {
+        when:
+        ArgumentChecker.checkLong(arg, argName, min, max)
+
+        then:
+        def e = thrown(exception)
+        e.class == exception
+
+        where:
+        arg                     | argName   | min               | max               | exception
+        -1l                     | "test"    | 0l                | 10l               | InvalidArgumentException
+        11l                     | "test"    | 0l                | 10l               | InvalidArgumentException
+        -3l                     | "test"    | -2l               | -1l               | InvalidArgumentException
+    }
+
     def 'Test notNull method'() {
         when:
         ArgumentChecker.notNull(arg, argName)
