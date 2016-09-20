@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * The service used to wrap real service to provide async service invocation feature
  */
-@Service(IAsyncServiceFactory.class)
+//@Service(IAsyncServiceFactory.class)
 public class AsyncServiceFactory implements IAsyncServiceFactory {
 
     private static final String EXECUTOR_THREAD_NAME_PATTERN    = "AsyncServiceExecutor-%d";
@@ -50,7 +50,7 @@ public class AsyncServiceFactory implements IAsyncServiceFactory {
     /**
      * time of checking, unit is ms
      */
-    @Config(path="service.async.time-of-check")
+//    @Config(path="service.async.time-of-check")
     int _timeOfCheck;
 
     public AsyncServiceFactory() {
@@ -62,7 +62,7 @@ public class AsyncServiceFactory implements IAsyncServiceFactory {
         this._lock = new ReentrantLock();
     }
 
-    @Init
+//    @Init
     public void init() {
         this._svcChecker.scheduleAtFixedRate(() -> {
             Iterator<WeakReference<AsyncService>> it = this._asyncSvcs.iterator();

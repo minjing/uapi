@@ -9,6 +9,7 @@
 
 package uapi.config;
 
+import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
@@ -55,20 +56,27 @@ public final class IntervalTime {
         for (int i = 0; i < intervalString.length(); i++) {
             char c = intervalString.charAt(i);
             if (c >= '0' && c <='9') {
-                numberBuffer.append(c);
                 if (! lastNumber) {
                     checkBuffer(intervalTime, numberBuffer, unitBuffer);
-                    lastNumber = true;
                 }
+                numberBuffer.append(c);
+                lastNumber = true;
             } else {
-                unitBuffer.append(c);
+                if (i == 0) {
+                    // the first char must be number
+                    throw new InvalidArgumentException(intervalString, InvalidArgumentException.InvalidArgumentType.FORMAT);
+                }
                 if (lastNumber) {
                     checkBuffer(intervalTime, numberBuffer, unitBuffer);
-                    lastNumber = false;
                 }
+                unitBuffer.append(c);
+                lastNumber = false;
             }
         }
         checkBuffer(intervalTime, numberBuffer, unitBuffer);
+        if (numberBuffer.length() > 0 || unitBuffer.length() > 0) {
+            throw new InvalidArgumentException(intervalString, InvalidArgumentException.InvalidArgumentType.FORMAT);
+        }
         return intervalTime;
     }
 
@@ -88,24 +96,21 @@ public final class IntervalTime {
             } else if (UNIT_DAY.equalsIgnoreCase(unitStr)) {
                 iTime.add(interval, TimeUnit.DAYS);
             } else {
-                throw new KernelException("Unsupported time unit - {}", unitStr);
+                throw new InvalidArgumentException("Unsupported time unit - {}", unitStr);
             }
             StringHelper.clear(numBuf, unitBuf);
-        } else {
-            throw new KernelException("The number buffer {} and unit buffer {} can't be empty",
-                    numBuf.toString(), unitBuf.toString());
         }
     }
 
     private long _interval;
     private TimeUnit _unit;
 
-    private IntervalTime() {
+    public IntervalTime() {
         this._interval = 0;
         this._unit = TimeUnit.DAYS;
     }
 
-    private IntervalTime(final long interval, TimeUnit unit) {
+    public IntervalTime(final long interval, TimeUnit unit) {
         ArgumentChecker.checkLong(interval, "interval", 0L, Long.MAX_VALUE);
         ArgumentChecker.required(unit, "unit");
         this._interval = interval;
@@ -114,92 +119,22 @@ public final class IntervalTime {
 
     public long milliseconds() {
         return this._unit.toMillis(this._interval);
-//        switch (this._unit) {
-//            case DAYS:
-//                return this._interval * HOUR_OF_DAY * MINUTE_OF_HOUR * SECOND_OF_MINUTE * MS_OF_SECOND;
-//            case HOURS:
-//                return this._interval * MINUTE_OF_HOUR * SECOND_OF_MINUTE * MS_OF_SECOND;
-//            case MINUTES:
-//                return this._interval * SECOND_OF_MINUTE * MS_OF_SECOND;
-//            case SECONDS:
-//                return this._interval * MS_OF_SECOND;
-//            case MILLISECONDS:
-//                return this._interval;
-//            default:
-//                throw new KernelException("Unsupported time unit - {}", this._unit);
-//        }
     }
 
     public long seconds() {
         return this._unit.toSeconds(this._interval);
-//        switch (this._unit) {
-//            case DAYS:
-//                return this._interval * HOUR_OF_DAY * MINUTE_OF_HOUR * SECOND_OF_MINUTE;
-//            case HOURS:
-//                return this._interval * MINUTE_OF_HOUR * SECOND_OF_MINUTE;
-//            case MINUTES:
-//                return this._interval * SECOND_OF_MINUTE;
-//            case SECONDS:
-//                return this._interval;
-//            case MILLISECONDS:
-//                return this._interval / MS_OF_SECOND;
-//            default:
-//                throw new KernelException("Unsupported time unit - {}", this._unit);
-//        }
     }
 
     public long minutes() {
         return this._unit.toMinutes(this._interval);
-//        switch (this._unit) {
-//            case DAYS:
-//                return this._interval * HOUR_OF_DAY * MINUTE_OF_HOUR;
-//            case HOURS:
-//                return this._interval * MINUTE_OF_HOUR;
-//            case MINUTES:
-//                return this._interval;
-//            case SECONDS:
-//                return this._interval / SECOND_OF_MINUTE;
-//            case MILLISECONDS:
-//                return this._interval / MS_OF_SECOND / SECOND_OF_MINUTE;
-//            default:
-//                throw new KernelException("Unsupported time unit - {}", this._unit);
-//        }
     }
 
     public long hours() {
         return this._unit.toHours(this._interval);
-//        switch (this._unit) {
-//            case DAYS:
-//                return (int) this._interval * HOUR_OF_DAY;
-//            case HOURS:
-//                return (int) this._interval;
-//            case MINUTES:
-//                return (int) this._interval / MINUTE_OF_HOUR;
-//            case SECONDS:
-//                return (int) this._interval / SECOND_OF_MINUTE / MINUTE_OF_HOUR;
-//            case MILLISECONDS:
-//                return (int) this._interval / MS_OF_SECOND / SECOND_OF_MINUTE / MINUTE_OF_HOUR;
-//            default:
-//                throw new KernelException("Unsupported time unit - {}", this._unit);
-//        }
     }
 
     public long days() {
         return this._unit.toDays(this._interval);
-//        switch (this._unit) {
-//            case DAYS:
-//                return (int) this._interval;
-//            case HOURS:
-//                return (int) this._interval / HOUR_OF_DAY;
-//            case MINUTES:
-//                return (int) this._interval / MINUTE_OF_HOUR / HOUR_OF_DAY;
-//            case SECONDS:
-//                return (int) this._interval / SECOND_OF_MINUTE / MINUTE_OF_HOUR / HOUR_OF_DAY;
-//            case MILLISECONDS:
-//                return (int) this._interval / MS_OF_SECOND / SECOND_OF_MINUTE / MINUTE_OF_HOUR / HOUR_OF_DAY;
-//            default:
-//                throw new KernelException("Unsupported time unit - {}", this._unit);
-//        }
     }
 
     public void add(final long interval, final TimeUnit unit) {
@@ -294,6 +229,28 @@ public final class IntervalTime {
             default:
                 throw new KernelException("Unsupported time unit - {}", this._unit);
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (! (obj instanceof IntervalTime)) {
+            return false;
+        }
+        IntervalTime other = (IntervalTime) obj;
+        if (this._interval == other._interval && this._unit == other._unit) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (_interval ^ (_interval >>> 32));
+        result = 31 * result + _unit.hashCode();
+        return result;
     }
 
     @Override

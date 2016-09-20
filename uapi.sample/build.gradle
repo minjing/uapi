@@ -8,9 +8,10 @@ dependencies {
     compile project(':uapi.log')
     compile project(':uapi.config')
     compile project(':uapi.app')
-//    compile project(':uapi.web')
-    runtime project(':uapi.web.http.netty')
     compile project(':uapi.web.restful')
+
+    compile project(':uapi.service.async')
+    runtime project(':uapi.web.http.netty')
 }
 
 jar {

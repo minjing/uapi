@@ -24,7 +24,7 @@ public class InvalidArgumentException extends KernelException {
         super(message, args);
     }
 
-    public static enum InvalidArgumentType {
+    public enum InvalidArgumentType {
 
         EMPTY, FORMAT
     }
