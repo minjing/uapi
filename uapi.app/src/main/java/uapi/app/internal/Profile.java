@@ -37,19 +37,19 @@ class Profile implements IProfile {
         this._tags = tags;
     }
 
-    String getName() {
+    public String getName() {
         return this._name;
     }
 
-    Model getModel() {
+    public Model getModel() {
         return this._model;
     }
 
-    Matching getMatching() {
+    public Matching getMatching() {
         return this._matching;
     }
 
-    String[] getTags() {
+    public String[] getTags() {
         return this._tags;
     }
 

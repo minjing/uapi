@@ -29,15 +29,15 @@ class ProfileManager {
     static final IProfile DEFAULT_PROFILE   = new IncludeAllProfile();
 
     @Config(path="cli.profile", optional=true)
-    String _usedProfile;
+    protected String _usedProfile;
 
     @Config(path="profiles", parser=ProfilesParser.class, optional=true)
-    Map<String, IProfile> _profiles;
+    protected Map<String, IProfile> _profiles;
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
-    IProfile getActiveProfile() {
+    public IProfile getActiveProfile() {
         if (Strings.isNullOrEmpty(this._usedProfile)) {
             return DEFAULT_PROFILE;
         }

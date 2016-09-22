@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 1h   == 1 hour
  * 1d   == 1 day
  */
-public final class IntervalTime {
+public class IntervalTime {
 
     private static final String UNIT_MS         = "ms";
     private static final String UNIT_SECOND     = "s";

@@ -9,132 +9,269 @@
 
 package uapi.service.internal;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import uapi.config.IntervalTime;
+import uapi.config.internal.IntervalTimeParser;
+import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
-import uapi.helper.Pair;
+import uapi.log.ILogger;
 import uapi.rx.Looper;
-import uapi.service.IAsyncCallback;
+import uapi.service.annotation.Init;
+import uapi.service.annotation.Inject;
+import uapi.service.annotation.Service;
+import uapi.service.async.IAsyncService;
+import uapi.service.async.ICallFailed;
+import uapi.service.async.ICallSucceed;
+import uapi.service.async.ICallTimedOut;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The AsyncService delegate real service to provide async call functionality
+ * The AsyncService used wrap sync service to support async call
  */
-class AsyncService implements InvocationHandler {
+@Service(IAsyncService.class)
+public class AsyncService implements IAsyncService {
 
-    private final Object _svc;
-    private final IAsyncCallback _callback;
-    private final int _expiredTime;
-    private final ExecutorService _exeSvc;
-    private final Map<String, Pair<Future, ServiceInvoker>> _callFutures;
+    @Inject
+    protected ILogger _logger;
+
+    @Config(path="service.async.time-of-check", parser=IntervalTimeParser.class)
+    protected IntervalTime _timeOfCheck;
+
+    private static final String EXECUTOR_THREAD_NAME_PATTERN    = "AsyncServiceExecutor-%d";
+    private static final String CHECKER_THREAD_NAME_PATTERN     = "AsyncServiceChecker-%d";
+
+    private final ExecutorService _svcExecutor;
+    private final ScheduledExecutorService _svcChecker;
     private final AtomicInteger _callIdGen;
+    private final Map<String, CallWrapper> _callWrappers;
 
-    AsyncService(
-            final Object service,
-            final IAsyncCallback callback,
-            final int expiredTime,
-            final ExecutorService executorService) {
-        ArgumentChecker.required(service, "service");
-        ArgumentChecker.required(callback, "callback");
-        ArgumentChecker.checkInt(expiredTime, "expiredTime", Integer.MIN_VALUE, Integer.MAX_VALUE);
-        ArgumentChecker.required(executorService, "executorService");
-        this._svc = service;
-        this._callback = callback;
-        this._expiredTime = expiredTime;
-        this._exeSvc = executorService;
-        this._callFutures = new ConcurrentHashMap<>();
+    public AsyncService() {
+        this._callWrappers = new ConcurrentHashMap<>();
+        this._svcExecutor = Executors.newCachedThreadPool(
+                new ThreadFactoryBuilder().setNameFormat(EXECUTOR_THREAD_NAME_PATTERN).build());
+        this._svcChecker = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setNameFormat(CHECKER_THREAD_NAME_PATTERN).build());
         this._callIdGen = new AtomicInteger(1);
     }
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String callId = Integer.toString(this._callIdGen.getAndIncrement());
-        this._callback.calling(callId, method.getName(), args);
-        ServiceInvoker svcInvoker = new ServiceInvoker(callId, method, args);
-        Future future = this._exeSvc.submit(svcInvoker);
-        this._callFutures.put(callId, new Pair<>(future, svcInvoker));
-        return null;
-    }
-
-    /**
-     * Check below futures:
-     * * Timed out future -> cancel it
-     * * Done future -> remove it
-     * * Canceled future -> remove it
-     */
-    public void CheckCallFutures() {
-        Looper.from(this._callFutures.entrySet().iterator())
-                .foreach(entry -> {
-                    String callId = entry.getKey();
-                    Pair<Future, ServiceInvoker> futureSvc = entry.getValue();
-                    Future future = futureSvc.getLeftValue();
-                    ServiceInvoker svcInvoker = futureSvc.getRightValue();
-                    if (future.isDone() || future.isCancelled()) {
-                        this._callFutures.remove(callId);
-                    } else {
-                        long currentTime = System.currentTimeMillis();
-                        if (this._expiredTime <= 0) {
-                            return;
-                        }
-                        if (currentTime - svcInvoker._startTime > this._expiredTime) {
-                            cancel(callId);
-                            this._callback.timedout(callId);
-                        }
+    @Init
+    public void init() {
+        /**
+         * Check below futures:
+         * * Timed out future -> cancel it
+         * * Done future -> remove it
+         * * Canceled future -> remove it
+         */
+        this._svcChecker.scheduleAtFixedRate(() -> {
+            Iterator<Map.Entry<String, CallWrapper>> callWrappersIt = this._callWrappers.entrySet().iterator();
+            while (callWrappersIt.hasNext()) {
+                Map.Entry<String, CallWrapper> callWrapperEntry = callWrappersIt.next();
+                String callId = callWrapperEntry.getKey();
+                CallWrapper callWrapper = callWrapperEntry.getValue();
+                Future future = callWrapper.future();
+                if (future.isDone() || future.isCancelled()) {
+                    this._callWrappers.remove(callId);
+                } else {
+                    IntervalTime expiredTime = callWrapper.expiredTime();
+                    if (expiredTime.milliseconds() <= 0) {
+                        return;
                     }
-                });
+                    if (callWrapper.checkExpired()) {
+                        callWrappersIt.remove();
+                    }
+                }
+            }
+        }, 0L, this._timeOfCheck.milliseconds(), TimeUnit.MILLISECONDS);
     }
 
-    public void cancel() {
-        Looper.from(this._callFutures.keySet().iterator()).foreach(this::cancel);
+    public int callCount() {
+        return this._callWrappers.size();
     }
 
-    private void cancel(String callId) {
-        ArgumentChecker.required(callId, "callId");
-        Pair<Future, ServiceInvoker> futureSvc = this._callFutures.remove(callId);
-        if (futureSvc == null) {
-            return;
-        }
-        Future future = futureSvc.getLeftValue();
-        if (! future.isDone() || ! future.isCancelled()) {
-            future.cancel(true);
-        }
+    @Override
+    public String call(final Runnable runnable) {
+        return call(runnable, null);
+    }
+
+    @Override
+    public String call(
+            final Runnable runnable,
+            final Map<String, Object> options) {
+        return call(() -> {
+            runnable.run();
+            return null;
+        }, null, null, null, options);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback
+    ) {
+        return call(callable, succeedCallback, null, null, null);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback,
+            final Map<String, Object> options
+    ) {
+        return call(callable, succeedCallback, null, null, options);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback,
+            final ICallFailed failedCallback
+    ) {
+        return call(callable, succeedCallback, failedCallback, null, null);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback,
+            final ICallFailed failedCallback,
+            final Map<String, Object> options
+    ) {
+        return call(callable, succeedCallback, failedCallback, null, options);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback,
+            final ICallFailed failedCallback,
+            final ICallTimedOut timedOutCallback
+    ) {
+        return call(callable, succeedCallback, failedCallback, null, null);
+    }
+
+    @Override
+    public String call(
+            final Callable callable,
+            final ICallSucceed succeedCallback,
+            final ICallFailed failedCallback,
+            final ICallTimedOut timedOutCallback,
+            final Map<String, Object> options
+    ) {
+        ArgumentChecker.required(callable, "callable");
+        String callId = Integer.toString(this._callIdGen.getAndIncrement());
+        CallWrapper callWrapper = new CallWrapper(
+                callId, options, callable, succeedCallback, failedCallback, timedOutCallback);
+        callWrapper._future = this._svcExecutor.submit(callWrapper);
+        this._callWrappers.put(callId, callWrapper);
+        return callId;
     }
 
     private void done(String callId) {
         ArgumentChecker.required(callId, "callId");
-        this._callFutures.remove(callId);
+        this._callWrappers.remove(callId);
     }
 
-    private class ServiceInvoker implements Runnable {
-
+    private final class CallWrapper implements Runnable {
         private final String _callId;
-        private final Method _method;
-        private final Object[] _args;
+        private final Callable _callable;
         private final long _startTime;
+        private final ICallSucceed _succeedCallback;
+        private final ICallFailed _failedCallback;
+        private final ICallTimedOut _timedOutCallback;
 
-        private ServiceInvoker(String callId, final Method method, final Object[] args) {
-            this._callId = callId;
-            this._method = method;
-            this._args = args;
+        private final IntervalTime _expiredTime;
+
+        private volatile CallStatus _status;
+        private Future _future;
+
+        private CallWrapper(
+                final String callId,
+                final Map<String, Object> options,
+                final Callable callable,
+                final ICallSucceed succeedCallback,
+                final ICallFailed failedCallback,
+                final ICallTimedOut timedOutCallback
+        ) {
             this._startTime = System.currentTimeMillis();
+            this._callId = callId;
+            this._callable = callable;
+            this._succeedCallback = succeedCallback;
+            this._failedCallback = failedCallback;
+            this._timedOutCallback = timedOutCallback;
+            if (options != null) {
+                IntervalTime expiredTime = (IntervalTime) options.get(OPTION_TIME_OUT);
+                if (expiredTime == null) {
+                    expiredTime = new IntervalTime();
+                }
+                this._expiredTime = expiredTime;
+            } else {
+                this._expiredTime = new IntervalTime();
+            }
         }
 
         @Override
         public void run() {
+            Object result = null;
+            Exception exception = null;
             try {
-                Object result = this._method.invoke(AsyncService.this._svc, this._args);
-                AsyncService.this._callback.succeed(this._callId, result);
+                result = this._callable.call();
+                this._status = CallStatus.SUCCEED;
             } catch (Exception ex) {
-                AsyncService.this._callback.failed(this._callId, ex);
+                if (this._status != CallStatus.TIMEDOUT) {
+                    this._status = CallStatus.FAILED;
+                    exception = ex;
+                }
+            }
+            try {
+                switch (this._status) {
+                    case SUCCEED:
+                        if (this._succeedCallback != null) {
+                            this._succeedCallback.accept(this._callId, result);
+                        }
+                        break;
+                    case FAILED:
+                        if (this._failedCallback != null) {
+                            this._failedCallback.accept(this._callId, exception);
+                        }
+                        break;
+                    case TIMEDOUT:
+                        if (this._timedOutCallback != null) {
+                            this._timedOutCallback.accept(this._callId);
+                        }
+                }
+            } catch (Exception ex) {
+                AsyncService.this._logger.error(ex);
             } finally {
-                AsyncService.this._callFutures.remove(this._callId);
                 done(this._callId);
             }
         }
+
+        private Future future() {
+            return this._future;
+        }
+
+        private IntervalTime expiredTime() {
+            return this._expiredTime;
+        }
+
+        private boolean checkExpired() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - this._startTime > this._expiredTime.milliseconds()) {
+                if (this._future.isDone() || !this._future.isCancelled()) {
+                    this._status = CallStatus.TIMEDOUT;
+                    this._future.cancel(true);
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private enum CallStatus {
+        SUCCEED, FAILED, TIMEDOUT
     }
 }
