@@ -2,7 +2,7 @@ language: java
 jdk:
     - oraclejdk8
 install:
-    - curl https://www.jpm4j.org/install/script | sh
+    - curl http://www.jpm4j.org/install/script | sh
     - jpm install com.codacy:codacy-coverage-reporter:assembly
 script: ./gradlew check --stacktrace
 after_success:
