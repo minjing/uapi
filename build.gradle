@@ -11,6 +11,10 @@ subprojects {
         mavenCentral()
     }
 
+    configurations {
+        codacy
+    }
+
     dependencies {
         compile (
             "com.google.guava:guava:${guava_version}",
@@ -25,6 +29,8 @@ subprojects {
             "cglib:cglib-nodep:${cglib_version}",           // allows mocking of classes (in addition to interfaces)
             "org.objenesis:objenesis:${objenesis_version}"  // allows mocking of classes without default constructor (together with CGLIB)
         )
+
+        codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
     }
 
     def generatedSources = ['**/*_Generated.*']
@@ -44,6 +50,35 @@ subprojects {
         reports {
             xml.enabled = true
             html.enabled = true
+        }
+    }
+
+    task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
+        main = "com.codacy.CodacyCoverageReporter"
+        classpath = configurations.codacy
+        args = [
+                "-l",
+                "Java",
+                "-r",
+                "${buildDir}/test-results/jacoco/jacocoTestReport.xml"
+        ]
+    }
+
+    task (codacyDepsize) << {
+        def size = 0;
+        configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
+        println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
+
+        configurations
+                .codacy
+                .sort { -it.length() }
+                .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
+    }
+
+    task (codacyLocs) << {
+        configurations.codacy.each {
+            String jarName = it
+            println jarName
         }
     }
 
