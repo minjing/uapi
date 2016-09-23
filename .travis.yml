@@ -1,7 +1,11 @@
 language: java
 jdk:
     - oraclejdk8
+install:
+    - curl https://www.jpm4j.org/install/script | sh
+    - jpm install com.codacy:codacy-coverage-reporter:assembly
 script: ./gradlew check --stacktrace
 after_success:
     - ./gradlew jacocoTestReport coveralls
     - bash <(curl -s https://codecov.io/bash)
+    - codacy-coverage-reporter -l Java -r coverage.xml
