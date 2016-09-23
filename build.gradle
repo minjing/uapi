@@ -9,6 +9,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url "http://dl.bintray.com/typesafe/maven-releases" }
     }
 
     configurations {
@@ -60,7 +61,7 @@ subprojects {
                 "-l",
                 "Java",
                 "-r",
-                "${buildDir}/test-results/jacoco/jacocoTestReport.xml"
+                "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
         ]
     }
 
