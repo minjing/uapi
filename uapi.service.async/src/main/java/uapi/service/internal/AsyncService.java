@@ -19,6 +19,7 @@ import uapi.rx.Looper;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 import uapi.service.async.IAsyncService;
 import uapi.service.async.ICallFailed;
 import uapi.service.async.ICallSucceed;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The AsyncService used wrap sync service to support async call
  */
 @Service(IAsyncService.class)
+@Tag("Async")
 public class AsyncService implements IAsyncService {
 
     @Inject

@@ -1,0 +1,13 @@
+app:
+  name: AsyncServiceApp
+
+service:
+  async:
+    time-of-check: 10s
+
+profiles:
+  - name: asyncProfile
+    model: include
+    matching: satisfy-any
+    tags:
+      - Async

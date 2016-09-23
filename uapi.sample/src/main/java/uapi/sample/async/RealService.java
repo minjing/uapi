@@ -9,9 +9,14 @@
 
 package uapi.sample.async;
 
+import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
+
 /**
  * Created by xquan on 9/20/2016.
  */
+@Service
+@Tag("Async")
 public class RealService {
 
     public String getTitle(String name) {

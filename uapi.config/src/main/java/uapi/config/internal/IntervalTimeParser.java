@@ -13,10 +13,14 @@ import uapi.config.IConfigValueParser;
 import uapi.config.IntervalTime;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
+import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 /**
  * Value parse for {@code IntervalTime}
  */
+@Service({ IConfigValueParser.class })
+@Tag("Config")
 public class IntervalTimeParser implements IConfigValueParser {
 
     private static final String[] supportTypesIn = new String[] { String.class.getCanonicalName() };
@@ -29,7 +33,7 @@ public class IntervalTimeParser implements IConfigValueParser {
 
     @Override
     public String getName() {
-        return IntervalTime.class.getCanonicalName();
+        return IntervalTimeParser.class.getCanonicalName();
     }
 
     @Override

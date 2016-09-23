@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * The service used to load Spring bean into the framework
  */
-@Service
+@Service(IServiceLoader.class)
 public class SpringServiceLoader implements ISpringServiceLoader {
 
     private static final int PRIORITY   = 100;

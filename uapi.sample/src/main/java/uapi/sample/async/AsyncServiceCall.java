@@ -11,12 +11,14 @@ package uapi.sample.async;
 
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 import uapi.service.async.IAsyncService;
 
 /**
  * Created by xquan on 9/20/2016.
  */
 @Service
+@Tag("Async")
 public class AsyncServiceCall {
 
     @Inject
@@ -29,7 +31,8 @@ public class AsyncServiceCall {
         String id = this._asyncSvc.call(
                 () -> this._svc.getTitle("abc"),
                 (callId, result) -> {
-
+                    assert callId.equals("1");
+                    assert result.equals("Test");
                 });
     }
 }
