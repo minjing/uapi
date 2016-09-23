@@ -102,8 +102,8 @@ class AsyncServiceTest extends Specification {
         aSvc.init()
 
         when:
-        aSvc.call({ -> Thread.currentThread().sleep(100) }, succeedCallback, failedCallback, timedOutCallback, options)
-        Thread.currentThread().sleep(100)
+        aSvc.call({ -> Thread.currentThread().sleep(200) }, succeedCallback, failedCallback, timedOutCallback, options)
+        Thread.currentThread().sleep(200)
 
         then:
         0 * succeedCallback.accept(_ as String, _ as Object)
@@ -129,8 +129,8 @@ class AsyncServiceTest extends Specification {
         aSvc.init()
 
         when:
-        aSvc.call({ -> Thread.currentThread().sleep(100) }, null as ICallSucceed, null as ICallFailed, null as ICallTimedOut, options)
-        Thread.currentThread().sleep(100)
+        aSvc.call({ -> Thread.currentThread().sleep(200) }, null as ICallSucceed, null as ICallFailed, null as ICallTimedOut, options)
+        Thread.currentThread().sleep(200)
 
         then:
         aSvc.callCount() == callCount
