@@ -8,7 +8,6 @@
 ## UAPI (Universal Application Platform Infrastructure)
 
 [![Join the chat at https://gitter.im/minjing/uapi](https://badges.gitter.im/minjing/uapi.svg)](https://gitter.im/minjing/uapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [![Build Status](https://travis-ci.org/minjing/uapi.svg?branch=master)](https://travis-ci.org/minjing/uapi)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/01288104a24c4703a4bccb629d1106b3)](https://www.codacy.com/app/min_jing/uapi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=minjing/uapi&amp;utm_campaign=Badge_Grade)
 [![Code Coverage](http://codecov.io/github/minjing/uapi/coverage.svg?branch=master)](https://codecov.io/github/minjing/uapi?branch=master)
