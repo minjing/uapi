@@ -19,7 +19,8 @@ import uapi.KernelException;
 import uapi.helper.StringHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
-import uapi.web.http.*;
+import uapi.web.http.ContentType;
+import uapi.web.http.IHttpRequest;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -169,6 +170,7 @@ class NettyHttpRequest implements IHttpRequest {
     @Override
     public void saveBody(OutputStream outputStream) {
         //TODO: save body to a file
+        this._logger.error("The method saveBody is not implemented yet!");
     }
 
     private void decodeTextBody() {

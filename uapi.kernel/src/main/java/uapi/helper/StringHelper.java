@@ -111,7 +111,7 @@ public final class StringHelper {
         }
         for (String str : strs) {
             if (str == null) {
-                throw new InvalidArgumentException("Not allow null string in the array {}", strs);
+                throw new InvalidArgumentException("Not allow null string in the array {}", CollectionHelper.asString(strs));
             }
             md.update(str.getBytes());
         }

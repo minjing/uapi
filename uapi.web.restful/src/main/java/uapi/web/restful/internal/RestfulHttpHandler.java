@@ -40,32 +40,32 @@ public class RestfulHttpHandler implements IHttpHandler {
     private static final String PARAM_INTERFACE                 = "interface";
 
     @Config(path=IRestfulConfigurableKey.RESTFUL_URI_PREFIX, optional=true)
-    String _context = Constant.DEF_RESTFUL_URI_PREFIX;
+    protected String _context = Constant.DEF_RESTFUL_URI_PREFIX;
 
     @Config(path=IRestfulConfigurableKey.RESTFUL_CODEC)
-    String _codecName;
+    protected String _codecName;
 
     @Config(path=IRestfulConfigurableKey.SERVER_HTTP_HOST)
-    String _host;
+    protected String _host;
 
     @Config(path=IRestfulConfigurableKey.SERVER_HTTP_PORT)
-    int _port;
+    protected int _port;
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
-    Map<String, IRestfulService> _restSvcs = new HashMap<>();
+    protected Map<String, IRestfulService> _restSvcs = new HashMap<>();
 
     @Inject
     @Optional
-    List<IRestfulInterface> _restIntfs = new LinkedList<>();
+    protected List<IRestfulInterface> _restIntfs = new LinkedList<>();
 
     @Inject
-    Map<String, IStringCodec> _codecs = new HashMap<>();
+    protected Map<String, IStringCodec> _codecs = new HashMap<>();
 
     @Inject
-    TypeMapper _typeMapper;
+    protected TypeMapper _typeMapper;
 
     @Override
     public String getUriMapping() {
@@ -85,7 +85,7 @@ public class RestfulHttpHandler implements IHttpHandler {
         UriInfo uriInfo = parseUri(request);
         if (Strings.isNullOrEmpty(uriInfo.serviceName)) {
             // Handle restful interface query
-            handleDiscoverRequest(request, response, uriInfo);
+            handleDiscoverRequest(request, response);
         } else {
             handleRequest(request, response, uriInfo);
         }
@@ -189,10 +189,9 @@ public class RestfulHttpHandler implements IHttpHandler {
         String resTxt = codec.decode(result, type);
         this._logger.debug("Response text -> {}", resTxt);
         response.write(resTxt);
-//        response.flush();
     }
 
-    private void handleDiscoverRequest(IHttpRequest request, IHttpResponse response, UriInfo uriInfo) {
+    private void handleDiscoverRequest(IHttpRequest request, IHttpResponse response) {
         List<String> intfNames = request.params().get(PARAM_INTERFACE);
         if (intfNames == null || intfNames.size() != 1) {
             throw new BadRequestException("Only allow query 1 restful interface - ", CollectionHelper.asString(intfNames));
@@ -234,10 +233,10 @@ public class RestfulHttpHandler implements IHttpHandler {
                                 .foreachWithIndex((argIdx, argMapping) -> {
                                     ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
                                     if (argMapping instanceof NamedArgumentMapping) {
-                                        uapi.web.restful.NamedArgumentMapping nArgMapping = (uapi.web.restful.NamedArgumentMapping) argMapping;
+                                        NamedArgumentMapping nArgMapping = (NamedArgumentMapping) argMapping;
                                         argMeta.name = nArgMapping.getName();
                                     } else if (argMapping instanceof IndexedArgumentMapping) {
-                                        uapi.web.restful.IndexedArgumentMapping iArgMapping = (uapi.web.restful.IndexedArgumentMapping) argMapping;
+                                        IndexedArgumentMapping iArgMapping = (IndexedArgumentMapping) argMapping;
                                         argMeta.index = iArgMapping.getIndex();
                                     }
                                     argMeta.from = argMapping.getFrom();
@@ -254,7 +253,6 @@ public class RestfulHttpHandler implements IHttpHandler {
         String resTxt = codec.decode(resp, ServiceDiscoveryResponse.class);
         this._logger.debug("Response text -> {}", resTxt);
         response.write(resTxt);
-//        response.flush();
     }
 
     private Object parseValue(String value, String type) {
@@ -305,6 +303,7 @@ public class RestfulHttpHandler implements IHttpHandler {
                     break;
                 default:
                     buffer.append(c);
+                    break;
             }
         }
         if (buffer.length() > 0) {

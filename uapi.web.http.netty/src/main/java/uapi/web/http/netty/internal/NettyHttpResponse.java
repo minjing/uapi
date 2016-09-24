@@ -18,7 +18,7 @@ import io.netty.util.CharsetUtil;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.rx.Looper;
-import uapi.web.http.*;
+import uapi.web.http.IHttpResponse;
 
 import java.util.HashMap;
 import java.util.Map;

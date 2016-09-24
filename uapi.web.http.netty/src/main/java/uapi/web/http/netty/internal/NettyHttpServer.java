@@ -36,13 +36,13 @@ import java.util.List;
 public class NettyHttpServer implements IHttpServer {
 
     @Config(path= IHttpConfigurableKey.SERVER_HTTP_HOST)
-    String _host;
+    protected String _host;
 
     @Config(path=IHttpConfigurableKey.SERVER_HTTP_PORT)
-    int _port;
+    protected int _port;
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
     List<IHttpHandler> _handlers = new ArrayList<>();

@@ -43,13 +43,13 @@ public class RestfulCommunicator implements ICommunicator {
     public static final String id = "Restful";
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
-    Map<String, IStringCodec> _codecs = new HashMap<>();
+    protected Map<String, IStringCodec> _codecs = new HashMap<>();
 
     @Inject
-    TypeMapper _typeMapper;
+    protected TypeMapper _typeMapper;
 
     private final OkHttpClient httpClient = new OkHttpClient();
 

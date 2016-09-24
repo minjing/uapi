@@ -34,17 +34,17 @@ import java.util.concurrent.Semaphore;
 public class Application implements IApplication {
 
     @Inject
-    IRegistry _registry;
+    protected IRegistry _registry;
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
     @Optional
-    List<IAppLifecycle> _lifecycles;
+    protected List<IAppLifecycle> _lifecycles;
 
     @Config(path="app.name", optional=true)
-    String _appName;
+    protected String _appName;
 
     private final Semaphore _semaphore;
 

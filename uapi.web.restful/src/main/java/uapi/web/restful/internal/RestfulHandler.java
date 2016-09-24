@@ -65,7 +65,6 @@ public class RestfulHandler extends AnnotationsHandler {
     ) throws KernelException {
         ArgumentChecker.notNull(annotationType, "annotationType");
 
-//        Observable.from(elements).subscribe(methodElement -> {
         try {
             Looper.from(elements).foreach(methodElement -> {
                 if (methodElement.getKind() != ElementKind.METHOD) {
@@ -114,7 +113,6 @@ public class RestfulHandler extends AnnotationsHandler {
             builderCtx.getLogger().error(ex);
             return;
         }
-//        }, t -> builderCtx.getLogger().error(t));
 
         implementIRestfulService(builderCtx);
     }

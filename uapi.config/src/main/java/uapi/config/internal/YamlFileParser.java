@@ -33,7 +33,7 @@ public class YamlFileParser implements IConfigFileParser {
     private static final String YAML_FILE_EXT   = "yaml";
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Override
     public boolean isSupport(String fileExtension) {

@@ -36,10 +36,10 @@ public class CliConfigProvider implements ICliConfigProvider {
     public static final String QUALIFY                         = "cli.";
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
-    IConfigTracer _configTracer;
+    protected IConfigTracer _configTracer;
 
     private String _optionPrefix = DEFAULT_OPTION_PREFIX;
     private String _optionValueSeparator = DEFAULT_OPTION_VALUE_SEPARATOR;

@@ -49,10 +49,10 @@ public class DirectServiceDiscover implements IServiceDiscover {
     protected String _uriPrefix;
 
     @Inject
-    Map<String, ICommunicator> _communicators = new HashMap<>();
+    protected Map<String, ICommunicator> _communicators = new HashMap<>();
 
     @Inject
-    MessageLoader _msgLoader;
+    protected MessageLoader _msgLoader;
 
     @Override
     public ServiceInterfaceMeta discover(ServiceInterfaceMeta serviceInterfaceMeta) {

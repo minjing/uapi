@@ -33,7 +33,7 @@ import java.util.Map;
 public class ProxyBuilder {
 
     @Inject
-    Map<String, ICommunicator> _communicators = new HashMap<>();
+    protected Map<String, ICommunicator> _communicators = new HashMap<>();
 
     private final List<IServiceInterfaceProxy> _proxyCache = new LinkedList<>();
 

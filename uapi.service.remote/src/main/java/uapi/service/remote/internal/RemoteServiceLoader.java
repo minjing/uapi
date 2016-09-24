@@ -38,25 +38,25 @@ public class RemoteServiceLoader implements IRemoteServiceLoader {
     private static final int PRIORITY   = 200;
 
     @Config(path=IRemoteServiceConfigurableKey.LOADER_COMM)
-    String _communicatorName;
+    protected String _communicatorName;
 
     @Inject
-    IRegistry _registry;
+    protected IRegistry _registry;
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
-    ServiceInspector _svcInspector;
+    protected ServiceInspector _svcInspector;
 
     @Inject
-    IServiceDiscover _svcDiscover;
+    protected IServiceDiscover _svcDiscover;
 
     @Inject
-    Map<String, ICommunicator> _communicators = new HashMap<>();
+    protected Map<String, ICommunicator> _communicators = new HashMap<>();
 
     @Inject
-    ProxyBuilder _proxyBuilder;
+    protected ProxyBuilder _proxyBuilder;
 
     @Override
     public int getPriority() {
