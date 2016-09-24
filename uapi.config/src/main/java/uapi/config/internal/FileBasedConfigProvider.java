@@ -33,18 +33,18 @@ public class FileBasedConfigProvider implements IConfigurable {
     static final String CFG_FILE_PATH  = "cli.config";
 
     @Inject
-    ILogger _logger;
+    protected ILogger _logger;
 
     @Inject
-    IConfigTracer _cfgTracer;
+    protected IConfigTracer _cfgTracer;
 
     @Inject
-    List<IConfigFileParser> _parsers = new ArrayList<>();
+    protected List<IConfigFileParser> _parsers = new ArrayList<>();
 
-    String _configPath;
+    private String _configPath;
 
     @Init
-    void init() {
+    protected void init() {
         this._logger.info("Config path is {}", this._configPath);
     }
 

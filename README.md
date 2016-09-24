@@ -324,7 +324,7 @@ The the HelloClient can invoke the service like local service.
 
 ## Version History
 * Featured
-  - [ ] Asynchronous service invocation.
+  - [ ] Support register service to Consul.
   - [ ] Event support, decide using 3rd library or implement it self.
   - [ ] Behavior(actions) definition.
   - [ ] Event based behavior(actions) execution.
@@ -333,8 +333,8 @@ The the HelloClient can invoke the service like local service.
   - [x] Using Netty to provide HTTP service
   - [x] Generic Restful service based on consistent HTTP service API
   - [x] A profile to indicate which service can be registered or not.
+  - [x] Asynchronous service invocation.
   - [ ] Support custom service parameter and return type.
-  - [ ] Support register service to Consul.
 
 * v0.2
   - [x] Remote service injection which is interface based.

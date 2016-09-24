@@ -140,7 +140,8 @@ public class ParameterMeta {
             Builder builder = (Builder) o;
             return Objects.equals(_name, builder._name) &&
                     Objects.equals(_type, builder._type) &&
-                    CollectionHelper.equals(_modifiers, builder._modifiers);
+                    this._modifiers.equals(builder._modifiers);
+//                    CollectionHelper.equals(_modifiers, builder._modifiers);
         }
 
         @Override

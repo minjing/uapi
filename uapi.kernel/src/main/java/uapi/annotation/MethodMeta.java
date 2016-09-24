@@ -365,9 +365,11 @@ public class MethodMeta {
             if (o == null || getClass() != o.getClass()) return false;
             Builder builder = (Builder) o;
             return Objects.equals(this._name, builder._name) &&
-                    CollectionHelper.equals(this._modifiers, builder._modifiers) &&
+//                    CollectionHelper.equals(this._modifiers, builder._modifiers) &&
+                    this._modifiers.equals(builder._modifiers) &&
                     Objects.equals(this._rtnTypeName, builder._rtnTypeName) &&
-                    CollectionHelper.equals(this._paramBuilders, builder._paramBuilders) &&
+//                    CollectionHelper.equals(this._paramBuilders, builder._paramBuilders) &&
+                    this._paramBuilders.equals(builder._paramBuilders) &&
                     CollectionHelper.equals(this._throwTypeNames, builder._throwTypeNames);
         }
 

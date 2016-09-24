@@ -21,7 +21,7 @@ import uapi.service.annotation.Service;
 public class Profile2AppLifeCycle implements IAppLifecycle {
 
     @Inject
-    IRegistry _registry;
+    protected IRegistry _registry;
 
     @Override
     public String getAppName() {

@@ -34,10 +34,10 @@ public class SpringServiceLoader implements ISpringServiceLoader {
     private Map<String, Object> _beanCache;
 
     @Inject
-    IRegistry _registry;
+    protected IRegistry _registry;
 
     @Config(path="spring.config")
-    String _cfgFile;
+    protected String _cfgFile;
 
     private ApplicationContext _ctx;
 
@@ -45,7 +45,6 @@ public class SpringServiceLoader implements ISpringServiceLoader {
     public void init() {
         this._beanCache = new HashMap<>();
         this._ctx = new ClassPathXmlApplicationContext(new String[] { this._cfgFile });
-//        this._registry.registerServiceLoader(this);
     }
 
     @Override

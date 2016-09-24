@@ -14,13 +14,9 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import uapi.config.annotation.Config;
 import uapi.log.ILogger;
-import uapi.rx.Looper;
 import uapi.server.ServerException;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -30,9 +26,7 @@ import uapi.web.http.IHttpHandler;
 import uapi.web.http.IHttpServer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The HTTP server implemented by Netty

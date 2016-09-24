@@ -10,12 +10,10 @@
 package uapi.config.internal;
 
 import com.google.common.base.Strings;
-import rx.Observable;
 import uapi.config.ICliConfigProvider;
 import uapi.config.IConfigTracer;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.Pair;
-import uapi.helper.StringHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.service.annotation.Inject;
@@ -23,9 +21,7 @@ import uapi.service.annotation.Service;
 import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The command line parser, it should support below pattern:

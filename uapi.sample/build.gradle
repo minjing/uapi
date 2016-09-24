@@ -10,7 +10,7 @@ dependencies {
     compile project(':uapi.app')
     compile project(':uapi.web.restful')
 
-    compile project(':uapi.service.async')
+    runtime project(':uapi.service.async')
     runtime project(':uapi.web.http.netty')
 }
 
@@ -18,7 +18,7 @@ jar {
     manifest.attributes
 }
 
-mainClassName = 'uapi.app.internal.Launcher'
+mainClassName = 'uapi.app.internal.Bootstrapper'
 
 task copyConfig {
     def cfgDir = file("conf")

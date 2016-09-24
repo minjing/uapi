@@ -233,10 +233,10 @@ public class RestfulHttpHandler implements IHttpHandler {
                                 .map(argMapping -> (uapi.web.restful.ArgumentMapping) argMapping)
                                 .foreachWithIndex((argIdx, argMapping) -> {
                                     ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
-                                    if (argMapping instanceof uapi.web.restful.NamedArgumentMapping) {
+                                    if (argMapping instanceof NamedArgumentMapping) {
                                         uapi.web.restful.NamedArgumentMapping nArgMapping = (uapi.web.restful.NamedArgumentMapping) argMapping;
                                         argMeta.name = nArgMapping.getName();
-                                    } else if (argMapping instanceof uapi.web.restful.IndexedArgumentMapping) {
+                                    } else if (argMapping instanceof IndexedArgumentMapping) {
                                         uapi.web.restful.IndexedArgumentMapping iArgMapping = (uapi.web.restful.IndexedArgumentMapping) argMapping;
                                         argMeta.index = iArgMapping.getIndex();
                                     }

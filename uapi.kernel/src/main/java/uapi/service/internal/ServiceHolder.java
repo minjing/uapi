@@ -135,7 +135,7 @@ class ServiceHolder implements IServiceReference {
 
         service.addStateMonitor(this._stateManagement);
         if (this._started) {
-            this._stateManagement.goon(service.getQualifiedId());
+            this._stateManagement.goon(service);
         }
     }
 
@@ -205,7 +205,7 @@ class ServiceHolder implements IServiceReference {
 
     private interface IStateMonitor {
 
-        void onInitialized(QualifiedServiceId qsId);
+        void onInitialized(ServiceHolder svcHolder);
     }
 
     private final class StateManagement implements IStateMonitor {
@@ -224,7 +224,9 @@ class ServiceHolder implements IServiceReference {
 //            goon();
         }
 
-        public void onInitialized(final QualifiedServiceId qsId) {
+        @Override
+        public void onInitialized(final ServiceHolder svcHolder) {
+            QualifiedServiceId qsId = svcHolder.getQualifiedId();
             if (this._dependencyStatus.put(qsId, true) == null) {
                 if (this._dependencyStatus.remove(new QualifiedServiceId(qsId.getId(), QualifiedServiceId.FROM_ANY)) == null) {
                     throw new InvalidArgumentException("The service {} does not depends on {}",
@@ -235,11 +237,11 @@ class ServiceHolder implements IServiceReference {
                     .filter(satisfied -> ! satisfied)
                     .toBlocking().firstOrDefault(true);
             if (allSatified) {
-                goon(qsId);
+                goon(svcHolder);
             }
         }
 
-        private boolean goon(QualifiedServiceId qSvcId) {
+        private boolean goon(ServiceHolder svcHolder) {
             if (this._changing) {
                 return this._state == State.Initialized;
             }
@@ -259,8 +261,8 @@ class ServiceHolder implements IServiceReference {
                     successful = tryInit();
                     break;
                 case Initialized:
-                    if (qSvcId != null) {
-                        injectDependency(qSvcId);
+                    if (svcHolder != null) {
+                        injectDependency(svcHolder);
                     }
                     successful = true;
                     break;
@@ -274,7 +276,7 @@ class ServiceHolder implements IServiceReference {
 
             // Notify upstream services
             Observable.from(ServiceHolder.this._stateMonitors)
-                    .subscribe(monitor -> monitor.onInitialized(ServiceHolder.this._qualifiedSvcId));
+                    .subscribe(monitor -> monitor.onInitialized(ServiceHolder.this));
             ServiceHolder.this._stateMonitors.clear();
 
             this._changing = false;
@@ -307,18 +309,20 @@ class ServiceHolder implements IServiceReference {
             return tryInject();
         }
 
-        private void injectDependency(QualifiedServiceId qSvcId) {
+        private void injectDependency(ServiceHolder svcHolder) {
             ArgumentChecker.equals(this._state, State.Initialized, "ServiceHolder.state");
+            ArgumentChecker.required(svcHolder, "svcHolder");
 
-            ServiceHolder svcHolder = Looper.from(ServiceHolder.this._dependencies.entries())
-                    .filter(entry -> entry.getKey().getServiceId().equals(qSvcId))
-                    .filter(entry -> entry.getValue().isInited())
-                    .map(entry -> entry.getValue())
-                    .first(null);
-            if (svcHolder == null) {
-                return;
-            }
+//            ServiceHolder svcHolder = Looper.from(ServiceHolder.this._dependencies.entries())
+//                    .filter(entry -> entry.getKey().getServiceId().equals(qSvcId))
+//                    .filter(entry -> entry.getValue().isInited())
+//                    .map(entry -> entry.getValue())
+//                    .first(null);
+//            if (svcHolder == null) {
+//                return;
+//            }
             Object svc = svcHolder.getService();
+            QualifiedServiceId qSvcId = svcHolder.getQualifiedId();
             if (svc == null) {
                 throw new KernelException("The dependency service {} is not created", qSvcId);
             }

@@ -37,19 +37,16 @@ import java.util.Map;
 public class DirectServiceDiscover implements IServiceDiscover {
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_COMM)
-    String _communicatorName;
+    protected String _communicatorName;
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_HOST)
-    String _host;
+    protected String _host;
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_PORT)
-    int _port;
+    protected int _port;
 
     @Config(path=IRemoteServiceConfigurableKey.DISCOVER_URI_PREFIX)
-    String _uriPrefix;
-
-    @Inject
-    IRegistry _registry;
+    protected String _uriPrefix;
 
     @Inject
     Map<String, ICommunicator> _communicators = new HashMap<>();

@@ -15,7 +15,6 @@ import uapi.config.internal.IntervalTimeParser;
 import uapi.config.annotation.Config;
 import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
-import uapi.rx.Looper;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;

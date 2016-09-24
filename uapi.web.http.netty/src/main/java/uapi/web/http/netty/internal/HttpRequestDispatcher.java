@@ -18,14 +18,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import uapi.KernelException;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.web.http.*;
-import uapi.web.http.HttpMethod;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The HttpRequestDispatcher dispatch http request to specific http handler.

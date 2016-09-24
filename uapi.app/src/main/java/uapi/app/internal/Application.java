@@ -10,17 +10,13 @@
 package uapi.app.internal;
 
 import com.google.common.base.Strings;
-import rx.Observable;
-import uapi.KernelException;
 import uapi.app.IAppLifecycle;
 import uapi.app.IApplication;
-import uapi.config.ICliConfigProvider;
 import uapi.config.annotation.Config;
 import uapi.helper.TimeHelper;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.service.IRegistry;
-import uapi.service.IService;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
@@ -28,7 +24,6 @@ import uapi.service.annotation.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.concurrent.Semaphore;
 
 /**

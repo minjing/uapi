@@ -24,19 +24,16 @@ import uapi.service.annotation.Service;
 public class ConfigurableService {
 
     @Config(path="name")
-    String _name;
+    protected String _name;
 
     @Config(path="age")
-    int _age;
+    protected int _age;
 
     @Config(path="address", parser=AddressParser.class)
-    Address _address;
+    protected Address _address;
 
     @Inject
-    ILogger _logger;
-
-    @Inject
-    IRegistry _svcReg;
+    protected ILogger _logger;
 
     @Init
     public void init() {

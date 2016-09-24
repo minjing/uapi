@@ -11,5 +11,3 @@ restful:
 
 app:
   name: HelloAppServer
-  ignored-services:
-    - uapi.sample.hello.IHello

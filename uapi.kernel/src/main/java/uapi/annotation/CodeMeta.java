@@ -136,7 +136,8 @@ public class CodeMeta {
                 }
                 return this._model.equals(other._model);
             } else {
-                return CollectionHelper.equals(this._rawCodes, other._rawCodes);
+//                return CollectionHelper.equals(this._rawCodes, other._rawCodes);
+                return this._rawCodes.equals(other._rawCodes);
             }
         }
 
