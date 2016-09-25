@@ -334,20 +334,14 @@ public class RestfulHandler extends AnnotationsHandler {
         FromHeader fromHeader = paramElem.getAnnotation(FromHeader.class);
         FromParam fromParam = paramElem.getAnnotation(FromParam.class);
         boolean valid = true;
-        if (fromUri != null) {
-            if (fromHeader != null || fromParam != null) {
-                valid = false;
-            }
+        if (fromUri != null && (fromHeader != null || fromParam != null)) {
+            valid = false;
         }
-        if (fromHeader != null) {
-            if (fromUri != null || fromParam != null) {
-                valid = false;
-            }
+        if (fromHeader != null && (fromUri != null || fromParam != null)) {
+            valid = false;
         }
-        if (fromParam != null) {
-            if (fromUri != null || fromHeader != null) {
-                valid = false;
-            }
+        if (fromParam != null && (fromUri != null || fromHeader != null)) {
+            valid = false;
         }
         if (! valid) {
             throw new KernelException(

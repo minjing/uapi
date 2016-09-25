@@ -14,8 +14,6 @@ package uapi.rx;
  */
 class SingleOperator<T> extends TerminatedOperator<T> {
 
-    private boolean _itemSet = false;
-    private T _item = null;
     private boolean _useDefault = false;
     private T _default = null;
 
@@ -32,16 +30,18 @@ class SingleOperator<T> extends TerminatedOperator<T> {
     @Override
     T getItem() throws NoItemException {
         boolean hasItem = hasItem();
+        T item = null;
+        boolean itemSet = false;
         while (hasItem) {
-            if (this._itemSet) {
+            if (itemSet) {
                 throw new MoreItemException();
             }
             try {
-                this._item = (T) getPreviously().getItem();
-                this._itemSet = true;
+                item = (T) getPreviously().getItem();
+                itemSet = true;
             } catch (NoItemException ex) {
-                if (this._itemSet) {
-                    return this._item;
+                if (itemSet) {
+                    return item;
                 }
                 if (this._useDefault) {
                     return this._default;
@@ -52,8 +52,8 @@ class SingleOperator<T> extends TerminatedOperator<T> {
             hasItem = hasItem();
         }
 
-        if (this._itemSet) {
-            return this._item;
+        if (itemSet) {
+            return item;
         }
         if (this._useDefault) {
             return this._default;

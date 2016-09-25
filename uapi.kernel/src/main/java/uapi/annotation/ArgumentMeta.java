@@ -49,7 +49,9 @@ public class ArgumentMeta {
         private String _value;
         private boolean _isString;
 
-        protected Builder() { }
+        protected Builder() {
+            // Nothing to do
+        }
 
         public Builder setName(
                 final String name
@@ -82,7 +84,9 @@ public class ArgumentMeta {
         }
 
         @Override
-        protected void initProperties() { }
+        protected void initProperties() {
+            // No properties need to init
+        }
 
         @Override
         protected ArgumentMeta createInstance() {

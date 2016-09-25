@@ -117,26 +117,26 @@ public final class ServiceHandler extends AnnotationsHandler {
         return ids.toArray(new String[ids.size()]);
     }
 
-    /**
-     * Get service type from AnnotationMirror
-     * Since the class type can't be received directly at annotation processing time
-     * so we have to get from AnnotationMirror
-     *
-     * @param   serviceAnnotation
-     *          The AnnotationMirror which is related with Service annotation
-     * @return  The type name array
-     */
-    @SuppressWarnings("unchecked")
-    private List<String> getTypes(AnnotationMirror serviceAnnotation) {
-        List<String> types = new ArrayList<>();
-        Observable.from(serviceAnnotation.getElementValues().values())
-                .flatMap(annoValue -> Observable.from((List<AnnotationValue>) annoValue.getValue()))
-                .map(annoValue -> (DeclaredType) annoValue.getValue())
-                .map(declaredType -> (TypeElement) declaredType.asElement())
-                .map(typeElem -> typeElem.getQualifiedName().toString())
-                .subscribe(types::add);
-        return types;
-    }
+//    /**
+//     * Get service type from AnnotationMirror
+//     * Since the class type can't be received directly at annotation processing time
+//     * so we have to get from AnnotationMirror
+//     *
+//     * @param   serviceAnnotation
+//     *          The AnnotationMirror which is related with Service annotation
+//     * @return  The type name array
+//     */
+//    @SuppressWarnings("unchecked")
+//    private List<String> getTypes(AnnotationMirror serviceAnnotation) {
+//        List<String> types = new ArrayList<>();
+//        Observable.from(serviceAnnotation.getElementValues().values())
+//                .flatMap(annoValue -> Observable.from((List<AnnotationValue>) annoValue.getValue()))
+//                .map(annoValue -> (DeclaredType) annoValue.getValue())
+//                .map(declaredType -> (TypeElement) declaredType.asElement())
+//                .map(typeElem -> typeElem.getQualifiedName().toString())
+//                .subscribe(types::add);
+//        return types;
+//    }
 
     private final class ServiceHandlerHelper implements IServiceHandlerHelper {
 

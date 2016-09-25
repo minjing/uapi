@@ -25,9 +25,6 @@ public class TestNotNull {
     @Inject
     protected String test;
 
-//    @Inject("test.string")
-//    List<String> tests;
-
     public void sayHello(
             @NotNull final String name
     ) {
@@ -36,6 +33,6 @@ public class TestNotNull {
 
     @Init
     public void init2() {
-
+        // Nothing to do
     }
 }

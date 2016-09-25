@@ -18,23 +18,30 @@ import java.util.Set;
 
 /**
  * The TripleMap is Map's map
+ *
+ * @param   <P>
+ *          left value type
+ * @param   <S>
+ *          right value type
+ * @param   <V>
+ *          the value type
  */
-public class TripleMap<PK, SK, V> {
+public class TripleMap<P, S, V> {
 
-    private final Map<PK, Map<SK, V>> _store;
+    private final Map<P, Map<S, V>> _store;
 
     public TripleMap() {
         this._store = new HashMap<>();
     }
 
-    public void put(PK primaryKey, SK secondaryKey) {
+    public void put(P primaryKey, S secondaryKey) {
         put(primaryKey, secondaryKey, null);
     }
 
-    public void put(PK primaryKey, SK secondaryKey, V value) {
+    public void put(P primaryKey, S secondaryKey, V value) {
         ArgumentChecker.required(primaryKey, "primaryKey");
         ArgumentChecker.required(secondaryKey, "secondaryKey");
-        Map<SK, V> secondaryMap = this._store.get(primaryKey);
+        Map<S, V> secondaryMap = this._store.get(primaryKey);
         if (secondaryMap == null) {
             secondaryMap = new HashMap<>();
             this._store.put(primaryKey, secondaryMap);
@@ -42,21 +49,21 @@ public class TripleMap<PK, SK, V> {
         secondaryMap.put(secondaryKey, value);
     }
 
-    public void put(PK primaryKey, List<SK> secondaryKeys) {
+    public void put(P primaryKey, List<S> secondaryKeys) {
         ArgumentChecker.required(primaryKey, "primaryKey");
         ArgumentChecker.required(secondaryKeys, "secondaryKeys");
         Observable.from(secondaryKeys).subscribe(secondaryKey -> put(primaryKey, secondaryKey));
     }
 
-    public Map<SK, V> get(PK primaryKey) {
+    public Map<S, V> get(P primaryKey) {
         ArgumentChecker.required(primaryKey, "primaryKey");
         return this._store.get(primaryKey);
     }
 
-    public V get(PK primaryKey, SK secondaryKey) {
+    public V get(P primaryKey, S secondaryKey) {
         ArgumentChecker.required(primaryKey, "primaryKey");
         ArgumentChecker.required(secondaryKey, "secondaryKey");
-        Map<SK, V> secondaryMap = get(primaryKey);
+        Map<S, V> secondaryMap = get(primaryKey);
         if (secondaryKey == null) {
             return null;
         }
@@ -67,13 +74,13 @@ public class TripleMap<PK, SK, V> {
         return this._store.size();
     }
 
-    public Set<Map.Entry<PK, Map<SK, V>>> entrySet() {
+    public Set<Map.Entry<P, Map<S, V>>> entrySet() {
         return this._store.entrySet();
     }
 
-    public boolean hasEmptyValue(PK primaryKey) {
+    public boolean hasEmptyValue(P primaryKey) {
         ArgumentChecker.required(primaryKey, "primaryKey");
-        Map<SK, V> secondaryMap = this._store.get(primaryKey);
+        Map<S, V> secondaryMap = this._store.get(primaryKey);
         if (secondaryMap == null) {
             return true;
         }

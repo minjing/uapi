@@ -23,7 +23,7 @@ import uapi.web.http.IHttpServer;
 public class HelloAppServerLifeCycle implements IAppLifecycle {
 
     @Inject
-    IRegistry _registry;
+    protected IRegistry _registry;
 
     private IHttpServer _httpSvr;
 
@@ -34,7 +34,7 @@ public class HelloAppServerLifeCycle implements IAppLifecycle {
 
     @Override
     public void onStarted() {
-        ConfigurableService svc = this._registry.findService(ConfigurableService.class);
+        this._registry.findService(ConfigurableService.class);
         this._httpSvr = this._registry.findService(IHttpServer.class);
         this._httpSvr.start();
     }

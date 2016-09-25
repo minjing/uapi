@@ -14,13 +14,13 @@ import uapi.InvalidArgumentException;
 /**
  * The Triple hold three value
  */
-public class Triple<LT, CT, RT> {
+public class Triple<L, C, R> {
 
-    private final LT _lValue;
+    private final L _lValue;
 
-    private final CT _cValue;
+    private final C _cValue;
 
-    private final RT _rValue;
+    private final R _rValue;
 
     /**
      * Split a string by specific separator and using it to construct a Pair instance
@@ -48,7 +48,7 @@ public class Triple<LT, CT, RT> {
         }
     }
 
-    public Triple(LT leftValue, CT centerValue, RT rightValue) {
+    public Triple(L leftValue, C centerValue, R rightValue) {
         ArgumentChecker.notNull(leftValue, "leftValue");
         ArgumentChecker.notNull(centerValue, "centerValue");
         ArgumentChecker.notNull(rightValue, "rightValue");
@@ -57,15 +57,15 @@ public class Triple<LT, CT, RT> {
         this._rValue = rightValue;
     }
 
-    public LT getLeftValue() {
+    public L getLeftValue() {
         return this._lValue;
     }
 
-    public CT getCenterValue() {
+    public C getCenterValue() {
         return this._cValue;
     }
 
-    public RT getRightValue() {
+    public R getRightValue() {
         return this._rValue;
     }
 }

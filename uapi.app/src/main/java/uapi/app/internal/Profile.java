@@ -86,26 +86,20 @@ class Profile implements IProfile {
         /**
          * Include all satisfied services
          */
-        INCLUDE("include"),
+        INCLUDE,
         /**
          * Exclude all satisfied services
          */
-        EXCLUDE("exclude");
-
-        private String _value;
+        EXCLUDE;
 
         public static Model parse(String value) {
-            if (INCLUDE._value.equalsIgnoreCase(value)) {
+            if ("include".equalsIgnoreCase(value)) {
                 return INCLUDE;
-            } else if (EXCLUDE._value.equalsIgnoreCase(value)) {
+            } else if ("exclude".equalsIgnoreCase(value)) {
                 return EXCLUDE;
             } else {
                 throw new KernelException("The value {} can't be parsed as Model enum");
             }
-        }
-
-        Model(String value) {
-            this._value = value;
         }
     }
 

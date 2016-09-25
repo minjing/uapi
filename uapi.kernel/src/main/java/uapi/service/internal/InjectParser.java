@@ -44,9 +44,6 @@ class InjectParser {
     private static final String TEMPLATE_GET_DEPENDENCIES   = "template/getDependencies_method.ftl";
     private static final String SETTER_PARAM_NAME           = "value";
 
-    private static final String MODEL_GET_DEPENDENCIES      = "ModelGetDependencies";
-    private static final String VAR_DEPENDENCIES            = "dependencies";
-
     private final InjectParserHelper _helper = new InjectParserHelper();
 
     InjectParserHelper getHelper() {

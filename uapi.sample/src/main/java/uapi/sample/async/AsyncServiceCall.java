@@ -22,13 +22,13 @@ import uapi.service.async.IAsyncService;
 public class AsyncServiceCall {
 
     @Inject
-    RealService _svc;
+    protected RealService _svc;
 
     @Inject
-    IAsyncService _asyncSvc;
+    protected IAsyncService _asyncSvc;
 
     public void callService() {
-        String id = this._asyncSvc.call(
+        this._asyncSvc.call(
                 () -> this._svc.getTitle("abc"),
                 (callId, result) -> {
                     assert callId.equals("1");

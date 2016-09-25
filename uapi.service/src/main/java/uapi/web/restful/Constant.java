@@ -14,8 +14,6 @@ package uapi.web.restful;
  */
 public class Constant {
 
-    private Constant() { }
-
     public static final String DEF_RESTFUL_URI_PREFIX   = "/rest";
 
 //    public static final String INTF_ID         = "interface-id";
@@ -30,4 +28,6 @@ public class Constant {
 //    public static final String TYPE_NAME       = "type-name";
 //    public static final String FROM            = "from";
 //    public static final String INDEX           = "index";
+
+    private Constant() { }
 }

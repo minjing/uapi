@@ -9,37 +9,33 @@
 
 package uapi.helper;
 
-import java.util.Collection;
-
 /**
  * Useful functional interface is defined here
  */
-public class Functionals {
-
-    private Functionals() { }
+public interface Functionals {
 
     @FunctionalInterface
-    public interface Extractor<I, O, T extends Throwable> {
+    interface Extractor<I, O, T extends Throwable> {
         O accept(I instance) throws T;
     }
 
     @FunctionalInterface
-    public interface Creator<T> {
+    interface Creator<T> {
         T accept();
     }
 
     @FunctionalInterface
-    public interface Convert<I, O> {
+    interface Convert<I, O> {
         O accept(I in);
     }
 
     @FunctionalInterface
-    public interface Action<I> {
+    interface Action<I> {
         void accept(I in);
     }
 
     @FunctionalInterface
-    public interface Filter<T> {
+    interface Filter<T> {
         boolean accept(T in);
     }
 }

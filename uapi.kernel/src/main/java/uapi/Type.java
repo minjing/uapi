@@ -13,11 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by min on 16/2/25.
+ * A utility class for type definition
  */
 public final class Type {
-
-    private Type() { }
 
     public static final String VOID             = "void";
     public static final String BOOLEAN          = "boolean";
@@ -52,4 +50,6 @@ public final class Type {
     public static final Class<Double>   T_DOUBLE    = Double.class;
 
     public static final Class<String>   T_STRING    = String.class;
+
+    private Type() { }
 }

@@ -39,6 +39,6 @@ public class Profile1AppLifeCycle implements IAppLifecycle {
 
     @Override
     public void onStopped() {
-
+        // Nothing to stop
     }
 }

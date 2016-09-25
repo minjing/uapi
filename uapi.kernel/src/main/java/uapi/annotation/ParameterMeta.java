@@ -115,7 +115,9 @@ public class ParameterMeta {
         }
 
         @Override
-        protected void initProperties() { }
+        protected void initProperties() {
+            // No properties need to init
+        }
 
         @Override
         protected ParameterMeta createInstance() {
