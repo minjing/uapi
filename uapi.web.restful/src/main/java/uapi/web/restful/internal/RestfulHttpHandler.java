@@ -229,7 +229,7 @@ public class RestfulHttpHandler implements IHttpHandler {
                         List<ArgumentMeta> argMappings = svcInfo.getArgumentMetas();
                         svcMeta.argumentMetas = new ServiceDiscoveryResponse.ArgumentMeta[argMappings.size()];
                         Looper.from(argMappings)
-                                .map(argMapping -> (uapi.web.restful.ArgumentMapping) argMapping)
+                                .map(argMapping -> (ArgumentMapping) argMapping)
                                 .foreachWithIndex((argIdx, argMapping) -> {
                                     ServiceDiscoveryResponse.ArgumentMeta argMeta = new ServiceDiscoveryResponse.ArgumentMeta();
                                     if (argMapping instanceof NamedArgumentMapping) {

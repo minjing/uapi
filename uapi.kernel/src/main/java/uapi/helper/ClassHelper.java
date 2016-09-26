@@ -95,7 +95,6 @@ public final class ClassHelper {
             for (int i = 0; i < paramTypes.length; i++) {
                 paramClasses[i] = (Class<?>) paramTypes[i];
             }
-            break;
         }
         return paramClasses;
     }

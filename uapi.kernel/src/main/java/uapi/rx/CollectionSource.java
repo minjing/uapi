@@ -20,7 +20,7 @@ import java.util.*;
 class CollectionSource<T> extends Operator<T> {
 
     private final Collection<T> _items;
-    private java.util.Iterator<T> _itemsIte;
+    private Iterator<T> _itemsIte;
 
     CollectionSource(Collection<T> items) {
         ArgumentChecker.required(items, "items");

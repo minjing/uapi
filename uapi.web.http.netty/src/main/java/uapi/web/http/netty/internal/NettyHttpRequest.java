@@ -141,11 +141,13 @@ class NettyHttpRequest implements IHttpRequest {
         return this._headers;
     }
 
-    ContentType contentType() {
+    @Override
+    public ContentType contentType() {
         return this._conentType;
     }
 
-    Charset charset() {
+    @Override
+    public Charset charset() {
         return this._charset;
     }
 

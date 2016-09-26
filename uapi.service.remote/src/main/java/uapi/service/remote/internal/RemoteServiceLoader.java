@@ -15,7 +15,6 @@ import uapi.helper.ArgumentChecker;
 import uapi.log.ILogger;
 import uapi.service.IRegistry;
 import uapi.service.IServiceLoader;
-import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 import uapi.service.remote.ICommunicator;

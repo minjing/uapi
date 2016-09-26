@@ -15,16 +15,16 @@ import uapi.InvalidArgumentException.InvalidArgumentType;
 /**
  * A pair contains two values
  *
- * @param   <LT>
+ * @param   <L>
  *          left value type
- * @param   <RT>
+ * @param   <R>
  *          right value type
  */
-public class Tuple<LT, RT> {
+public class Tuple<L, R> {
 
-    private final LT _lValue;
+    private final L _lValue;
 
-    private final RT _rValue;
+    private final R _rValue;
 
     /**
      * Split a string by specific separator and using it to construct a Pair instance
@@ -50,7 +50,7 @@ public class Tuple<LT, RT> {
         }
     }
 
-    public Tuple(LT leftValue, RT rightValue) {
+    public Tuple(L leftValue, R rightValue) {
         if (leftValue == null) {
             throw new InvalidArgumentException("leftValue", InvalidArgumentType.EMPTY);
         }
@@ -61,11 +61,11 @@ public class Tuple<LT, RT> {
         this._rValue = rightValue;
     }
 
-    public LT getLeftValue() {
+    public L getLeftValue() {
         return this._lValue;
     }
 
-    public RT getRightValue() {
+    public R getRightValue() {
         return this._rValue;
     }
 

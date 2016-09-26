@@ -12,7 +12,6 @@ package uapi.rx;
 import uapi.helper.ArgumentChecker;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 
 /**

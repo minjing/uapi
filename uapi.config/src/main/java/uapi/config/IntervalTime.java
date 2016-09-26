@@ -240,10 +240,7 @@ public class IntervalTime {
             return false;
         }
         IntervalTime other = (IntervalTime) obj;
-        if (this._interval == other._interval && this._unit == other._unit) {
-            return true;
-        }
-        return false;
+        return this._interval == other._interval && this._unit == other._unit;
     }
 
     @Override

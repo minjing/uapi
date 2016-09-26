@@ -10,18 +10,18 @@ import java.util.Map;
  * The ToMapOperator will collect all of element and put into a Map
  * The previously operator must generate a value which is instance of Pair
  */
-class ToMapOperator<KT, VT> extends TerminatedOperator<Map<KT, VT>> {
+class ToMapOperator<K, V> extends TerminatedOperator<Map<K, V>> {
 
-    ToMapOperator(Operator<Pair<KT, VT>> previously) {
+    ToMapOperator(Operator<Pair<K, V>> previously) {
         super(previously);
     }
 
     @Override
-    Map<KT, VT> getItem() throws NoItemException {
-        Map<KT, VT> items = new HashMap<>();
+    Map<K, V> getItem() throws NoItemException {
+        Map<K, V> items = new HashMap<>();
         while (hasItem()) {
             try {
-                Pair<KT, VT> item = (Pair<KT, VT>) getPreviously().getItem();
+                Pair<K, V> item = (Pair<K, V>) getPreviously().getItem();
                 if (item == null) {
                     continue;
                 }

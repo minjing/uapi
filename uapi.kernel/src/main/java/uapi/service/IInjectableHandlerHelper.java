@@ -12,7 +12,6 @@ package uapi.service;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.IBuilderContext;
 import uapi.annotation.IHandlerHelper;
-import uapi.annotation.internal.BuilderContext;
 
 /**
  * A helper for maintain injectable annotation at build-time

@@ -24,7 +24,6 @@ import uapi.service.IInjectableHandlerHelper;
 import uapi.service.IRegistry;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
-import uapi.service.internal.InjectableHandler;
 import uapi.service.internal.QualifiedServiceId;
 
 import javax.lang.model.element.AnnotationMirror;

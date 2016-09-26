@@ -12,7 +12,6 @@ package uapi.helper;
 import com.google.common.base.Strings;
 import uapi.InvalidArgumentException;
 import uapi.InvalidArgumentException.InvalidArgumentType;
-import uapi.KernelException;
 
 import java.util.Collection;
 

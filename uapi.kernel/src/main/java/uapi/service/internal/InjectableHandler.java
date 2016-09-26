@@ -12,7 +12,6 @@ package uapi.service.internal;
 import com.google.auto.service.AutoService;
 import uapi.KernelException;
 import uapi.annotation.*;
-import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.service.IInjectableHandlerHelper;
 import uapi.service.annotation.Inject;

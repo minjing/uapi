@@ -9,7 +9,6 @@
 
 package uapi.config;
 
-import rx.Observable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;

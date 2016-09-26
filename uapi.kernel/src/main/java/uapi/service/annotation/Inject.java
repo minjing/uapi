@@ -10,7 +10,6 @@
 package uapi.service.annotation;
 
 import uapi.helper.StringHelper;
-import uapi.service.IRegistry;
 import uapi.service.internal.QualifiedServiceId;
 
 import java.lang.annotation.ElementType;

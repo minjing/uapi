@@ -11,8 +11,6 @@ package uapi.service.remote;
 
 import uapi.service.ServiceInterfaceMeta;
 
-import java.util.List;
-
 /**
  * The IServiceInterfaceProxy will act as specific service proxy to
  * interactive with remote real service.

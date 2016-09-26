@@ -10,7 +10,6 @@
 package uapi.helper;
 
 import com.google.common.base.Strings;
-import rx.Observable;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.rx.Looper;
@@ -20,8 +19,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class StringHelper {
 

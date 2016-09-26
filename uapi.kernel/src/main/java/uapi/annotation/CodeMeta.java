@@ -13,8 +13,6 @@ import freemarker.template.Template;
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
-import uapi.helper.CollectionHelper;
-import uapi.helper.MapHelper;
 import uapi.helper.StringHelper;
 
 import java.io.StringWriter;
@@ -111,7 +109,9 @@ public class CodeMeta {
         }
 
         @Override
-        protected void initProperties() { }
+        protected void initProperties() {
+            // Do nothing
+        }
 
         @Override
         protected CodeMeta createInstance() {

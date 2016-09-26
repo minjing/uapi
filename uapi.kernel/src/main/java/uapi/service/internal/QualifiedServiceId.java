@@ -86,10 +86,7 @@ public class QualifiedServiceId extends Pair<String, String> {
         if (getFrom().equals(qsId.getFrom())) {
             return true;
         }
-        if (qsId.getFrom().equals(FROM_ANY)) {
-            return true;
-        }
-        return false;
+        return qsId.getFrom().equals(FROM_ANY);
     }
 
     public boolean canFrom(final String from) {

@@ -11,7 +11,6 @@ package uapi.annotation;
 
 import uapi.InvalidArgumentException;
 import uapi.KernelException;
-import uapi.annotation.internal.BuilderContext;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.rx.Looper;

@@ -39,6 +39,6 @@ public class AsyncAppLifecycle implements IAppLifecycle {
 
     @Override
     public void onStopped() {
-
+        // Do nothing
     }
 }

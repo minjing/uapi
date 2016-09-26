@@ -31,8 +31,8 @@ public class AsyncServiceCall {
         this._asyncSvc.call(
                 () -> this._svc.getTitle("abc"),
                 (callId, result) -> {
-                    assert callId.equals("1");
-                    assert result.equals("Test");
+                    assert "1".equals(callId);
+                    assert "Test".equals(result);
                 });
     }
 }

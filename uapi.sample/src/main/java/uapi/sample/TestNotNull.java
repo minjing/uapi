@@ -10,6 +10,7 @@
 package uapi.sample;
 
 import uapi.annotation.NotNull;
+import uapi.log.ILogger;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
@@ -25,10 +26,13 @@ public class TestNotNull {
     @Inject
     protected String test;
 
+    @Inject
+    protected ILogger logger;
+
     public void sayHello(
             @NotNull final String name
     ) {
-        System.out.print("Hello " + name);
+        this.logger.info("Hello " + name);
     }
 
     @Init

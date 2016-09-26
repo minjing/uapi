@@ -15,10 +15,10 @@ package uapi.flow;
  * 
  * @author min
  *
- * @param <IT> The input data type
- * @param <OT> The output data type
+ * @param <I> The input data type
+ * @param <O> The output data type
  */
-public interface IHandler<IT, OT> {
+public interface IHandler<I, O> {
 
     /**
      * The handler name.
@@ -27,5 +27,5 @@ public interface IHandler<IT, OT> {
      */
     String getName();
 
-    OT handle(IT input, IContext context);
+    O handle(I input, IContext context);
 }

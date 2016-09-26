@@ -10,6 +10,7 @@
 package uapi.web.http;
 
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,10 @@ public interface IHttpRequest {
     HttpVersion version();
 
     Map<String, List<String>> params();
+
+    ContentType contentType();
+
+    Charset charset();
 
     <T> T objectParam(Class<T> objectType);
 

@@ -127,7 +127,9 @@ public class FieldMeta {
         }
 
         @Override
-        protected void initProperties() { }
+        protected void initProperties() {
+            // Do nothing
+        }
 
         @Override
         protected FieldMeta createInstance() {
