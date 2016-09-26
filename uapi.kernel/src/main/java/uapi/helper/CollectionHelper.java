@@ -365,42 +365,6 @@ public final class CollectionHelper {
     }
 
     /**
-     * Compare two list, make sure two list has same item and same order
-     *
-     * @param   l1
-     *          First list which will be compared
-     * @param   l2
-     *          Second list which will be compared
-     * @return  true means two list is equals otherwise return false
-     */
-//    public static boolean equals(List l1, List l2) {
-//        if (l1 == l2) {
-//            return true;
-//        }
-//        if (l1 == null || l2 == null) {
-//            return false;
-//        }
-//        if (l1.size() != l2.size()) {
-//            return false;
-//        }
-//        for (int i = 0; i < l1.size(); i++) {
-//            Object o1 = l1.get(i);
-//            Object o2 = l2.get(i);
-//            if (o1 == null || o2 == null) {
-//                continue;
-//            }
-//            if (o1 == o2) {
-//                continue;
-//            }
-//            if (o1.equals(o2)) {
-//                continue;
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
-
-    /**
      * Compare two Set, make sure two set has same item
      *
      * @param   s1

@@ -92,7 +92,7 @@ public class BufferTest {
             try {
                 this.item = this._buffer.read(true);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // do nothing
             }
         }
     }

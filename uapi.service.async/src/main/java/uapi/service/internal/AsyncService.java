@@ -10,6 +10,7 @@
 package uapi.service.internal;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import uapi.KernelException;
 import uapi.config.IntervalTime;
 import uapi.config.internal.IntervalTimeParser;
 import uapi.config.annotation.Config;
@@ -244,6 +245,8 @@ public class AsyncService implements IAsyncService {
                             this._timedOutCallback.accept(this._callId);
                         }
                         break;
+                    default:
+                        throw new KernelException("Unsupported type - {}", this._status);
                 }
             } catch (Exception ex) {
                 AsyncService.this._logger.error(ex);
