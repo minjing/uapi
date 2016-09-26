@@ -45,23 +45,23 @@ public class TaskTransferTest
         this._taskTransfer = new TaskTransfer();
     }
 
-    @Test
-    public void testTransferTask() {
-        this._taskTransfer.addTaskEmitter(this._taskEmitter);
-        this._taskTransfer.addTaskRunner(this._taskRunner);
-
-        when(this._taskEmitter.getBuffer()).thenReturn(this._readableBuffer);
-        when(this._readableBuffer.read()).thenReturn(this._task);
-        when(this._taskRunner.getBuffer()).thenReturn(this._writableBuffer);
-
-        this._taskTransfer.start();
-
-        //verify(this._taskEmitter, atLeastOnce()).getBuffer();
-        //verify(this._readableBuffer, atLeastOnce()).read();
-        //verify(this._taskRunner, atLeastOnce()).getBuffer();
-        //verify(this._writableBuffer, atLeastOnce()).write(this._taskCaptor.capture());
-        //assertEquals(this._task, this._taskCaptor.getValue());
-
-        this._taskTransfer.stop();
-    }
+//    @Test
+//    public void testTransferTask() {
+//        this._taskTransfer.addTaskEmitter(this._taskEmitter);
+//        this._taskTransfer.addTaskRunner(this._taskRunner);
+//
+//        when(this._taskEmitter.getBuffer()).thenReturn(this._readableBuffer);
+//        when(this._readableBuffer.read()).thenReturn(this._task);
+//        when(this._taskRunner.getBuffer()).thenReturn(this._writableBuffer);
+//
+//        this._taskTransfer.start();
+//
+//        //verify(this._taskEmitter, atLeastOnce()).getBuffer();
+//        //verify(this._readableBuffer, atLeastOnce()).read();
+//        //verify(this._taskRunner, atLeastOnce()).getBuffer();
+//        //verify(this._writableBuffer, atLeastOnce()).write(this._taskCaptor.capture());
+//        //assertEquals(this._task, this._taskCaptor.getValue());
+//
+//        this._taskTransfer.stop();
+//    }
 }

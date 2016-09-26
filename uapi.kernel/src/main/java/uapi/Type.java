@@ -10,7 +10,6 @@
 package uapi;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A utility class for type definition

@@ -410,9 +410,6 @@ public final class CollectionHelper {
      * @return  true means two set is equals otherwise return false
      */
     public static boolean equals(Set s1, Set s2) {
-        if (s1 == s2) {
-            return true;
-        }
         if (s1 == null || s2 == null) {
             return false;
         }

@@ -15,7 +15,6 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import uapi.KernelException;
 import uapi.log.ILogger;
-import uapi.service.annotation.Inject;
 import uapi.task.ITask;
 
 class TaskTransfer

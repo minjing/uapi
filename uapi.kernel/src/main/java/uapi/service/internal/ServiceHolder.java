@@ -157,10 +157,7 @@ class ServiceHolder implements IServiceReference {
 //            return true;
 //        }
 
-        if (findDependencies(qualifiedServiceId) != null) {
-            return true;
-        }
-        return false;
+        return findDependencies(qualifiedServiceId) != null;
     }
 
     List<Dependency> getUnresolvedServices(String from) {

@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class CircleBuffer<T> implements IReadableBuffer<T>, IWritableBuffer<T> {
 
     private static final int RETRY_LIMITATION   = 16;
-    private static final int NO_INDEX           = -1;
 
     private final int _capacity;
     private final Item<T>[] _items;
@@ -111,14 +110,13 @@ public class CircleBuffer<T> implements IReadableBuffer<T>, IWritableBuffer<T> {
     private int getWriteIndex() {
         int idx = this._idxWrite.getAndIncrement() % this._capacity;
         if (idx <= this._idxRead.get()) {
-
+            // Todo:
         }
         return idx;
     }
 
     private int getReadIndex() {
-        int idx = this._idxRead.getAndIncrement() % this._capacity;
-        return idx;
+        return this._idxRead.getAndIncrement() % this._capacity;
     }
 
     private boolean tryWrite(int idx, T item) throws InterruptedException {

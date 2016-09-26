@@ -15,8 +15,6 @@ import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
-import java.util.List;
-
 /**
  * Created by min on 16/2/14.
  */

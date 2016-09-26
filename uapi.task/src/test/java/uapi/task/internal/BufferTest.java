@@ -108,7 +108,7 @@ public class BufferTest {
                 Thread.sleep(500);
                 this._buffer.write(this._item);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                fail(e.getMessage());
             }
         }
     }

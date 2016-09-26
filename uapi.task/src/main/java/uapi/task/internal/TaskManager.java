@@ -50,7 +50,9 @@ public final class TaskManager
         this._taskTransfer = transfer;
     }
 
-    public void config(String key, String config) {}
+    public void config(String key, String config) {
+        // TODO:
+    }
 
     @Override
     public void addTask(ITask task) {

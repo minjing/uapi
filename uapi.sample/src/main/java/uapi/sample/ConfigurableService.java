@@ -10,9 +10,7 @@
 package uapi.sample;
 
 import uapi.config.annotation.Config;
-import uapi.config.internal.IntValueParser;
 import uapi.log.ILogger;
-import uapi.service.IRegistry;
 import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;

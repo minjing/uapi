@@ -22,9 +22,6 @@ final class TaskOrder implements Comparator<ITask> {
 
     @Override
     public int compare(ITask task1, ITask task2) {
-        if (task1 == task2) {
-            return 0;
-        }
         if (task1.getPriority() == task2.getPriority()) {
             return 0;
         } else if (task1.getPriority() < task2.getPriority()) {

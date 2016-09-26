@@ -243,6 +243,7 @@ public class AsyncService implements IAsyncService {
                         if (this._timedOutCallback != null) {
                             this._timedOutCallback.accept(this._callId);
                         }
+                        break;
                 }
             } catch (Exception ex) {
                 AsyncService.this._logger.error(ex);
