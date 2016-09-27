@@ -28,7 +28,7 @@ class ProfileManager {
 
     static final IProfile DEFAULT_PROFILE   = new IncludeAllProfile();
 
-    @Config(path="cli.profile", optional=true)
+    @Config(path="app.active-profile", optional=true)
     protected String _usedProfile;
 
     @Config(path="profiles", parser=ProfilesParser.class, optional=true)
@@ -38,13 +38,18 @@ class ProfileManager {
     protected ILogger _logger;
 
     public IProfile getActiveProfile() {
+        IProfile profile;
         if (Strings.isNullOrEmpty(this._usedProfile)) {
-            return DEFAULT_PROFILE;
-        }
-        IProfile profile = this._profiles.get(this._usedProfile);
-        if (profile == null) {
-            this._logger.warn("No profile is named {}, using default profile instead of", this._usedProfile);
             profile = DEFAULT_PROFILE;
+            this._logger.info("No profile is specified, using default profile");
+        } else {
+            profile = this._profiles.get(this._usedProfile);
+            if (profile == null) {
+                this._logger.warn("No profile is named {}, using default profile instead of", this._usedProfile);
+                profile = DEFAULT_PROFILE;
+            } else {
+                this._logger.info("Active profile is - {}", this._usedProfile);
+            }
         }
         return profile;
     }

@@ -1,5 +1,6 @@
 app:
   name: Profile1EnabledApp
+  active-profile: profile1
 
 profiles:
   - name: profile1
