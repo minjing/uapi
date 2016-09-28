@@ -10,7 +10,7 @@
 package uapi.service.async;
 
 /**
- * Created by xquan on 9/20/2016.
+ * The call back interface used for the specified call failed.
  */
 public interface ICallFailed {
 

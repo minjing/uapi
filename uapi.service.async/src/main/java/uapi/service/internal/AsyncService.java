@@ -37,10 +37,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Tag("Async")
 public class AsyncService implements IAsyncService {
 
+    private static final String DEFAULT_TIME_OF_CHECK   = "10s";
+
     @Inject
     protected ILogger _logger;
 
-    @Config(path="service.async.time-of-check", parser=IntervalTimeParser.class)
+    @Config(path="service.async.time-of-check", parser=IntervalTimeParser.class, optional=true)
     protected IntervalTime _timeOfCheck;
 
     private static final String EXECUTOR_THREAD_NAME_PATTERN    = "AsyncServiceExecutor-%d";
@@ -62,12 +64,15 @@ public class AsyncService implements IAsyncService {
 
     @Init
     public void init() {
-        /**
-         * Check below futures:
-         * * Timed out future -> cancel it
-         * * Done future -> remove it
-         * * Canceled future -> remove it
-         */
+        if (this._timeOfCheck == null) {
+            this._timeOfCheck = IntervalTime.parse(DEFAULT_TIME_OF_CHECK);
+        }
+        //
+        // Check below futures:
+        // * Timed out future -> cancel it
+        // * Done future -> remove it
+        // * Canceled future -> remove it
+        //
         this._svcChecker.scheduleAtFixedRate(() -> {
             Iterator<Map.Entry<String, CallWrapper>> callWrappersIt = this._callWrappers.entrySet().iterator();
             while (callWrappersIt.hasNext()) {
