@@ -327,7 +327,7 @@ The the HelloClient can invoke the service like local service.
   - [ ] Support register service to Consul.
   - [ ] Service status can be monitored.
   - [ ] Full documentation.
-
+  - [ ] Increase unit test coverage.
 
 * v0.4 - in working
   - [ ] Event support, decide using 3rd library or implement it self.
