@@ -328,6 +328,7 @@ The the HelloClient can invoke the service like local service.
 * Featured
   - [ ] Support register service to Consul.
   - [ ] Service status can be monitored.
+  - [ ] Support Docker image based development.
   - [ ] Full documentation.
   - [ ] Increase unit test coverage.
 
