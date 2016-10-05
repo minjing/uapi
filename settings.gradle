@@ -1,6 +1,7 @@
 include 'uapi.kernel'
 include 'uapi.service', 'uapi.log', 'uapi.config'
 include 'uapi.service.async', 'uapi.service.spring', 'uapi.service.remote'
+include 'uapi.event'
 include 'uapi.web.http.netty', 'uapi.web.restful'
 include 'uapi.app'
 include 'uapi.sample'
