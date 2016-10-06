@@ -36,7 +36,7 @@ class EventBusTest extends Specification{
         'Topic'     | null
     }
 
-    def 'Test fire'() {
+    def 'Test fire to one handler'() {
         given:
         IEvent event = Mock(IEvent) {
             topic() >> eventTopic
@@ -55,6 +55,37 @@ class EventBusTest extends Specification{
         then:
         noExceptionThrown()
         1 * handler.handle(event)
+
+        where:
+        eventTopic  | none
+        'Topic'     | null
+    }
+
+    def 'Test fire to more handler'() {
+        given:
+        IEvent event = Mock(IEvent) {
+            topic() >> eventTopic
+        }
+        IEventHandler handler1 = Mock(IEventHandler) {
+            topic() >> eventTopic
+        }
+        IEventHandler handler2 = Mock(IEventHandler) {
+            topic() >> eventTopic
+        }
+        EventBus eventBus = new EventBus()
+        eventBus.init()
+        eventBus.register(handler1)
+        eventBus.register(handler2)
+
+        when:
+        eventBus.fire(event)
+        Thread.currentThread().sleep(200)
+        eventBus.destroy()
+
+        then:
+        noExceptionThrown()
+        1 * handler1.handle(event)
+        1 * handler2.handle(event)
 
         where:
         eventTopic  | none

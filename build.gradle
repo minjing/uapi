@@ -50,6 +50,7 @@ subprojects {
         }
         reports {
             xml.enabled = true
+            xml.destination = "${buildDir}/reports/jacoco/test/${project.name}_jacocoTestReport.xml"
             html.enabled = true
         }
     }
@@ -61,7 +62,7 @@ subprojects {
                 "-l",
                 "Java",
                 "-r",
-                "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+                "${buildDir}/reports/jacoco/test/${project.name}_jacocoTestReport.xml"
         ]
     }
 
