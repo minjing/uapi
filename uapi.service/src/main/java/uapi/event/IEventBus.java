@@ -19,8 +19,10 @@ public interface IEventBus {
      *
      * @param   event
      *          Fired event
+     * @throws  NoEventHandlerException
+     *          No event handler can handle the event
      */
-    void fire(IEvent event);
+    void fire(IEvent event) throws NoEventHandlerException;
 
     /**
      * Fire event which
@@ -29,8 +31,10 @@ public interface IEventBus {
      *          Fired event
      * @param   syncable
      *          Synchronous or asynchronous to fire
+     * @throws  NoEventHandlerException
+     *          No event handler can handle the event
      */
-    void fire(IEvent event, boolean syncable);
+    void fire(IEvent event, boolean syncable) throws NoEventHandlerException;
 
     /**
      * Register a event handler

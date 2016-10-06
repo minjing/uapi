@@ -10,7 +10,7 @@
 package uapi.event;
 
 /**
- * Created by min on 16/10/4.
+ * A handler for specific event
  */
 public interface IEventHandler {
 
@@ -20,4 +20,9 @@ public interface IEventHandler {
      * @return  The event handler
      */
     String topic();
+
+    /**
+     * Handle event
+     */
+    void handle(IEvent event);
 }
