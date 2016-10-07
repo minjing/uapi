@@ -37,13 +37,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Tag("Async")
 public class AsyncService implements IAsyncService {
 
-    private static final String DEFAULT_TIME_OF_CHECK   = "10s";
+    private static final String DEFAULT_TIME_OF_CHECK       = "10s";
+    private static final String DEFAULT_DESTROY_WAIT_TIME   = "10s";
 
     @Inject
     protected ILogger _logger;
 
     @Config(path="service.async.time-of-check", parser=IntervalTimeParser.class, optional=true)
     protected IntervalTime _timeOfCheck;
+
+    protected IntervalTime _destoryWaitTime;
 
     private static final String EXECUTOR_THREAD_NAME_PATTERN    = "AsyncServiceExecutor-%d";
     private static final String CHECKER_THREAD_NAME_PATTERN     = "AsyncServiceChecker-%d";
@@ -66,6 +69,9 @@ public class AsyncService implements IAsyncService {
     public void init() {
         if (this._timeOfCheck == null) {
             this._timeOfCheck = IntervalTime.parse(DEFAULT_TIME_OF_CHECK);
+        }
+        if (this._destoryWaitTime == null) {
+            this._destoryWaitTime = IntervalTime.parse(DEFAULT_DESTROY_WAIT_TIME);
         }
         //
         // Check below futures:
@@ -93,6 +99,12 @@ public class AsyncService implements IAsyncService {
                 }
             }
         }, 0L, this._timeOfCheck.milliseconds(), TimeUnit.MILLISECONDS);
+    }
+
+    public void destroy() throws InterruptedException {
+        this._svcExecutor.shutdown();
+        this._svcChecker.shutdown();
+        this._svcExecutor.awaitTermination(this._destoryWaitTime.seconds(), TimeUnit.SECONDS);
     }
 
     public int callCount() {
@@ -172,8 +184,8 @@ public class AsyncService implements IAsyncService {
         String callId = Integer.toString(this._callIdGen.getAndIncrement());
         CallWrapper callWrapper = new CallWrapper(
                 callId, options, callable, succeedCallback, failedCallback, timedOutCallback);
-        callWrapper._future = this._svcExecutor.submit(callWrapper);
         this._callWrappers.put(callId, callWrapper);
+        callWrapper._future = this._svcExecutor.submit(callWrapper);
         return callId;
     }
 

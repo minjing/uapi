@@ -24,10 +24,12 @@ class AsyncServiceTest extends Specification {
         given:
         AsyncService aSvc = new AsyncService()
         def succeedCallback = Mock(ICallSucceed)
+        aSvc.init()
 
         when:
         aSvc.call({ -> result }, succeedCallback)
-        Thread.currentThread().sleep(200)
+        aSvc.destroy()
+        //Thread.currentThread().sleep(200)
 
         then:
         1 * succeedCallback.accept(callId, result)
@@ -40,14 +42,16 @@ class AsyncServiceTest extends Specification {
     def 'Test succeed call without result'() {
         given:
         AsyncService aSvc = new AsyncService()
+        aSvc.init()
 
         when:
         aSvc.call({ -> })
-        Thread.currentThread().sleep(200)
+        aSvc.destroy()
+        //Thread.currentThread().sleep(200)
 
         then:
-        aSvc.callCount() == 0
         noExceptionThrown();
+        aSvc.callCount() == 0
     }
 
     def 'Test failed call'() {
@@ -104,6 +108,7 @@ class AsyncServiceTest extends Specification {
         when:
         aSvc.call({ -> Thread.currentThread().sleep(200) }, succeedCallback, failedCallback, timedOutCallback, options)
         Thread.currentThread().sleep(200)
+        aSvc.destroy()
 
         then:
         0 * succeedCallback.accept(_ as String, _ as Object)
@@ -130,7 +135,8 @@ class AsyncServiceTest extends Specification {
 
         when:
         aSvc.call({ -> Thread.currentThread().sleep(200) }, null as ICallSucceed, null as ICallFailed, null as ICallTimedOut, options)
-        Thread.currentThread().sleep(200)
+        aSvc.destroy()
+//        Thread.currentThread().sleep(200)
 
         then:
         aSvc.callCount() == callCount

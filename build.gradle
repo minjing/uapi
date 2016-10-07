@@ -1,12 +1,6 @@
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'groovy'
-    apply plugin: 'jacoco'
+apply plugin: 'jacoco'
 
-    version = getProjectVersion()
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-
+allprojects {
     repositories {
         mavenCentral()
         maven { url "http://dl.bintray.com/typesafe/maven-releases" }
@@ -15,6 +9,20 @@ subprojects {
     configurations {
         codacy
     }
+
+    dependencies {
+        codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+    apply plugin: 'jacoco'
+
+    version = getProjectVersion()
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     dependencies {
         compile (
@@ -30,8 +38,6 @@ subprojects {
             "cglib:cglib-nodep:${cglib_version}",           // allows mocking of classes (in addition to interfaces)
             "org.objenesis:objenesis:${objenesis_version}"  // allows mocking of classes without default constructor (together with CGLIB)
         )
-
-        codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
     }
 
     def generatedSources = ['**/*_Generated.*']
@@ -50,45 +56,62 @@ subprojects {
         }
         reports {
             xml.enabled = true
-            xml.destination = "${buildDir}/reports/jacoco/test/${project.name}_jacocoTestReport.xml"
             html.enabled = true
         }
     }
 
-    task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
-        main = "com.codacy.CodacyCoverageReporter"
-        classpath = configurations.codacy
-        args = [
-                "-l",
-                "Java",
-                "-r",
-                "${buildDir}/reports/jacoco/test/${project.name}_jacocoTestReport.xml"
-        ]
-    }
+//    task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
+//        main = "com.codacy.CodacyCoverageReporter"
+//        classpath = configurations.codacy
+//        args = [
+//                "-l",
+//                "Java",
+//                "-r",
+//                "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+//        ]
+//    }
 
-    task (codacyDepsize) << {
-        def size = 0;
-        configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
-        println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
-
-        configurations
-                .codacy
-                .sort { -it.length() }
-                .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
-    }
-
-    task (codacyLocs) << {
-        configurations.codacy.each {
-            String jarName = it
-            println jarName
-        }
-    }
+//    task (codacyDepsize) << {
+//        def size = 0;
+//        configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
+//        println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
+//
+//        configurations
+//                .codacy
+//                .sort { -it.length() }
+//                .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
+//    }
+//
+//    task (codacyLocs) << {
+//        configurations.codacy.each {
+//            String jarName = it
+//            println jarName
+//        }
+//    }
 
     check.dependsOn jacocoTestReport
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = "${gradle_version}"
+}
+
+task jacocoMerge(type: JacocoMerge) {
+    subprojects.each { subproject ->
+        executionData subproject.tasks.withType(Test)
+    }
+    destinationFile = new File("${buildDir}/reports/jacoco/test/jacocoMergedReport.xml")
+}
+
+task uploadCoverageToCodacy(type: JavaExec) {
+    main = "com.codacy.CodacyCoverageReporter"
+    classpath = configurations.codacy
+    args = [
+            "-l",
+            "Java",
+            "-r",
+            "${buildDir}/reports/jacoco/test/jacocoMergedReport.xml"
+    ]
 }
 
 def getProjectVersion() {
