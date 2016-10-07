@@ -9,6 +9,7 @@
 
 package uapi.service.internal
 
+import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.config.IntervalTime
 import uapi.service.async.ICallFailed
@@ -90,6 +91,7 @@ class AsyncServiceTest extends Specification {
         '1'     | new Exception()   | 0
     }
 
+    @Ignore
     def 'Test time out call'() {
         given:
         AsyncService aSvc = new AsyncService()
