@@ -158,7 +158,7 @@ public final class ServiceHandler extends AnnotationsHandler {
             } else {
                 List<String> idList = new ArrayList<>();
                 Observable.from(idArr).subscribe(idList::add);
-                Observable.from(serviceIds).subscribe(idList::add);
+                Observable.from(serviceIds).filter(id -> ! idList.contains(id)).subscribe(idList::add);
                 idArr = idList.toArray(new String[idList.size()]);
             }
             tempGetIdsModel.put(VAR_SVC_IDS, idArr);

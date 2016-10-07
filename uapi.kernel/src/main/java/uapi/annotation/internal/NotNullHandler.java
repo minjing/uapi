@@ -47,7 +47,7 @@ public final class NotNullHandler extends AnnotationsHandler {
         paramElements.forEach(paramElement -> {
             if (paramElement.getKind() != ElementKind.PARAMETER) {
                 throw new KernelException(
-                        "The NotNull annotation only can be applied on method parameter",
+                        "The NotNull annotation only can be applied on method parameter element - {}",
                         paramElement.getSimpleName().toString());
             }
             Element methodElement = paramElement.getEnclosingElement();

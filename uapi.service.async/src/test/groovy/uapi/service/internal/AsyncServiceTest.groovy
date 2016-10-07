@@ -9,7 +9,6 @@
 
 package uapi.service.internal
 
-import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.config.IntervalTime
 import uapi.service.async.ICallFailed
@@ -30,7 +29,6 @@ class AsyncServiceTest extends Specification {
         when:
         aSvc.call({ -> result }, succeedCallback)
         aSvc.destroy()
-        //Thread.currentThread().sleep(200)
 
         then:
         1 * succeedCallback.accept(callId, result)
@@ -48,7 +46,6 @@ class AsyncServiceTest extends Specification {
         when:
         aSvc.call({ -> })
         aSvc.destroy()
-        //Thread.currentThread().sleep(200)
 
         then:
         noExceptionThrown();
@@ -60,10 +57,11 @@ class AsyncServiceTest extends Specification {
         AsyncService aSvc = new AsyncService()
         def succeedCallback = Mock(ICallSucceed)
         def failedCallback = Mock(ICallFailed)
+        aSvc.init();
 
         when:
         aSvc.call({ -> throw ex }, succeedCallback, failedCallback)
-        Thread.currentThread().sleep(200)
+        aSvc.destroy()
 
         then:
         0 * succeedCallback.accept(_ as String, _ as Object)
@@ -78,10 +76,11 @@ class AsyncServiceTest extends Specification {
     def 'Test failed call without callback'() {
         given:
         AsyncService aSvc = new AsyncService()
+        aSvc.init()
 
         when:
         aSvc.call({ -> throw ex }, null as ICallSucceed, null as ICallFailed)
-        Thread.currentThread().sleep(200)
+        aSvc.destroy()
 
         then:
         aSvc.callCount() == callCount
@@ -110,7 +109,6 @@ class AsyncServiceTest extends Specification {
         aSvc.call({ -> Thread.currentThread().sleep(200) }, succeedCallback, failedCallback, timedOutCallback, options)
         Thread.currentThread().sleep(300)
         aSvc.destroy()
-        System.out.println("Check count -> " + aSvc._checkCount)
 
         then:
         0 * succeedCallback.accept(_ as String, _ as Object)
@@ -138,7 +136,6 @@ class AsyncServiceTest extends Specification {
         when:
         aSvc.call({ -> Thread.currentThread().sleep(200) }, null as ICallSucceed, null as ICallFailed, null as ICallTimedOut, options)
         aSvc.destroy()
-//        Thread.currentThread().sleep(200)
 
         then:
         aSvc.callCount() == callCount

@@ -69,7 +69,7 @@ public class RestfulHandler extends AnnotationsHandler {
             Looper.from(elements).foreach(methodElement -> {
                 if (methodElement.getKind() != ElementKind.METHOD) {
                     throw new KernelException(
-                            "The Restful annotation only can be applied on field",
+                            "The Restful annotation only can be applied on field element - {}",
                             methodElement.getSimpleName().toString());
                 }
                 Element classElement = methodElement.getEnclosingElement();
