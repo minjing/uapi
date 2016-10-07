@@ -6,12 +6,8 @@ allprojects {
         maven { url "http://dl.bintray.com/typesafe/maven-releases" }
     }
 
-    configurations {
-        codacy
-    }
-
-    dependencies {
-        codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
+    plugins {
+        id 'com.github.kt3k.coveralls' version '2.6.3'
     }
 }
 
@@ -92,16 +88,17 @@ subprojects {
     check.dependsOn jacocoTestReport
 }
 
+configurations {
+    codacy
+}
+
+dependencies {
+    codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = "${gradle_version}"
 }
-
-//task jacocoMerge(type: JacocoMerge) {
-//    subprojects.each { subproject ->
-//        executionData subproject.tasks.withType(Test)
-//    }
-//    //destinationFile = new File("${buildDir}/reports/jacoco/test/jacocoMergedReport.xml")
-//}
 
 def publishedProjects = subprojects.findAll { it.path != ':uapi.sample' }
 

@@ -1,7 +1,3 @@
-plugins {
-    id 'com.github.kt3k.coveralls' version '2.6.3'
-}
-
 dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.3'
     compile project(':uapi.kernel')
