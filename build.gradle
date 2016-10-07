@@ -5,10 +5,6 @@ allprojects {
         mavenCentral()
         maven { url "http://dl.bintray.com/typesafe/maven-releases" }
     }
-
-    plugins {
-        id 'com.github.kt3k.coveralls' version '2.6.3'
-    }
 }
 
 subprojects {
@@ -130,6 +126,24 @@ task uploadCoverageToCodacy(type: JavaExec) {
             "-r",
             "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     ]
+}
+
+task (codacyDepsize) << {
+    def size = 0;
+    configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
+    println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
+
+    configurations
+            .codacy
+            .sort { -it.length() }
+            .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
+}
+
+task (codacyLocs) << {
+    configurations.codacy.each {
+        String jarName = it
+        println jarName
+    }
 }
 
 def getProjectVersion() {
