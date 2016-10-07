@@ -238,7 +238,9 @@ public class AsyncService implements IAsyncService {
             Exception exception = null;
             try {
                 result = this._callable.call();
-                this._status = CallStatus.SUCCEED;
+                if (this._status != CallStatus.TIMEDOUT) {
+                    this._status = CallStatus.SUCCEED;
+                }
             } catch (Exception ex) {
                 if (this._status != CallStatus.TIMEDOUT) {
                     this._status = CallStatus.FAILED;

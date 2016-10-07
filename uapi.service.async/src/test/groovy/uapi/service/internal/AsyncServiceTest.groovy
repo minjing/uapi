@@ -91,7 +91,6 @@ class AsyncServiceTest extends Specification {
         '1'     | new Exception()   | 0
     }
 
-    @Ignore
     def 'Test time out call'() {
         given:
         AsyncService aSvc = new AsyncService()
@@ -109,7 +108,7 @@ class AsyncServiceTest extends Specification {
 
         when:
         aSvc.call({ -> Thread.currentThread().sleep(200) }, succeedCallback, failedCallback, timedOutCallback, options)
-        Thread.currentThread().sleep(200)
+        Thread.currentThread().sleep(300)
         aSvc.destroy()
 
         then:
