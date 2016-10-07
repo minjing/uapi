@@ -65,6 +65,8 @@ public class AsyncService implements IAsyncService {
         this._callIdGen = new AtomicInteger(1);
     }
 
+    private int _checkCount = 0;
+
     @Init
     public void init() {
         if (this._timeOfCheck == null) {
@@ -80,6 +82,7 @@ public class AsyncService implements IAsyncService {
         // * Canceled future -> remove it
         //
         this._svcChecker.scheduleAtFixedRate(() -> {
+            this._checkCount++;
             Iterator<Map.Entry<String, CallWrapper>> callWrappersIt = this._callWrappers.entrySet().iterator();
             while (callWrappersIt.hasNext()) {
                 Map.Entry<String, CallWrapper> callWrapperEntry = callWrappersIt.next();
@@ -98,7 +101,7 @@ public class AsyncService implements IAsyncService {
                     }
                 }
             }
-        }, 0L, this._timeOfCheck.milliseconds(), TimeUnit.MILLISECONDS);
+        }, this._timeOfCheck.milliseconds(), this._timeOfCheck.milliseconds(), TimeUnit.MILLISECONDS);
     }
 
     public void destroy() throws InterruptedException {

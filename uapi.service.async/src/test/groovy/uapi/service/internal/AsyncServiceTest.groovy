@@ -110,6 +110,7 @@ class AsyncServiceTest extends Specification {
         aSvc.call({ -> Thread.currentThread().sleep(200) }, succeedCallback, failedCallback, timedOutCallback, options)
         Thread.currentThread().sleep(300)
         aSvc.destroy()
+        System.out.println("Check count -> " + aSvc._checkCount)
 
         then:
         0 * succeedCallback.accept(_ as String, _ as Object)
