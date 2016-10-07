@@ -57,35 +57,6 @@ subprojects {
         }
     }
 
-//    task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
-//        main = "com.codacy.CodacyCoverageReporter"
-//        classpath = configurations.codacy
-//        args = [
-//                "-l",
-//                "Java",
-//                "-r",
-//                "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-//        ]
-//    }
-//
-//    task (codacyDepsize) << {
-//        def size = 0;
-//        configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
-//        println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
-//
-//        configurations
-//                .codacy
-//                .sort { -it.length() }
-//                .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
-//    }
-//
-//    task (codacyLocs) << {
-//        configurations.codacy.each {
-//            String jarName = it
-//            println jarName
-//        }
-//    }
-
     check.dependsOn jacocoTestReport
 }
 
@@ -132,24 +103,6 @@ task uploadCoverageToCodacy(type: JavaExec) {
             "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     ]
 }
-
-//task (codacyDepsize) << {
-//    def size = 0;
-//    configurations.codacy.collect { it.length() / (1024 * 1024) }.each { size += it }
-//    println "Total dependencies size: ${Math.round(size * 100) / 100} Mb"
-//
-//    configurations
-//            .codacy
-//            .sort { -it.length() }
-//            .each { println "${it.name} : ${Math.round(it.length() / (1024) * 100) / 100} kb" }
-//}
-//
-//task (codacyLocs) << {
-//    configurations.codacy.each {
-//        String jarName = it
-//        println jarName
-//    }
-//}
 
 def getProjectVersion() {
     def release = project.hasProperty("project_release") ? project.project_release.toBoolean() : null
