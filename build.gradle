@@ -16,6 +16,10 @@ subprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
+    configurations {
+        codacy
+    }
+
     dependencies {
         compile (
             "com.google.guava:guava:${guava_version}",
@@ -30,6 +34,7 @@ subprojects {
             "cglib:cglib-nodep:${cglib_version}",           // allows mocking of classes (in addition to interfaces)
             "org.objenesis:objenesis:${objenesis_version}"  // allows mocking of classes without default constructor (together with CGLIB)
         )
+        codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
     }
 
     def generatedSources = ['**/*_Generated.*']
@@ -82,14 +87,6 @@ subprojects {
     }
 
     check.dependsOn jacocoTestReport
-}
-
-configurations {
-    codacy
-}
-
-dependencies {
-    codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
 }
 
 task wrapper(type: Wrapper) {
