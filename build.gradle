@@ -96,11 +96,32 @@ task wrapper(type: Wrapper) {
     gradleVersion = "${gradle_version}"
 }
 
-task jacocoMerge(type: JacocoMerge) {
-    subprojects.each { subproject ->
-        executionData subproject.tasks.withType(Test)
+//task jacocoMerge(type: JacocoMerge) {
+//    subprojects.each { subproject ->
+//        executionData subproject.tasks.withType(Test)
+//    }
+//    //destinationFile = new File("${buildDir}/reports/jacoco/test/jacocoMergedReport.xml")
+//}
+
+def publishedProjects = subprojects.findAll { it.path != ':uapi.sample' }
+
+task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn(publishedProjects.test)
+
+    additionalSourceDirs = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(publishedProjects.sourceSets.main.output)
+    executionData = files(publishedProjects.jacocoTestReport.executionData)
+
+    reports {
+        html.enabled = true // human readable
+        xml.enabled = true // required by coveralls
     }
-    destinationFile = new File("${buildDir}/reports/jacoco/test/jacocoMergedReport.xml")
+
+    doFirst {
+        executionData = files(executionData.findAll { it.exists() })
+    }
 }
 
 task uploadCoverageToCodacy(type: JavaExec) {
@@ -110,7 +131,7 @@ task uploadCoverageToCodacy(type: JavaExec) {
             "-l",
             "Java",
             "-r",
-            "${buildDir}/reports/jacoco/test/jacocoMergedReport.xml"
+            "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
     ]
 }
 
