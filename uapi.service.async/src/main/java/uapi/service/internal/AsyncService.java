@@ -46,7 +46,7 @@ public class AsyncService implements IAsyncService {
     @Config(path="service.async.time-of-check", parser=IntervalTimeParser.class, optional=true)
     protected IntervalTime _timeOfCheck;
 
-    protected IntervalTime _destoryWaitTime;
+    protected IntervalTime _destroyWaitTime;
 
     private static final String EXECUTOR_THREAD_NAME_PATTERN    = "AsyncServiceExecutor-%d";
     private static final String CHECKER_THREAD_NAME_PATTERN     = "AsyncServiceChecker-%d";
@@ -70,8 +70,8 @@ public class AsyncService implements IAsyncService {
         if (this._timeOfCheck == null) {
             this._timeOfCheck = IntervalTime.parse(DEFAULT_TIME_OF_CHECK);
         }
-        if (this._destoryWaitTime == null) {
-            this._destoryWaitTime = IntervalTime.parse(DEFAULT_DESTROY_WAIT_TIME);
+        if (this._destroyWaitTime == null) {
+            this._destroyWaitTime = IntervalTime.parse(DEFAULT_DESTROY_WAIT_TIME);
         }
         //
         // Check below futures:
@@ -104,7 +104,7 @@ public class AsyncService implements IAsyncService {
     public void destroy() throws InterruptedException {
         this._svcExecutor.shutdown();
         this._svcChecker.shutdown();
-        this._svcExecutor.awaitTermination(this._destoryWaitTime.seconds(), TimeUnit.SECONDS);
+        this._svcExecutor.awaitTermination(this._destroyWaitTime.seconds(), TimeUnit.SECONDS);
     }
 
     public int callCount() {
@@ -260,9 +260,6 @@ public class AsyncService implements IAsyncService {
                         }
                         break;
                     case TIMEDOUT:
-//                        if (this._timedOutCallback != null) {
-//                            this._timedOutCallback.accept(this._callId);
-//                        }
                         // Do nothing
                         break;
                     default:
