@@ -260,9 +260,10 @@ public class AsyncService implements IAsyncService {
                         }
                         break;
                     case TIMEDOUT:
-                        if (this._timedOutCallback != null) {
-                            this._timedOutCallback.accept(this._callId);
-                        }
+//                        if (this._timedOutCallback != null) {
+//                            this._timedOutCallback.accept(this._callId);
+//                        }
+                        // Do nothing
                         break;
                     default:
                         throw new KernelException("Unsupported type - {}", this._status);
@@ -285,9 +286,16 @@ public class AsyncService implements IAsyncService {
         private boolean checkExpired() {
             long currentTime = System.currentTimeMillis();
             if (currentTime - this._startTime > this._expiredTime.milliseconds()) {
-                if (this._future.isDone() || !this._future.isCancelled()) {
+                if (!this._future.isDone() && !this._future.isCancelled()) {
                     this._status = CallStatus.TIMEDOUT;
                     this._future.cancel(true);
+                    try {
+                        if (this._timedOutCallback != null) {
+                            this._timedOutCallback.accept(this._callId);
+                        }
+                    } catch (Exception ex) {
+                        AsyncService.this._logger.error(ex);
+                    }
                 }
                 return true;
             }
