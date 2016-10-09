@@ -53,7 +53,7 @@ public class EventHandlerAnnotationHandler extends AnnotationsHandler {
                                 element.getSimpleName().toString());
                     }
 
-                    checkModifiers(element, EventHandler.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+                    builderContext.checkModifiers(element, EventHandler.class, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
 
                     ClassMeta.Builder clsBuilder = builderContext.findClassBuilder(element);
                     // Make the event handler must be a IService instance
@@ -61,7 +61,7 @@ public class EventHandlerAnnotationHandler extends AnnotationsHandler {
                     svcHandlerHelper.addServiceId(clsBuilder, IEventHandler.class.getCanonicalName());
 
                     String topic = element.getAnnotation(EventHandler.class).value();
-                    String codes = StringHelper.makeString("return {};", topic);
+                    String codes = StringHelper.makeString("return \"{}\";", topic);
                     clsBuilder
                             .addImplement(IEventHandler.class.getCanonicalName())
                             .addMethodBuilder(MethodMeta.builder()
