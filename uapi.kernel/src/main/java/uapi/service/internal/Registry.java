@@ -175,10 +175,25 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
 
         checkCycleDependency(unresolvedSvcs);
 
+        // If the unresolved service contains a required local service then throw exception
+        Iterator<Dependency> dependencies = unresolvedSvcs.iterator();
+        while (dependencies.hasNext()) {
+            Dependency dep = dependencies.next();
+            if (dep.getServiceId().getFrom().equalsIgnoreCase(QualifiedServiceId.FROM_LOCAL)) {
+                if (dep.isOptional()) {
+                    this._logger.debug("Found an optional unresolved service - {}, ignored", dep.getServiceId());
+                    dependencies.remove();
+                } else {
+                    throw new KernelException("The local dependency is not satisfied - {}", dep.getServiceId());
+                }
+            }
+        }
+
         if (this._svcLoaders.size() > 0) {
             this._orderedSvcLoaders.addAll(this._svcLoaders.values());
         }
 
+        // If the unresolved service is optional then try to load it, if it can't be loaded no error
         loadExternalServices(unresolvedSvcs);
 
         this._started = true;
@@ -217,7 +232,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
                     break;
                 }
             }
-            if (!loaded) {
+            if (!loaded && !dependency.isOptional()) {
                 this._logger.error("No any service loader can load service {}", qSvcId);
             }
             return svc;
@@ -225,11 +240,11 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
             // Search specific service loader
             IServiceLoader svcLoader = this._svcLoaders.get(from);
             if (svcLoader == null) {
-                this._logger.error("Can't found service {}", qSvcId);
+                this._logger.error("Can't load service {} because no service loader for {}", qSvcId, from);
                 return null;
             }
             Object svc = svcLoader.load(qSvcId.getId(), dependency.getServiceType());
-            if (svc == null) {
+            if (svc == null && !dependency.isOptional()) {
                 this._logger.error("Load service {} from location {} failed", qSvcId, from);
                 return null;
             }
@@ -320,13 +335,13 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
         return new Dependency[] {
                 new Dependency(
                         StringHelper.makeString("{}{}{}", ISatisfyHook.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
-                        ISatisfyHook.class),
+                        ISatisfyHook.class, false, true),
                 new Dependency(
                         StringHelper.makeString("{}{}{}", ILogger.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
-                        ILogger.class),
+                        ILogger.class, true, false),
                 new Dependency(
                         StringHelper.makeString("{}{}{}", IServiceLoader.class.getName(), QualifiedServiceId.LOCATION, QualifiedServiceId.FROM_LOCAL),
-                        IServiceLoader.class)
+                        IServiceLoader.class, false, true)
         };
     }
 

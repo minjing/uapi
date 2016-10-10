@@ -1,0 +1,11 @@
+app:
+  name: Event Demo
+  active-profile: event
+
+profiles:
+  - name: event
+    model: include
+    matching: satisfy-any
+    tags:
+      - Event
+      - Event Demo

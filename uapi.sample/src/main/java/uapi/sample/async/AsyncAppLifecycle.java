@@ -19,7 +19,6 @@ import uapi.service.annotation.Tag;
  * Created by xquan on 9/23/2016.
  */
 @Service(IAppLifecycle.class)
-@Tag("Application")
 public class AsyncAppLifecycle implements IAppLifecycle {
 
     @Inject

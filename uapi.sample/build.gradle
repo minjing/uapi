@@ -10,6 +10,7 @@ dependencies {
     compile project(':uapi.app')
     compile project(':uapi.web.restful')
 
+    runtime project(':uapi.event')
     runtime project(':uapi.service.async')
     runtime project(':uapi.web.http.netty')
 }

@@ -20,8 +20,7 @@ import uapi.event.IEventHandler;
 import uapi.event.NoEventHandlerException;
 import uapi.helper.ArgumentChecker;
 import uapi.rx.Looper;
-import uapi.service.annotation.Init;
-import uapi.service.annotation.Service;
+import uapi.service.annotation.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 @ThreadSafe
 @Service(IEventBus.class)
+@Tag("Event")
 public class EventBus implements IEventBus {
 
     private static final IntervalTime DEFAULT_AWAIT_TIME = IntervalTime.parse("10s");
@@ -44,8 +44,11 @@ public class EventBus implements IEventBus {
     @Config(path="event.await-time", parser=IntervalTimeParser.class, optional=true)
     IntervalTime _awaitTime;
 
+    @Inject
+    @Optional
+    protected List<IEventHandler> _eventHandlers = new CopyOnWriteArrayList<>();
+
     private ForkJoinPool _fjPoll = new ForkJoinPool();
-    private List<IEventHandler> _eventHandlers = new CopyOnWriteArrayList<>();
 
     @Init
     protected void init() {
