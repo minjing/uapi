@@ -12,7 +12,7 @@ package uapi.event;
 /**
  * A handler for specific event
  */
-public interface IEventHandler {
+public interface IEventHandler<T extends IEvent> {
 
     /**
      * The topic of event which can be handled by this handler
@@ -23,6 +23,9 @@ public interface IEventHandler {
 
     /**
      * Handle event
+     *
+     * @param   event
+     *          The event
      */
-    void handle(IEvent event);
+    void handle(T event);
 }

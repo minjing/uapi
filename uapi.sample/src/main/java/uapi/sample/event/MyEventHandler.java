@@ -12,7 +12,7 @@ import uapi.service.annotation.Tag;
  */
 @Service(IEventHandler.class)
 @Tag("Event Demo")
-public class MyEventHandler implements IEventHandler {
+public class MyEventHandler implements IEventHandler<MyEvent> {
 
     @Inject
     protected ILogger _logger;
@@ -23,10 +23,9 @@ public class MyEventHandler implements IEventHandler {
     }
 
     @Override
-    public void handle(IEvent event) {
+    public void handle(MyEvent event) {
         this._logger.info("Processing a new event...");
         assert event != null;
-        assert event instanceof MyEvent;
-        assert ((MyEvent) event).name().equals("new event");
+        assert event.name().equals("new event");
     }
 }
