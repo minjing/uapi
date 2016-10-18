@@ -11,4 +11,6 @@ public interface IResponsible {
      * @return  The name
      */
     String name();
+
+    IEventDrivenBehavior behaviors();
 }

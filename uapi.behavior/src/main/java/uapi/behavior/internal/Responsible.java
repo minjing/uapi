@@ -1,5 +1,6 @@
 package uapi.behavior.internal;
 
+import uapi.behavior.IEventDrivenBehavior;
 import uapi.behavior.IResponsible;
 import uapi.helper.ArgumentChecker;
 
@@ -18,5 +19,10 @@ public class Responsible implements IResponsible {
     @Override
     public String name() {
         return this._name;
+    }
+
+    @Override
+    public IEventDrivenBehavior behaviors() {
+        return null;
     }
 }

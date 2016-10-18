@@ -20,15 +20,5 @@ public class ActionRepository {
     public IAction findAction(final String name) {
         ArgumentChecker.required(name, "name");
         return this._actions.get(name);
-//        List<IAction> matchedActions = Looper.from(this._actions)
-//                .filter(action -> action.name().equals(name))
-//                .toList();
-//        if (matchedActions.size() == 0) {
-//            return null;
-//        } else if (matchedActions.size() == 1) {
-//            return matchedActions.get(0);
-//        } else {
-//            throw new KernelException("Found more action is mapped to name - {}", name);
-//        }
     }
 }
