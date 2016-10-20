@@ -10,10 +10,7 @@ import uapi.rx.Looper;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,26 +35,41 @@ public class ResponsibleRegistry {
     @Inject
     protected IEventBus _eventBus;
 
+    @Inject
+    protected ActionRepository _actionRepo;
+
+    @Inject
+    protected BehaviorRepository _behaviorRepo;
+
     public void init() {
-        if (this._behaviorDefPath == null) {
-            return;
-        }
-        File dir = new File(this._behaviorDefPath);
-        if (! dir.exists()) {
-            throw new KernelException("The behavior definition directory is not exist - {}", this._behaviorDefPath);
-        }
-        if (! dir.isDirectory()) {
-            throw new KernelException("The behavior definition directory is not a directory - {}", this._behaviorDefPath);
-        }
-        File[] jsFiles = dir.listFiles(file -> file.getName().endsWith(".js"));
-        ScriptEngine jsEngine = new ScriptEngineManager().getEngineByName("nashorn");
-        Looper.from(jsFiles).foreach(jsFile -> {
-            try {
-                jsEngine.eval(new FileReader(jsFile));
-            } catch (IOException | ScriptException ex) {
-                this._logger.error(ex);
+        // Load js based responsible if the config is specified
+        if (this._behaviorDefPath != null) {
+            File dir = new File(this._behaviorDefPath);
+            if (!dir.exists()) {
+                throw new KernelException("The behavior definition directory is not exist - {}", this._behaviorDefPath);
             }
-        });
+            if (!dir.isDirectory()) {
+                throw new KernelException("The behavior definition directory is not a directory - {}", this._behaviorDefPath);
+            }
+
+            // Initial javascript engine
+            ScriptEngine jsEngine = new ScriptEngineManager().getEngineByName("nashorn");
+            Bindings bindings = jsEngine.createBindings();
+            bindings.put("registry", this);
+            bindings.put("actionRepo", this._actionRepo);
+            bindings.put("behaviorRepo", this._behaviorRepo);
+            jsEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+
+            // Load all js file
+            File[] jsFiles = dir.listFiles(file -> file.getName().endsWith(".js"));
+            Looper.from(jsFiles).foreach(jsFile -> {
+                try {
+                    jsEngine.eval(new FileReader(jsFile));
+                } catch (IOException | ScriptException ex) {
+                    this._logger.error(ex);
+                }
+            });
+        }
 
         // Register behavior/event handler into event bus
         Looper.from(this._responsibles)
