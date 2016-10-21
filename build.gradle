@@ -1,8 +1,15 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
 apply plugin: 'jacoco'
 
 allprojects {
     repositories {
         mavenCentral()
+        jcenter()
         maven { url "http://dl.bintray.com/typesafe/maven-releases" }
     }
 }
@@ -11,6 +18,8 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
     apply plugin: 'jacoco'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
 
     version = getProjectVersion()
     sourceCompatibility = 1.8
