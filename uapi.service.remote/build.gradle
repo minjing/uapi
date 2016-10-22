@@ -17,7 +17,7 @@ jar {
     manifest.attributes
 }
 
-def pojectVer = version
+//def projectVer = version
 
 publishing {
     publications {
@@ -25,7 +25,7 @@ publishing {
             from components.java
             groupId "${project_group}"
             artifactId "${project.name}"
-            version "${pojectVer}"
+            version "${projectVer}"
         }
     }
 }
@@ -46,7 +46,7 @@ bintray {
         githubReleaseNotesFile = 'README.md'
 
         version {
-            name = "${pojectVer}"
+            name = "${projectVer}"
         }
     }
 }

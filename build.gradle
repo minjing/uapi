@@ -6,6 +6,8 @@ buildscript {
 
 apply plugin: 'jacoco'
 
+ext.projectVer = getProjectVersion()
+
 allprojects {
     repositories {
         mavenCentral()
@@ -21,7 +23,7 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
 
-    version = getProjectVersion()
+    version = projectVer
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
