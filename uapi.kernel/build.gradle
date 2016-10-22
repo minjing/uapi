@@ -3,13 +3,9 @@ plugins {
     id "com.jfrog.bintray" version "1.7"
 }
 
-//apply plugin: 'com.jfrog.bintray'
-
 dependencies {
     compile "com.google.auto.service:auto-service:${auto_service_version}"
     compile "org.freemarker:freemarker:${freemarker_version}"
-
-//    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
 }
 
 jar {
@@ -20,9 +16,9 @@ publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
-            groupId 'org.jfrog.gradle.sample'
-            artifactId 'gradle-project'
-            version '1.1'
+            groupId 'uapi'
+            artifactId 'uapi.kernel'
+            version "${version}"
         }
     }
 }
@@ -31,11 +27,12 @@ bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
     publications = ['MyPublication']
+    publish = true
     pkg {
         repo = 'maven-snapshot'
         vcsUrl = 'https://github.com/minjing/uapi.git'
         name = project.name
-        licenses = ['GPLv3']
+        licenses = ['GPL-3.0']
         userOrg = System.getenv('BINTRAY_USER')
         version {
             name = "${version}"
