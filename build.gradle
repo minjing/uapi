@@ -22,6 +22,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     version = getProjectVersion()
+    pojectVer = version
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 

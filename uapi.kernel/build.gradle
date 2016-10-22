@@ -34,8 +34,12 @@ bintray {
         name = "${project.name}"
         licenses = ['GPL-3.0']
         userOrg = System.getenv('BINTRAY_USER')
+
+        githubRepo = 'minjing/uapi'
+        githubReleaseNotesFile = 'README.md'
+
         version {
-            name = '1.0'
+            name = "${pojectVer}"
         }
     }
 }
