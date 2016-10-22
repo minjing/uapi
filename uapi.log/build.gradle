@@ -11,3 +11,37 @@ dependencies {
 jar {
     manifest.attributes
 }
+
+def pojectVer = version
+
+publishing {
+    publications {
+        mavenPublication(MavenPublication) {
+            from components.java
+            groupId "${project_group}"
+            artifactId "${project.name}"
+            version "${pojectVer}"
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenPublication']
+    publish = true
+    pkg {
+        repo = 'maven-snapshot'
+        vcsUrl = 'https://github.com/minjing/uapi.git'
+        name = "${project.name}"
+        licenses = ['GPL-3.0']
+        userOrg = System.getenv('BINTRAY_USER')
+
+        githubRepo = 'minjing/uapi'
+        githubReleaseNotesFile = 'README.md'
+
+        version {
+            name = "${pojectVer}"
+        }
+    }
+}
