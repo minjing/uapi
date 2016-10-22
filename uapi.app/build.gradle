@@ -32,7 +32,7 @@ bintray {
     publications = ['mavenPublication']
     publish = true
     pkg {
-        repo = 'maven-snapshot'
+        repo = getMavenRepo()
         vcsUrl = 'https://github.com/minjing/uapi.git'
         name = "${project.name}"
         licenses = ['GPL-3.0']

@@ -127,6 +127,14 @@ def getProjectVersion() {
     }
 }
 
+def getMavenRepo() {
+    if (project.project_release.toBoolean()) {
+        return 'maven-release'
+    } else {
+        return 'maven-snapshot'
+    }
+}
+
 //apply plugin: 'application'
 //
 //mainClassName = 'uapi.app.internal.Launcher'
