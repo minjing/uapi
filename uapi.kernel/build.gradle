@@ -18,7 +18,7 @@ publishing {
     publications {
         mavenPublication(MavenPublication) {
             from components.java
-            groupId 'uapi'
+            groupId "${project_group}"
             artifactId "${project.name}"
             version "${pojectVer}"
         }

@@ -21,7 +21,6 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
 
-
     version = getProjectVersion()
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -37,7 +36,6 @@ subprojects {
         )
         testCompile (
             "junit:junit:${junit_vesion}",
-            //"org.mockito:mockito-core:${mockito_version}",
             "org.spockframework:spock-core:${spock_version}"
         )
         testRuntime (
