@@ -14,10 +14,10 @@ jar {
 
 publishing {
     publications {
-        MyPublication(MavenPublication) {
+        mavenPublication(MavenPublication) {
             from components.java
             groupId 'uapi'
-            artifactId 'uapi.kernel'
+            artifactId "${project.name}"
             version "${version}"
         }
     }
@@ -26,16 +26,16 @@ publishing {
 bintray {
     user = System.getenv('BINTRAY_USER')
     key = System.getenv('BINTRAY_KEY')
-    publications = ['MyPublication']
+    publications = ['mavenPublication']
     publish = true
     pkg {
         repo = 'maven-snapshot'
         vcsUrl = 'https://github.com/minjing/uapi.git'
-        name = project.name
+        name = "${project.name}"
         licenses = ['GPL-3.0']
         userOrg = System.getenv('BINTRAY_USER')
         version {
-            name = "${version}"
+            name = '1.0'
         }
     }
 }
