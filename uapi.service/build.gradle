@@ -14,8 +14,6 @@ jar {
     manifest.attributes
 }
 
-//def projectVer = version
-
 publishing {
     publications {
         mavenPublication(MavenPublication) {

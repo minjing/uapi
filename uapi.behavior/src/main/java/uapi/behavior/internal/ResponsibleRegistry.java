@@ -36,9 +36,6 @@ public class ResponsibleRegistry {
     protected IEventBus _eventBus;
 
     @Inject
-    protected ActionRepository _actionRepo;
-
-    @Inject
     protected BehaviorRepository _behaviorRepo;
 
     public void init() {
@@ -56,7 +53,6 @@ public class ResponsibleRegistry {
             ScriptEngine jsEngine = new ScriptEngineManager().getEngineByName("nashorn");
             Bindings bindings = jsEngine.createBindings();
             bindings.put("registry", this);
-            bindings.put("actionRepo", this._actionRepo);
             bindings.put("behaviorRepo", this._behaviorRepo);
             jsEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 
