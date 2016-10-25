@@ -15,7 +15,29 @@ package uapi.event;
 public interface IEventBus {
 
     /**
-     * Fire event
+     * Fire a event which only contains topic, the event will be handled in async
+     *
+     * @param   topic
+     *          The event topic
+     * @throws  NoEventHandlerException
+     *          No event handler can handle the event
+     */
+    void fire(String topic) throws NoEventHandlerException;
+
+    /**
+     * Fire a event which only contains topic, the event will be handled by syncable tag
+     *
+     * @param   topic
+     *          The event topic
+     * @param   syncable
+     *          Synchronous or asynchronous to fire
+     * @throws  NoEventHandlerException
+     *          No event handler can handle the event
+     */
+    void fire(String topic, boolean syncable) throws  NoEventHandlerException;
+
+    /**
+     * Fire event, the event will be handled in async
      *
      * @param   event
      *          Fired event

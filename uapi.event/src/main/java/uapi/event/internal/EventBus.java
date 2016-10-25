@@ -59,6 +59,21 @@ public class EventBus implements IEventBus {
 
     @Override
     public void fire(
+            final String topic
+    ) throws NoEventHandlerException {
+        this.fire(new PlainEvent(topic));
+    }
+
+    @Override
+    public void fire(
+            final String topic,
+            boolean syncable
+    ) throws NoEventHandlerException {
+        this.fire(new PlainEvent(topic), syncable);
+    }
+
+    @Override
+    public void fire(
             final IEvent event
     ) throws NoEventHandlerException {
         fire(event, false);

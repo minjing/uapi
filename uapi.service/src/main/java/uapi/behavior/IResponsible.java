@@ -12,5 +12,5 @@ public interface IResponsible {
      */
     String name();
 
-    IEventDrivenBehavior behaviors();
+    IEventDrivenBehavior[] behaviors();
 }

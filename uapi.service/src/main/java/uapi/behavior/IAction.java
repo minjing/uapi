@@ -30,4 +30,18 @@ public interface IAction<I, O> extends IIdentifiable<String> {
      * @return  Output data
      */
     O process(I input);
+
+    /**
+     * Return input data type
+     *
+     * @return  input data type
+     */
+    Class<I> inputType();
+
+    /**
+     * Return output data type
+     *
+     * @return  output data type
+     */
+    Class<O> outputType();
 }

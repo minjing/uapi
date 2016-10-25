@@ -9,4 +9,8 @@ package uapi.behavior;
  *          Output data type
  */
 public interface IBehavior<I, O> extends IAction<I, O> {
+
+    default String getId() {
+        return name();
+    }
 }

@@ -22,7 +22,7 @@ public class Responsible implements IResponsible {
     }
 
     @Override
-    public IEventDrivenBehavior behaviors() {
+    public IEventDrivenBehavior[] behaviors() {
         return null;
     }
 }
