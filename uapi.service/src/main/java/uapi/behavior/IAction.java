@@ -27,9 +27,11 @@ public interface IAction<I, O> extends IIdentifiable<String> {
      *
      * @param   input
      *          Inputted data
+     * @param   context
+     *          The execution context
      * @return  Output data
      */
-    O process(I input);
+    O process(I input, IExecutionContext context);
 
     /**
      * Return input data type

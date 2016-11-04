@@ -41,15 +41,8 @@ public interface Functionals {
         boolean accept(T in);
     }
 
-    interface Evaluator {}
-
     @FunctionalInterface
-    interface MapEvaluator<I extends Map> extends Evaluator {
-        boolean accept(I in);
-    }
-
-    @FunctionalInterface
-    interface EvaluateAttributed<I extends IAttributed> extends Evaluator {
-        boolean acceptd(I in);
+    interface Evaluator {
+        boolean accept(IAttributed in);
     }
 }

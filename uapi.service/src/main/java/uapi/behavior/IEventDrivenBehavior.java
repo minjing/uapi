@@ -19,7 +19,7 @@ public interface IEventDrivenBehavior<I extends IEvent> extends IBehavior<I, Voi
      * @return  nothing
      */
     @Override
-    default Void process(I input) {
+    default Void process(I input, IExecutionContext context) {
         handle(input);
         return null;
     }

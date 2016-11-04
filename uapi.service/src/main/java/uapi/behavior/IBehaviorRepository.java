@@ -13,21 +13,23 @@ public interface IBehaviorRepository {
      */
     void register(IBehavior behavior);
 
-    /**
-     * Find specific Action by name
-     *
-     * @param   name
-     *          Specific action name
-     * @return  Matched Action or null
-     */
-    IAction findAction(final String name);
+    IAction find(String name);
 
-    /**
-     * Find specific Behavior by name
-     *
-     * @param   name
-     *          Specific Behavior name
-     * @return  Matched Behavior or null
-     */
-    IBehavior findBehavior(String name);
+//    /**
+//     * Find specific Action by name
+//     *
+//     * @param   name
+//     *          Specific action name
+//     * @return  Matched Action or null
+//     */
+//    IAction findAction(final String name);
+//
+//    /**
+//     * Find specific Behavior by name
+//     *
+//     * @param   name
+//     *          Specific Behavior name
+//     * @return  Matched Behavior or null
+//     */
+//    IBehavior findBehavior(String name);
 }

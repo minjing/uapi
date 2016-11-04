@@ -35,14 +35,26 @@ public class BehaviorRepository implements IBehaviorRepository {
     }
 
     @Override
-    public IAction findAction(final String name) {
+    public IAction find(final String name) {
         ArgumentChecker.required(name, "name");
-        return this._actions.get(name);
-    }
-
-    @Override
-    public IBehavior findBehavior(String name) {
-        ArgumentChecker.required(name, "name");
-        return this._behaviors.get(name);
+        String[] actionFrom = name.split("@");
+        IAction action;
+        if (actionFrom.length == 1) {
+            action = this._actions.get(actionFrom[0]);
+            if (action == null) {
+                action = this._behaviors.get(actionFrom[0]);
+            }
+        } else if (actionFrom.length == 2) {
+            if ("Action".equalsIgnoreCase(actionFrom[1])) {
+                action = this._actions.get(actionFrom[0]);
+            } else if ("Behavior".equalsIgnoreCase(actionFrom[1])) {
+                action = this._behaviors.get(actionFrom[0]);
+            } else {
+                throw new KernelException("Unsupported action from string - {}", actionFrom[1]);
+            }
+        } else {
+            throw new KernelException("Found more than 1 @ in the action name string - {}", name);
+        }
+        return action;
     }
 }
