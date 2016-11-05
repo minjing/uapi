@@ -1,6 +1,8 @@
 package uapi.sample.behavior;
 
 import uapi.behavior.IEventDrivenBehavior;
+import uapi.behavior.IExecution;
+import uapi.behavior.IExecutionContext;
 import uapi.behavior.IResponsible;
 import uapi.event.IEvent;
 import uapi.event.IEventBus;
@@ -42,6 +44,11 @@ public class Store implements IResponsible {
         }
 
         @Override
+        public Void process(IEvent input, IExecutionContext context) {
+            return null;
+        }
+
+        @Override
         public Class<IEvent> inputType() {
             return IEvent.class;
         }
@@ -61,6 +68,11 @@ public class Store implements IResponsible {
             Store.this._logger.info("Handler event - {}", event.topic());
             Store.this._counter++;
             Store.this._eventBus.fire(EVENT_COUNTER_CHANGED);
+        }
+
+        @Override
+        public void setExecution(IExecution execution) {
+
         }
     }
 }

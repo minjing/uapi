@@ -1,6 +1,8 @@
 package uapi.sample.behavior;
 
 import uapi.behavior.IEventDrivenBehavior;
+import uapi.behavior.IExecution;
+import uapi.behavior.IExecutionContext;
 import uapi.behavior.IResponsible;
 import uapi.event.IEventBus;
 import uapi.log.ILogger;
@@ -45,6 +47,11 @@ public class View implements IResponsible {
         }
 
         @Override
+        public Void process(CounterChangedEvent input, IExecutionContext context) {
+            return null;
+        }
+
+        @Override
         public Class<CounterChangedEvent> inputType() {
             return CounterChangedEvent.class;
         }
@@ -63,6 +70,11 @@ public class View implements IResponsible {
         public void handle(CounterChangedEvent event) {
             View.this._logger.info("Handler event - {}", event.topic());
             View.this._logger.info("Counter change to - {}", event.counter());
+        }
+
+        @Override
+        public void setExecution(IExecution execution) {
+
         }
     }
 }

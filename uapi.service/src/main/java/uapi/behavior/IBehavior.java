@@ -13,4 +13,6 @@ public interface IBehavior<I, O> extends IAction<I, O> {
     default String getId() {
         return name();
     }
+
+    void setExecution(IExecution execution);
 }

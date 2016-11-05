@@ -54,6 +54,7 @@ public interface IExecutionContext {
      *
      * @param   key
      *          The key
+     * @return  The value
      */
-    void get(Object key);
+    <T> T get(Object key);
 }

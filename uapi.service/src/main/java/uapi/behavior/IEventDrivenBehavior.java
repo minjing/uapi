@@ -5,11 +5,9 @@ import uapi.event.IEventHandler;
 
 /**
  * A Behavior which is driven by specific event
- *
- * @param   <I>
- *          event type
  */
-public interface IEventDrivenBehavior<I extends IEvent> extends IBehavior<I, Void>, IEventHandler<I> {
+public interface IEventDrivenBehavior<I extends IEvent>
+        extends IBehavior<I, Void>, IEventHandler<I> {
 
     /**
      * The default method just invoke event handling method and return nothing
@@ -17,10 +15,21 @@ public interface IEventDrivenBehavior<I extends IEvent> extends IBehavior<I, Voi
      * @param   input
      *          Inputted data
      * @return  nothing
+//     */
+//    @Override
+//    default Void process(I input, IExecutionContext context) {
+//        handle(input);
+//        return null;
+//    }
+
+    /**
+     * The event driven behavior returns null, so the output type
+     * always Void
+     *
+     * @return  Void type
      */
     @Override
-    default Void process(I input, IExecutionContext context) {
-        handle(input);
-        return null;
+    default Class<Void> outputType() {
+        return Void.class;
     }
 }

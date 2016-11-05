@@ -12,6 +12,17 @@ public interface IExecution {
      *          The input data
      * @param   context
      *          The execution context
+     * @return  The result of execution
      */
-    void execute(Object data, IExecutionContext context);
+    Object execute(Object data, IExecutionContext context);
+
+    /**
+     * Check the last execution data to ensure which child execution should be executed
+     * in next round.
+     *
+     * @param   data
+     *          The data which generated in last execution
+     * @return  The next execution or null
+     */
+    IExecution next(Object data);
 }

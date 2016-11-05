@@ -51,17 +51,23 @@ public class Execution implements IExecution, IExecutionBuilder {
     }
 
     @Override
-    public void execute(Object data, IExecutionContext context) {
+    public Object execute(Object data, IExecutionContext context) {
         ArgumentChecker.required(data, "data");
         ArgumentChecker.required(context, "context");
-        if (! this._built) {
+        if (!this._built) {
             throw new KernelException("The execution is not built");
         }
 
-        IAttributed result = (IAttributed) this._action.process(data, context);
+        return this._action.process(data, context);
+    }
+
+    @Override
+    public IExecution next(Object data) {
         if (! hasChild()) {
-            return;
+            return null;
         }
+
+        IAttributed result = (IAttributed) data;
         Execution execution = null;
         for (Pair<Functionals.Evaluator, Execution> conditionalChild : this._conditionalChildren) {
             Functionals.Evaluator evaluator = conditionalChild.getLeftValue();
@@ -73,7 +79,7 @@ public class Execution implements IExecution, IExecutionBuilder {
         if (execution == null) {
             execution = this._defaultChild;
         }
-        execution.execute(result, context);
+        return execution;
     }
 
     private Functionals.Evaluator _currentEval;
