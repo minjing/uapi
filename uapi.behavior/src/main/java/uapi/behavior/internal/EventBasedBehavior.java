@@ -15,14 +15,17 @@ public class EventBasedBehavior implements IEventDrivenBehavior<IEvent> {
 
     private final IEventBus _eventBus;
     private final String _name;
+    private final String _topic;
 
     private IExecution _execution;
 
-    EventBasedBehavior(final String name, final IEventBus eventBus) {
+    EventBasedBehavior(final String name, final String topic, final IEventBus eventBus) {
         ArgumentChecker.required(name, "name");
+        ArgumentChecker.required(topic, "topic");
         ArgumentChecker.required(eventBus, "eventBus");
 
         this._name = name;
+        this._topic = topic;
         this._eventBus = eventBus;
     }
 
@@ -33,12 +36,12 @@ public class EventBasedBehavior implements IEventDrivenBehavior<IEvent> {
 
     @Override
     public String topic() {
-        return null;
+        return this._topic;
     }
 
     @Override
-    public Class inputType() {
-        return null;
+    public Class<IEvent> inputType() {
+        return IEvent.class;
     }
 
     @Override
@@ -56,6 +59,7 @@ public class EventBasedBehavior implements IEventDrivenBehavior<IEvent> {
             execution = execution.next(result);
         }
 
+        // Return nothing
         return null;
     }
 

@@ -13,14 +13,16 @@ import uapi.IIdentifiable;
  */
 public interface IAction<I, O> extends IIdentifiable<String> {
 
+    default String getId() {
+        return name();
+    }
+
     /**
      * Return the action name
      *
      * @return  Action name
      */
-    default String name() {
-        return getId();
-    }
+    String name();
 
     /**
      * Process input data and output processed data
