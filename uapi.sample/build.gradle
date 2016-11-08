@@ -9,8 +9,9 @@ dependencies {
     compile project(':uapi.config')
     compile project(':uapi.app')
     compile project(':uapi.web.restful')
+    compile project(':uapi.behavior')
 
-    runtime project(':uapi.event')
+    compile project(':uapi.event')
     runtime project(':uapi.service.async')
     runtime project(':uapi.web.http.netty')
 }

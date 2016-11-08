@@ -44,12 +44,12 @@ public class EventBasedBehavior implements IEventDrivenBehavior<IEvent> {
         return IEvent.class;
     }
 
-    @Override
-    public void setExecution(IExecution execution) {
-        ArgumentChecker.required(execution, "execution");
-
-        this._execution = execution;
-    }
+//    @Override
+//    public void setExecution(IExecution execution) {
+//        ArgumentChecker.required(execution, "execution");
+//
+//        this._execution = execution;
+//    }
 
     @Override
     public Void process(IEvent input, IExecutionContext context) {

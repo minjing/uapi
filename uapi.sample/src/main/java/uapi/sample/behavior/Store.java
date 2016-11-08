@@ -69,10 +69,5 @@ public class Store implements IResponsible {
             Store.this._counter++;
             Store.this._eventBus.fire(EVENT_COUNTER_CHANGED);
         }
-
-        @Override
-        public void setExecution(IExecution execution) {
-
-        }
     }
 }

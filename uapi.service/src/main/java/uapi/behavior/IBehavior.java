@@ -10,5 +10,5 @@ package uapi.behavior;
  */
 public interface IBehavior<I, O> extends IAction<I, O> {
 
-    void setExecution(IExecution execution);
+//    void setExecution(IExecution execution);
 }

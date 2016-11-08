@@ -15,6 +15,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
 import uapi.helper.Pair;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;

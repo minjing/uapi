@@ -9,6 +9,8 @@ import uapi.event.IEventHandler;
 public interface IEventDrivenBehavior<I extends IEvent>
         extends IBehavior<I, Void>, IEventHandler<I> {
 
+    public static final String KEY_EVENT_CONTEXT    = "__GlobalData";
+
     /**
      * The default method just invoke event handling method and return nothing
      *

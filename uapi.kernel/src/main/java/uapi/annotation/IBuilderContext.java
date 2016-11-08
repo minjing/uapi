@@ -60,8 +60,48 @@ public interface IBuilderContext {
             final Modifier... unexpectedModifiers
     ) throws KernelException;
 
+    void checkAnnotations(
+            final Element element,
+            final Class<? extends Annotation>... annotationTypes
+    ) throws KernelException;
+
     Element findFieldWith(
             final Element classElement,
             final Class<?> fieldType,
             final Class annotationType);
+
+    /**
+     * Check specific class element can be assigned to specified type
+     *
+     * @param   classElement
+     *          The class element which will be checked
+     * @param   type
+     *          The class type
+     * @return  true means the element can be assigned to the type otherwise return false
+     */
+    boolean isAssignable(
+            final Element classElement,
+            final Class type);
+
+    /**
+     * Check type1 can be assigned to type2
+     *
+     * @param   type1
+     *          The first type
+     * @param   type2
+     *          The second type
+     * @return  True means the first type can be assigned to second type, otherwise return false
+     */
+    boolean isAssignable(final String type1, final Class type2);
+
+    /**
+     * Check type1 can be assigned to type2
+     *
+     * @param   type1
+     *          The first type
+     * @param   type2
+     *          The second type
+     * @return  True means the first type can be assigned to second type, otherwise return false
+     */
+    boolean isAssignable(final String type1, final String type2);
 }

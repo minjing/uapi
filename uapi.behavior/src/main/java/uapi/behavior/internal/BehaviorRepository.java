@@ -21,7 +21,8 @@ public class BehaviorRepository implements IBehaviorRepository {
     @Inject
     protected Map<String, IAction> _actions = new ConcurrentHashMap<>();
 
-    private Map<String, IBehavior> _behaviors = new ConcurrentHashMap<>();
+    @Inject
+    protected Map<String, IBehavior> _behaviors = new ConcurrentHashMap<>();
 
     @Override
     public void register(IBehavior behavior) {

@@ -27,6 +27,8 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
@@ -162,6 +164,23 @@ public final class BuilderContext implements IBuilderContext {
     }
 
     @Override
+    public void checkAnnotations(
+            final Element element,
+            final Class<? extends Annotation>... annotationTypes
+    ) throws KernelException {
+        ArgumentChecker.notNull(element, "element");
+        List<Class<? extends Annotation>> unAnnotateds = Observable.from(annotationTypes)
+                .filter(annotationType -> element.getAnnotation(annotationType) == null)
+                .toList().toBlocking().single();
+        if (unAnnotateds == null || unAnnotateds.size() > 0) {
+            throw new KernelException("The {} element [{}] does not annotated with {}.",
+                    element.getKind(),
+                    element.getSimpleName().toString(),
+                    CollectionHelper.asString(annotationTypes));
+        }
+    }
+
+    @Override
     public Element findFieldWith(
             final Element classElement,
             final Class<?> fieldType,
@@ -190,5 +209,37 @@ public final class BuilderContext implements IBuilderContext {
     public IHandlerHelper getHelper(String name) {
         ArgumentChecker.required(name, "name");
         return this._helpers.get(name);
+    }
+
+    @Override
+    public boolean isAssignable(final Element classElement, final Class type) {
+        Elements elemtUtils = getElementUtils();
+        Types typeUtils = getTypeUtils();
+        TypeElement typeElemt = elemtUtils.getTypeElement(type.getCanonicalName());
+        DeclaredType elemtType = typeUtils.getDeclaredType(typeElemt);
+        return typeUtils.isAssignable(classElement.asType(), elemtType);
+    }
+
+    @Override
+    public boolean isAssignable(final String type1, final Class type2) {
+//        Elements elemtUtils = getElementUtils();
+//        Types typeUtils = getTypeUtils();
+//        TypeElement typeElemt1 = elemtUtils.getTypeElement(type1);
+//        DeclaredType elemtType1 = typeUtils.getDeclaredType(typeElemt1);
+//        TypeElement typeElemt2 = elemtUtils.getTypeElement(type2.getCanonicalName());
+//        DeclaredType elemtType2 = typeUtils.getDeclaredType(typeElemt2);
+//        return typeUtils.isAssignable(elemtType1, elemtType2);
+        return isAssignable(type1, type2.getCanonicalName());
+    }
+
+    @Override
+    public boolean isAssignable(final String type1, final String type2) {
+        Elements elemtUtils = getElementUtils();
+        Types typeUtils = getTypeUtils();
+        TypeElement typeElemt1 = elemtUtils.getTypeElement(type1);
+        DeclaredType elemtType1 = typeUtils.getDeclaredType(typeElemt1);
+        TypeElement typeElemt2 = elemtUtils.getTypeElement(type2);
+        DeclaredType elemtType2 = typeUtils.getDeclaredType(typeElemt2);
+        return typeUtils.isAssignable(elemtType1, elemtType2);
     }
 }

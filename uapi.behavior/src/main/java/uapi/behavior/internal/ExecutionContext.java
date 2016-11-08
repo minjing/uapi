@@ -13,13 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The implementation of IExecutionContext
  */
-final class ExecutionContext implements IExecutionContext {
+public final class ExecutionContext implements IExecutionContext {
 
     private final IEventBus _eventBus;
     private final Map<Object, Object> _globalData;
     private final Map<Object, Object> _data;
 
-    ExecutionContext(final IEventBus eventBus) {
+    public ExecutionContext(final IEventBus eventBus) {
         ArgumentChecker.required(eventBus, "eventBus");
         this._eventBus = eventBus;
         this._globalData = new ConcurrentHashMap<>();

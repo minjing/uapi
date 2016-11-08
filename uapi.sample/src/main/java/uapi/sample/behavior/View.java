@@ -1,9 +1,7 @@
 package uapi.sample.behavior;
 
-import uapi.behavior.IEventDrivenBehavior;
-import uapi.behavior.IExecution;
-import uapi.behavior.IExecutionContext;
-import uapi.behavior.IResponsible;
+import uapi.behavior.*;
+import uapi.behavior.annotation.EventBehavior;
 import uapi.event.IEventBus;
 import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
@@ -20,8 +18,8 @@ public class View implements IResponsible {
     @Inject
     protected IEventBus _eventBus;
 
-    @Inject
-    protected ILogger _logger;
+    @Inject(CounterChangedBehavior.name)
+    protected IEventDrivenBehavior _counterChangedbehavior;
 
     @Override
     public String name() {
@@ -35,46 +33,7 @@ public class View implements IResponsible {
     @Override
     public IEventDrivenBehavior[] behaviors() {
         return new IEventDrivenBehavior[] {
-                new CounterChangedHandler()
+                this._counterChangedbehavior
         };
-    }
-
-    private class CounterChangedHandler implements IEventDrivenBehavior<CounterChangedEvent> {
-
-        @Override
-        public String name() {
-            return "NameChangedHandler";
-        }
-
-        @Override
-        public Void process(CounterChangedEvent input, IExecutionContext context) {
-            return null;
-        }
-
-        @Override
-        public Class<CounterChangedEvent> inputType() {
-            return CounterChangedEvent.class;
-        }
-
-        @Override
-        public Class<Void> outputType() {
-            return Void.class;
-        }
-
-        @Override
-        public String topic() {
-            return CounterChangedEvent.EVENT_COUNTER_CHANGED;
-        }
-
-        @Override
-        public void handle(CounterChangedEvent event) {
-            View.this._logger.info("Handler event - {}", event.topic());
-            View.this._logger.info("Counter change to - {}", event.counter());
-        }
-
-        @Override
-        public void setExecution(IExecution execution) {
-
-        }
     }
 }

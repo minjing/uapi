@@ -26,6 +26,26 @@ public class BehaviorEvent implements IEvent {
         return this._event.topic();
     }
 
+    @Override
+    public <T> void attach(String key, T data) {
+
+    }
+
+    @Override
+    public <T> T attachment(String key) {
+        return null;
+    }
+
+    @Override
+    public void clearAttachment(String key) {
+
+    }
+
+    @Override
+    public void clearAttachments() {
+
+    }
+
     IEvent rawEvent() {
         return this._event;
     }

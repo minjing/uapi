@@ -333,7 +333,7 @@ The the HelloClient can invoke the service like local service.
   - [ ] Increase unit test coverage.
 
 * v0.4 - in working
-  - [ ] Event support, decide using 3rd library or implement it self.
+  - [x] Event support, decide using 3rd library or implement it self.
   - [ ] Behavior(actions) definition.
   - [ ] Event based behavior(actions) execution.
   - [ ] Support custom service parameter and return type.
