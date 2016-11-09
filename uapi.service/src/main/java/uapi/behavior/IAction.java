@@ -1,7 +1,6 @@
 package uapi.behavior;
 
 import uapi.IIdentifiable;
-import uapi.helper.IAttributed;
 
 /**
  * The IAction is minimum data handling unit in Behavior framework.

@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by min on 2016/11/5.
+ * The implementation for IBehaviorEvent interface
  */
 public class BehaviorEvent extends PlainEvent implements IBehaviorEvent {
+
     private final Map<String, Object> _attachments;
 
     public BehaviorEvent(final String topic) {

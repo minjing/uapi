@@ -1,9 +1,7 @@
 package uapi.sample.behavior;
 
 import uapi.behavior.*;
-import uapi.behavior.annotation.EventBehavior;
 import uapi.event.IEventBus;
-import uapi.log.ILogger;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
 
