@@ -1,7 +1,7 @@
 package uapi.sample.event;
 
-import uapi.event.IEvent;
-import uapi.event.internal.PlainEvent;
+import uapi.event.PlainEvent;
+
 
 /**
  * Customer event class

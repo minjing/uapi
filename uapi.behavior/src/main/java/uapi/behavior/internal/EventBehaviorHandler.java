@@ -17,8 +17,9 @@ import uapi.event.IEventBus;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
 import uapi.rx.Looper;
+import uapi.service.IInitialHandlerHelper;
 import uapi.service.IInjectableHandlerHelper;
-import uapi.service.annotation.Service;
+import uapi.service.internal.QualifiedServiceId;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -26,7 +27,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,8 +36,10 @@ import java.util.Set;
 @AutoService(IAnnotationsHandler.class)
 public class EventBehaviorHandler extends AnnotationsHandler {
 
-    private static final String TEMPLATE_PROCESS    = "template/process_method.ftl";
-    private static final String TEMPLATE_HANDLE     = "template/handle_method.ftl";
+    private static final String TEMPLATE_PROCESS        = "template/process_method.ftl";
+    private static final String TEMPLATE_HANDLE         = "template/handle_method.ftl";
+
+    private static final String METHOD_EXECTUION_INIT   = "__initExecution";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] {
@@ -88,13 +90,13 @@ public class EventBehaviorHandler extends AnnotationsHandler {
                 throw new KernelException("The topic property is required for EventBehavior annotation");
             }
             if (! builderContext.isAssignable(eventType, IEvent.class)) {
-                throw new KernelException("The event property of EventBehavior annotation must be implement IEvent interface");
+                throw new KernelException(
+                        "The event property {} of EventBehavior annotation on {} must be implement IEvent interface",
+                        eventType, classElement.getSimpleName().toString());
             }
 
             // Build model
             Map<String, String> model = new HashMap<>();
-            model.put("name", name);
-            model.put("topic", topic);
             model.put("inputType", eventType);
             model.put("executionField", "_execution");
 
@@ -139,7 +141,12 @@ public class EventBehaviorHandler extends AnnotationsHandler {
                             .addParameterBuilder(ParameterMeta.builder().setName("event").setType(eventType))
                             .setReturnTypeName(Type.VOID)
                             .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
-                            .addCodeBuilder(CodeMeta.builder().setTemplate(tempHandle).setModel(model)));
+                            .addCodeBuilder(CodeMeta.builder().setTemplate(tempHandle).setModel(model)))
+                    .addMethodBuilder(MethodMeta.builder()
+                            .setName(METHOD_EXECTUION_INIT)
+                            .addModifier(Modifier.PROTECTED)
+                            .setReturnTypeName(Type.VOID)
+                            .addCodeBuilder(CodeMeta.builder().addRawCode(StringHelper.makeString("this._execution = super.execution();"))));
 
             IInjectableHandlerHelper injectHelper = (IInjectableHandlerHelper) builderContext.getHelper(IInjectableHandlerHelper.name);
             injectHelper.addDependency(
@@ -148,7 +155,11 @@ public class EventBehaviorHandler extends AnnotationsHandler {
                     "_eventBus",
                     IEventBus.class.getCanonicalName(),
                     IEventBus.class.getCanonicalName(),
-                    "Local", false, false, null, false);
+                    QualifiedServiceId.FROM_LOCAL,
+                    false, false, null, false);
+
+            IInitialHandlerHelper initialHelper = (IInitialHandlerHelper) builderContext.getHelper(IInitialHandlerHelper.name);
+            initialHelper.addInitMethod(builderContext, clsBuilder, METHOD_EXECTUION_INIT);
         });
     }
 }

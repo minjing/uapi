@@ -1,12 +1,11 @@
 package uapi.sample.behavior;
 
-import uapi.event.IEvent;
-import uapi.event.internal.PlainEvent;
+import uapi.behavior.BehaviorEvent;
 
 /**
  * Created by xquan on 10/25/2016.
  */
-public class CounterChangedEvent extends PlainEvent {
+public class CounterChangedEvent extends BehaviorEvent {
 
     public static final String EVENT_COUNTER_CHANGED   = "CounterChanged";
 

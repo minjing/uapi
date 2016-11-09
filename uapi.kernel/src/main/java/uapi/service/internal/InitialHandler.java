@@ -10,19 +10,22 @@
 package uapi.service.internal;
 
 import com.google.auto.service.AutoService;
+import freemarker.template.Template;
 import uapi.KernelException;
+import uapi.Type;
 import uapi.annotation.*;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.StringHelper;
+import uapi.rx.Looper;
 import uapi.service.IInitial;
+import uapi.service.IInitialHandlerHelper;
 import uapi.service.annotation.Init;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A handler used to handle IInitial related annotations
@@ -32,8 +35,18 @@ public final class InitialHandler extends AnnotationsHandler {
 
     private static final String METHOD_INIT_NAME    = "init";
 
+    private static final String TEMP_INIT           = "template/init_method.ftl";
+    private static final String MODEL_INIT          = "ModelInit";
+    private static final String VAR_METHODS         = "methods";
+
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Init.class };
+
+    private final InitialHandlerHelper _helper;
+
+    public InitialHandler() {
+        this._helper = new InitialHandlerHelper();
+    }
 
     @Override
     public Class<? extends Annotation>[] getOrderedAnnotations() {
@@ -74,17 +87,76 @@ public final class InitialHandler extends AnnotationsHandler {
                         "Multiple Init annotation was defined in the class {}",
                         classElemt.getSimpleName().toString());
             }
-            String initCode = StringHelper.makeString("super.{}();", methodName);
-            clsBuilder
+            this._helper.addInitMethod(builderCtx, clsBuilder, methodName);
+//            Template tempInit = builderCtx.loadTemplate(TEMP_INIT);
+//            clsBuilder
+//                    .addImplement(IInitial.class.getCanonicalName())
+//                    .addMethodBuilder(MethodMeta.builder()
+//                            .addModifier(Modifier.PUBLIC)
+//                            .setName(METHOD_INIT_NAME)
+//                            .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
+//                            .addCodeBuilder(CodeMeta.builder()
+//                                    .setTemplate(tempInit)
+//                                    .setModel(clsBuilder.getTransience(MODEL_INIT)))
+//                            .setReturnTypeName(Type.VOID));
+        });
+    }
+
+    @Override
+    public IHandlerHelper getHelper() {
+        return this._helper;
+    }
+
+    private class InitialHandlerHelper implements IInitialHandlerHelper {
+
+        @Override
+        public String getName() {
+            return IInitialHandlerHelper.name;
+        }
+
+        @Override
+        public void addInitMethod(
+                final IBuilderContext builderContext,
+                final ClassMeta.Builder classBuilder,
+                final String... methodNames) {
+            ArgumentChecker.required(builderContext, "builderContext");
+            ArgumentChecker.required(classBuilder, "classBuilder");
+            ArgumentChecker.required(methodNames, "methodNames");
+
+            Map<String, Object> tempInitModel = classBuilder.createTransienceIfAbsent(MODEL_INIT, HashMap::new);
+            String[] methods = (String[]) tempInitModel.get(VAR_METHODS);
+            List<String> tmpMethods = new ArrayList<>();
+            if (methods == null) {
+                methods = methodNames;
+            } else {
+                Looper.from(methodNames).foreach(tmpMethods::add);
+                Looper.from(methods).foreach(tmpMethods::add);
+                methods = tmpMethods.toArray(new String[tmpMethods.size()]);
+            }
+            tempInitModel.put(VAR_METHODS, methods);
+
+            List<MethodMeta.Builder> methodBuilders = classBuilder.findMethodBuilders(METHOD_INIT_NAME);
+            if (methodBuilders.size() > 0) {
+                MethodMeta.Builder mbuilder = Looper.from(methodBuilders)
+                        .filter(builder -> builder.getReturnTypeName().equals(Type.VOID))
+                        .filter(builder -> builder.getParameterCount() == 0)
+                        .first();
+                if (mbuilder != null) {
+                    return;
+                }
+            }
+
+            Template tempInit = builderContext.loadTemplate(TEMP_INIT);
+            classBuilder
                     .addImplement(IInitial.class.getCanonicalName())
                     .addMethodBuilder(MethodMeta.builder()
-                            .addModifier(Modifier.PUBLIC)
-                            .setName(METHOD_INIT_NAME)
-                            .addAnnotationBuilder(AnnotationMeta.builder()
-                                    .setName("Override"))
-                            .addCodeBuilder(CodeMeta.builder()
-                                    .addRawCode(initCode))
-                            .setReturnTypeName("void"));
-        });
+                        .addModifier(Modifier.PUBLIC)
+                        .setName(METHOD_INIT_NAME)
+                        .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
+                        .addCodeBuilder(CodeMeta.builder()
+                                .setTemplate(tempInit)
+                                .setModel(classBuilder.getTransience(MODEL_INIT)))
+                        .setReturnTypeName(Type.VOID));
+        }
     }
 }

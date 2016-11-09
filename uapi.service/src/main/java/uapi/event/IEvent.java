@@ -20,12 +20,4 @@ public interface IEvent {
      * @return  The event topic
      */
     String topic();
-
-    <T> void attach(String key, T data);
-
-    <T> T attachment(String key);
-
-    void clearAttachment(String key);
-
-    void clearAttachments();
 }

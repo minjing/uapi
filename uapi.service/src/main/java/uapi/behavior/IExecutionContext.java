@@ -15,7 +15,7 @@ public interface IExecutionContext {
      * @param   event
      *          The event which will be fired
      */
-    void fire(IEvent event);
+    void fire(IBehaviorEvent event);
 
     /**
      * Fire an async event or sync event to the framework
@@ -25,7 +25,7 @@ public interface IExecutionContext {
      * @param   syncable
      *          Indicate fire event by async way or async way
      */
-    void fire(IEvent event, boolean syncable);
+    void fire(IBehaviorEvent event, boolean syncable);
 
     /**
      * Put single k/v data under specific scope

@@ -1,5 +1,7 @@
 package uapi.behavior.internal;
 
+import uapi.behavior.IBehaviorEvent;
+import uapi.behavior.IEventDrivenBehavior;
 import uapi.behavior.IExecutionContext;
 import uapi.behavior.Scope;
 import uapi.event.IEvent;
@@ -27,14 +29,14 @@ public final class ExecutionContext implements IExecutionContext {
     }
 
     @Override
-    public void fire(IEvent event) {
+    public void fire(IBehaviorEvent event) {
         fire(event, false);
     }
 
     @Override
-    public void fire(IEvent event, boolean syncable) {
-        BehaviorEvent bEvent = new BehaviorEvent(event, this._globalData);
-        this._eventBus.fire(bEvent, syncable);
+    public void fire(IBehaviorEvent event, boolean syncable) {
+        event.attach(IEventDrivenBehavior.KEY_EVENT_CONTEXT, this._globalData);
+        this._eventBus.fire(event, syncable);
     }
 
     @Override

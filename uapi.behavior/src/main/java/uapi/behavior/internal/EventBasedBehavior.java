@@ -65,13 +65,13 @@ public class EventBasedBehavior implements IEventDrivenBehavior<IEvent> {
 
     @Override
     public void handle(IEvent event) {
-        ExecutionContext context = new ExecutionContext(this._eventBus);
-        IEvent rawEvent = event;
-        if (event instanceof BehaviorEvent) {
-            BehaviorEvent bEvent = (BehaviorEvent) event;
-            context.put(bEvent.data(), Scope.Global);
-            rawEvent = bEvent.rawEvent();
-        }
-        process(rawEvent, context);
+//        ExecutionContext context = new ExecutionContext(this._eventBus);
+//        IEvent rawEvent = event;
+//        if (event instanceof BehaviorEvent) {
+//            BehaviorEvent bEvent = (BehaviorEvent) event;
+//            context.put(bEvent.data(), Scope.Global);
+//            rawEvent = bEvent.rawEvent();
+//        }
+//        process(rawEvent, context);
     }
 }

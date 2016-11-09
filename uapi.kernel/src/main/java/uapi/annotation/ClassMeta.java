@@ -252,6 +252,11 @@ public class ClassMeta {
             return methodBuilder;
         }
 
+        public List<MethodMeta.Builder> findMethodBuilder(final String methodName) {
+            ArgumentChecker.required(methodName, "methodName");
+            return Looper.from(this._methodBuilders).filter(builder -> builder.getName().equals(methodName)).toList();
+        }
+
         public List<MethodMeta.Builder> findSetterBuilders() {
             List<MethodMeta.Builder> setters = new ArrayList<>();
             this._methodBuilders.forEach(methodBuilder -> {

@@ -1,29 +1,20 @@
-package uapi.event.internal;
+package uapi.behavior;
 
-import uapi.event.IEvent;
+import uapi.event.PlainEvent;
 import uapi.helper.ArgumentChecker;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Most simple event which only contains event topic
+ * Created by min on 2016/11/5.
  */
-public class PlainEvent implements IEvent {
-
-    private final String _topic;
-
+public class BehaviorEvent extends PlainEvent implements IBehaviorEvent {
     private final Map<String, Object> _attachments;
 
-    public PlainEvent(final String topic) {
-        ArgumentChecker.required(topic, "topic");
-        this._topic = topic;
+    public BehaviorEvent(final String topic) {
+        super(topic);
         this._attachments = new HashMap<>();
-    }
-
-    @Override
-    public String topic() {
-        return this._topic;
     }
 
     @Override

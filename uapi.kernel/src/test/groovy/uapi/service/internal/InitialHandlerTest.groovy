@@ -9,6 +9,7 @@
 
 package uapi.service.internal
 
+import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.annotation.ClassMeta
 import uapi.annotation.IBuilderContext
@@ -26,6 +27,7 @@ import javax.lang.model.type.TypeMirror
 /**
  * Test for InitialHandler
  */
+@Ignore
 class InitialHandlerTest extends Specification {
 
     def 'Test handleAnnotatedElements'() {

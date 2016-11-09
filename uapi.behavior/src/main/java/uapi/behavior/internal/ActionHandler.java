@@ -1,12 +1,12 @@
 package uapi.behavior.internal;
 
+import com.google.auto.service.AutoService;
 import uapi.KernelException;
 import uapi.annotation.AnnotationsHandler;
 import uapi.annotation.IAnnotationsHandler;
 import uapi.annotation.IBuilderContext;
 import uapi.behavior.annotation.Action;
 import uapi.behavior.annotation.ActionCall;
-import uapi.service.annotation.Service;
 
 import javax.lang.model.element.Element;
 import java.lang.annotation.Annotation;
@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * The handler is used to handle IAction related annotations
  */
-@Service(IAnnotationsHandler.class)
+@AutoService(IAnnotationsHandler.class)
 public class ActionHandler extends AnnotationsHandler {
 
     @SuppressWarnings("unchecked")
