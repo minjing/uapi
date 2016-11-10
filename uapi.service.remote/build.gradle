@@ -13,9 +13,9 @@ dependencies {
     compile ("org.ow2.asm:asm:${asm_version}")
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

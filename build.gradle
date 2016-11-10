@@ -47,6 +47,11 @@ subprojects {
         codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.7'
     }
 
+    jar {
+        manifest.attributes
+        exclude('**/*.java')
+    }
+
     def generatedSources = ['**/*_Generated.*']
 
     test {

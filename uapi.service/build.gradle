@@ -10,9 +10,9 @@ dependencies {
     compile "com.fasterxml.jackson.jr:jackson-jr-objects:${jackson_version}"
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

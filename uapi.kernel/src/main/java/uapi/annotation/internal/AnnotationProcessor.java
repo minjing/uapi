@@ -16,6 +16,7 @@ import uapi.annotation.AnnotationsHandler;
 import uapi.annotation.ClassMeta;
 import uapi.annotation.IAnnotationsHandler;
 import uapi.annotation.LogSupport;
+import uapi.helper.StringHelper;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -153,7 +154,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 //this._logger.info("Generate source for -> {}", classBuilder);
                 ClassMeta classMeta = classBuilder.build();
                 JavaFileObject fileObj = builderContext.getFiler().createSourceFile(
-                        classMeta.getGeneratedClassName()
+                        StringHelper.makeString("{}.{}", classMeta.getPackageName(), classMeta.getGeneratedClassName())
                 );
                 srcWriter = fileObj.openWriter();
                 temp.process(classMeta, srcWriter);

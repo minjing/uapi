@@ -8,9 +8,9 @@ dependencies {
     compile "org.freemarker:freemarker:${freemarker_version}"
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

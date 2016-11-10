@@ -10,9 +10,9 @@ dependencies {
     compile project(':uapi.event')
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

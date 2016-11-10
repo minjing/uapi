@@ -9,9 +9,9 @@ dependencies {
     compile project(':uapi.service')
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

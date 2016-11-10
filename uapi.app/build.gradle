@@ -9,9 +9,9 @@ dependencies {
     compile project(':uapi.log')
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

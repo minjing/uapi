@@ -16,10 +16,6 @@ dependencies {
     runtime project(':uapi.web.http.netty')
 }
 
-jar {
-    manifest.attributes
-}
-
 mainClassName = 'uapi.app.internal.Bootstrapper'
 
 task copyConfig {

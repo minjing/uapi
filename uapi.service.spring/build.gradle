@@ -12,9 +12,9 @@ dependencies {
     )
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

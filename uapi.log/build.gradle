@@ -8,9 +8,9 @@ dependencies {
     compile project(':uapi.kernel')
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {

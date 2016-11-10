@@ -10,9 +10,9 @@ dependencies {
     compile "com.esotericsoftware.yamlbeans:yamlbeans:${yamlbeans_version}"
 }
 
-jar {
-    manifest.attributes
-}
+//jar {
+//    manifest.attributes
+//}
 
 publishing {
     publications {
