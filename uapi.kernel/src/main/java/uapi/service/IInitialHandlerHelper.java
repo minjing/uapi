@@ -22,5 +22,6 @@ public interface IInitialHandlerHelper extends IHandlerHelper {
     void addInitMethod(
             final IBuilderContext builderContext,
             final ClassMeta.Builder classBuilder,
+            final String target,
             final String... methodNames);
 }

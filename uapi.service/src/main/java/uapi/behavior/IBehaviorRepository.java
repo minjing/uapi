@@ -13,6 +13,14 @@ public interface IBehaviorRepository {
      */
     void register(IBehavior behavior);
 
+    /**
+     * Register a new action to the repository
+     *
+     * @param   action
+     *          The action which will be registered in
+     */
+    void register(IAction action);
+
     IAction find(String name);
 
 //    /**

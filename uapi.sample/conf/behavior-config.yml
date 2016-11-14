@@ -1,0 +1,12 @@
+app:
+  name: Behavior Demo
+  active-profile: behavior
+
+profiles:
+  - name: behavior
+    model: include
+    matching: satisfy-any
+    tags:
+      - Event
+      - Behavior
+      - Behavior Demo

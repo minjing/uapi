@@ -2,13 +2,16 @@ package uapi.behavior.internal;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uapi.KernelException;
+import uapi.behavior.IBehaviorRepository;
 import uapi.behavior.IResponsible;
 import uapi.config.annotation.Config;
 import uapi.event.IEventBus;
 import uapi.log.ILogger;
 import uapi.rx.Looper;
+import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import javax.script.*;
 import java.io.File;
@@ -21,6 +24,7 @@ import java.util.List;
  * Read js files and generate Responsible
  */
 @Service
+@Tag("Behavior")
 public class ResponsibleRegistry {
 
     @Config(path="path.behavior", optional=true)
@@ -36,8 +40,9 @@ public class ResponsibleRegistry {
     protected IEventBus _eventBus;
 
     @Inject
-    protected BehaviorRepository _behaviorRepo;
+    protected IBehaviorRepository _behaviorRepo;
 
+    @Init
     public void init() {
         // Load js based responsible if the config is specified
         if (this._behaviorDefPath != null) {
