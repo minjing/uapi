@@ -19,7 +19,7 @@ public class CounterIncBehavior implements IExecutable {
     public static final String name = "CounterIncBehavior";
 
     @Inject
-    IExecutionBuilderFactory _execBuilderFactory;
+    protected IExecutionBuilderFactory _execBuilderFactory;
 
     @Override
     public IExecution execution() {

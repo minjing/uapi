@@ -18,6 +18,9 @@ public abstract class CounterIncAction implements IAction<CounterIncEvent, Void>
     @Inject
     protected ILogger _logger;
 
+//    @Inject
+//    protected Store _store;
+
     @Override
     public String name() {
         return name;
@@ -26,8 +29,7 @@ public abstract class CounterIncAction implements IAction<CounterIncEvent, Void>
     @Override
     public Void process(CounterIncEvent event, IExecutionContext context) {
         this._logger.info("Handler event - {}", event.topic());
-//        Store.this._counter++;
-//        Store.this._eventBus.fire(CounterChangedEvent.EVENT_COUNTER_CHANGED);
+//        this._store.incCounter();
         return null;
     }
 }

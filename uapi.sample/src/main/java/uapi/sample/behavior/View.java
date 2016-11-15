@@ -25,7 +25,7 @@ public class View implements IResponsible {
     }
 
     public void incCounter() {
-        this._eventBus.fire(CounterIncEvent.TOPIC);
+        this._eventBus.fire(new CounterIncEvent());
     }
 
     @Override

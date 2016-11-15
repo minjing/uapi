@@ -19,9 +19,6 @@ public class Store implements IResponsible {
     private int _counter;
 
     @Inject
-    protected IBehaviorRepository _behaviorRepo;
-
-    @Inject
     protected IEventBus _eventBus;
 
     @Inject
@@ -29,11 +26,6 @@ public class Store implements IResponsible {
 
     @Inject(CounterIncBehavior.name)
     protected IEventDrivenBehavior _counterIncBehavior;
-
-//    @Init
-//    public void init() {
-//        this._behaviorRepo.register(new CounterIncAction());
-//    }
 
     @Override
     public String name() {
@@ -45,5 +37,10 @@ public class Store implements IResponsible {
         return new IEventDrivenBehavior[] {
                 this._counterIncBehavior
         };
+    }
+
+    public void incCounter() {
+        this._counter++;
+        this._eventBus.fire(new CounterChangedEvent(this._counter));
     }
 }
