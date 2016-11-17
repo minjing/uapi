@@ -12,6 +12,7 @@ import uapi.service.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * The ServiceHolder hold specific service with its id and dependencies
@@ -25,8 +26,6 @@ final class ServiceHolder2 implements IServiceReference {
     private final Multimap<Dependency, ServiceHolder2> _dependencies;
     private final ISatisfyHook _satisfyHook;
     private final StateManagement _stateManagement;
-
-    private boolean _actived = false;
 
     ServiceHolder2(
             final String from,
@@ -63,9 +62,9 @@ final class ServiceHolder2 implements IServiceReference {
         this._stateManagement = new StateManagement();
     }
 
-    /************************************************
-     * Implementation Methods for IServiceReference *
-     ************************************************/
+    /********************************************
+     * Methods implements for IServiceReference *
+     ********************************************/
     @Override
     public String getId() {
         return this._svcId;
@@ -78,6 +77,8 @@ final class ServiceHolder2 implements IServiceReference {
 
     @Override
     public Object getService() {
+        prepare();
+        activate();
         return this._svc;
     }
 
@@ -86,23 +87,71 @@ final class ServiceHolder2 implements IServiceReference {
 
     }
 
-    void prepare(LinkedList<ServiceHolder2> stack) {
-        if (this._actived) {
+    /*******************
+     * Package methods *
+     *******************/
+
+    boolean isDependsOn(final String serviceId) {
+        ArgumentChecker.notEmpty(serviceId, "serviceId");
+        return isDependsOn(new QualifiedServiceId(serviceId, QualifiedServiceId.FROM_LOCAL));
+    }
+
+    boolean isDependsOn(QualifiedServiceId qualifiedServiceId) {
+        ArgumentChecker.notNull(qualifiedServiceId, "qualifiedServiceId");
+        return findDependencies(qualifiedServiceId) != null;
+    }
+
+    void setDependency(ServiceHolder2 service) {
+        ArgumentChecker.notNull(service, "service");
+
+        // remove null entry first
+        Dependency dependency = findDependencies(service.getQualifiedId());
+        if (dependency == null) {
+            throw new KernelException(
+                    "The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
+        }
+        this._dependencies.remove(dependency, null);
+        this._dependencies.put(dependency, service);
+    }
+
+    void prepare() {
+        if (this._stateManagement.isActivated()) {
             return;
         }
 
+        Stack<ServiceHolder2> stack = new Stack<>();
+        this._stateManagement.resolve(stack);
+
+        this._stateManagement.inject();
+
+        this._stateManagement.satisfy();
     }
 
-    void active() {
-        this._actived = true;
+    void activate() {
+        if (this._stateManagement.isActivated()) {
+            return;
+        }
+
+        this._stateManagement.activate();
+    }
+
+    /*******************
+     * Private methods *
+     *******************/
+
+    private Dependency findDependencies(QualifiedServiceId qsId) {
+        return Looper.from(this._dependencies.keySet())
+                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
+                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().equals(qsId))
+                .first(null);
     }
 
     private enum State {
-        Unresolved(0), Resolved(10), Injected(20), Satisfied(30), Initialized(40), Destroyed(-1);
+        Unresolved(0), Resolved(10), Injected(20), Satisfied(30), Activated(40), Deactivated(50), Destroyed(-1);
 
         private int _value;
 
-        private State(int value) {
+        State(int value) {
             this._value = value;
         }
     }
@@ -112,6 +161,10 @@ final class ServiceHolder2 implements IServiceReference {
         private volatile State _state = State.Unresolved;
 
         private final List<ServiceHolder2> _injectedSvcs = new LinkedList<>();
+
+        private boolean isActivated() {
+            return this._state == State.Activated;
+        }
 
         private void checkState(State state) {
             if (this._state == state) {
@@ -138,17 +191,21 @@ final class ServiceHolder2 implements IServiceReference {
                         throw new KernelException("The service state is {}, but require {}", this._state, state);
                     }
                     break;
-                case Initialized:
-                    if (this._state._value < State.Initialized._value) {
+                case Activated:
+                    if (this._state._value < State.Activated._value) {
                         throw new KernelException("The service state is {}, but require {}", this._state, state);
                     }
                     break;
+                case Deactivated:
+                    if (this._state._value < State.Deactivated._value) {
+                        throw new KernelException("The service state is {}, but require {}", this._state, state);
+                    }
                 default:
                     throw new KernelException("Unsupported state enumeration - {}", state);
             }
         }
 
-        private void resolve() {
+        private void resolve(final Stack<ServiceHolder2> stack) {
             checkState(State.Unresolved);
             if (this._state._value >= State.Resolved._value) {
                 return;
@@ -164,10 +221,26 @@ final class ServiceHolder2 implements IServiceReference {
                 throw new KernelException("The dependency {} of service {} is not resolved", unresolvedSvc, _qualifiedSvcId);
             }
 
+            // Check cycle dependency
+            StringBuilder buffer = new StringBuilder();
+            ServiceHolder2 self = Looper.from(stack)
+                    .next(svc -> buffer.append(svc._qualifiedSvcId).append(" -> "))
+                    .filter(svc -> svc == ServiceHolder2.this)
+                    .first(null);
+            if (self != null) {
+                buffer.append(_qualifiedSvcId);
+                throw new KernelException("Found cycle dependency, dependency path: {}", buffer.toString());
+            }
+
+            stack.push(ServiceHolder2.this);
             Looper.from(_dependencies.entries())
                     .filter(entry -> entry.getValue() != null)
                     .map(Map.Entry::getValue)
-                    .foreach(svcHolder -> svcHolder._stateManagement.resolve());
+                    .foreach(svcHolder -> svcHolder._stateManagement.resolve(stack));
+
+            if (stack.pop() != ServiceHolder2.this) {
+                throw new KernelException("The popup the service is not equals self");
+            }
 
             this._state = State.Resolved;
         }
@@ -217,27 +290,27 @@ final class ServiceHolder2 implements IServiceReference {
                     .foreach(svcHolder -> svcHolder._stateManagement.satisfy());
 
             if (! _satisfyHook.isSatisfied(ServiceHolder2.this)) {
-                throw new KernelException("The service {} can'be satisfied");
+                throw new KernelException("The service {} can'be satisfied", _qualifiedSvcId);
             }
 
             this._state = State.Satisfied;
         }
 
-        private void init() {
+        private void activate() {
             checkState(State.Satisfied);
-            if (this._state._value >= State.Initialized._value) {
+            if (this._state._value >= State.Activated._value) {
                 return;
             }
 
             Looper.from(_dependencies.entries())
                     .map(Map.Entry::getValue)
-                    .foreach(svcHolder -> svcHolder._stateManagement.init());
+                    .foreach(svcHolder -> svcHolder._stateManagement.activate());
 
             if (_svc instanceof IInitial) {
                 ((IInitial) _svc).init();
             }
 
-            this._state = State.Initialized;
+            this._state = State.Activated;
         }
     }
 }
