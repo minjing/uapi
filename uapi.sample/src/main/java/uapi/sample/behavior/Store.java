@@ -1,22 +1,20 @@
 package uapi.sample.behavior;
 
-import uapi.behavior.IEventDrivenBehavior;
-import uapi.behavior.IExecution;
-import uapi.behavior.IExecutionContext;
-import uapi.behavior.IResponsible;
+import uapi.behavior.*;
 import uapi.event.IEvent;
 import uapi.event.IEventBus;
 import uapi.log.ILogger;
+import uapi.service.annotation.Init;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 /**
  * Created by xquan on 10/25/2016.
  */
 @Service(IResponsible.class)
+@Tag("Behavior Demo")
 public class Store implements IResponsible {
-
-    public static final String EVENT_COUNTER_CHANGED   = "CounterChanged";
 
     private int _counter;
 
@@ -26,6 +24,9 @@ public class Store implements IResponsible {
     @Inject
     protected ILogger _logger;
 
+    @Inject(CounterIncBehavior.name)
+    protected IEventDrivenBehavior _counterIncBehavior;
+
     @Override
     public String name() {
         return "Store";
@@ -33,41 +34,13 @@ public class Store implements IResponsible {
 
     @Override
     public IEventDrivenBehavior[] behaviors() {
-        return null;
+        return new IEventDrivenBehavior[] {
+                this._counterIncBehavior
+        };
     }
 
-    private class IncCounterHandler implements IEventDrivenBehavior<IEvent> {
-
-        @Override
-        public String name() {
-            return "IncCounterHandler";
-        }
-
-        @Override
-        public Void process(IEvent input, IExecutionContext context) {
-            return null;
-        }
-
-        @Override
-        public Class<IEvent> inputType() {
-            return IEvent.class;
-        }
-
-        @Override
-        public Class<Void> outputType() {
-            return Void.class;
-        }
-
-        @Override
-        public String topic() {
-            return View.EVENT_INC_COUNTER;
-        }
-
-        @Override
-        public void handle(IEvent event) {
-            Store.this._logger.info("Handler event - {}", event.topic());
-            Store.this._counter++;
-            Store.this._eventBus.fire(EVENT_COUNTER_CHANGED);
-        }
+    public void incCounter() {
+        this._counter++;
+        this._eventBus.fire(new CounterChangedEvent(this._counter));
     }
 }

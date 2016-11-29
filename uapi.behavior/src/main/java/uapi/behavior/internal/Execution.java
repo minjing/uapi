@@ -143,6 +143,7 @@ public class Execution implements IExecution, IExecutionBuilder {
             }
         }
         this._behaviorOutputType = behaviorOutputType;
+        this._built = true;
 
         return root;
     }

@@ -1,3 +1,3 @@
 <#list methods as method>
-    ${method}();
+    ${target}.${method}();
 </#list>

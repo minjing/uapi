@@ -1,6 +1,7 @@
 package uapi.service;
 
 import uapi.helper.ArgumentChecker;
+import uapi.helper.StringHelper;
 import uapi.service.internal.QualifiedServiceId;
 
 /**
@@ -73,5 +74,10 @@ public class Dependency {
         }
         Dependency other = (Dependency) obj;
         return getServiceId().equals(other.getServiceId());
+    }
+
+    @Override
+    public String toString() {
+        return StringHelper.makeString("Dependency[{}]", this._qSvcId);
     }
 }

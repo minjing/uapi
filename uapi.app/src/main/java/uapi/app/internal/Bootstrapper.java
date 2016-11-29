@@ -84,7 +84,7 @@ public class Bootstrapper {
         Looper.from(otherSvcs)
                 .filter(profile::isAllow)
                 .foreach(svcRegistry::register);
-
+        
         svcRegistry.start();
 
         Application app = svcRegistry.findService(Application.class);

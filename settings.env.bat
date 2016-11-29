@@ -1,4 +1,3 @@
-set JAVA_HOME=D:\dev\java\sdk\oracleJDK1.8.0_65
-set GRADLE_HOME=D:\dev\gradle\2.3
+set JAVA_HOME=C:\Users\xquan\Dev\Java\sdk\OracleJDK1.8.0_112
 
-set PATH=%JAVA_HOME%\bin;%GRADLE_HOME%\bin;%PATH%
+set PATH=%JAVA_HOME%\bin;%PATH%

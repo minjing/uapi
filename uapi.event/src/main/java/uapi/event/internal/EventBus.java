@@ -16,6 +16,7 @@ import uapi.config.annotation.Config;
 import uapi.config.internal.IntervalTimeParser;
 import uapi.event.*;
 import uapi.helper.ArgumentChecker;
+import uapi.log.ILogger;
 import uapi.rx.Looper;
 import uapi.service.annotation.*;
 
@@ -44,6 +45,9 @@ public class EventBus implements IEventBus {
     @Inject
     @Optional
     protected List<IEventHandler> _eventHandlers = new CopyOnWriteArrayList<>();
+
+    @Inject
+    protected ILogger _logger;
 
     private ForkJoinPool _fjPoll = new ForkJoinPool();
 
@@ -137,7 +141,11 @@ public class EventBus implements IEventBus {
         @Override
         protected void compute() {
             if (this._handlers.size() == 1) {
-                this._handlers.get(0).handle(this._event);
+                try {
+                    this._handlers.get(0).handle(this._event);
+                } catch (Exception ex) {
+                    EventBus.this._logger.error(ex);
+                }
                 return;
             }
 

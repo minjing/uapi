@@ -6,7 +6,9 @@ import uapi.behavior.IBehavior;
 import uapi.behavior.IBehaviorRepository;
 import uapi.helper.ArgumentChecker;
 import uapi.service.annotation.Inject;
+import uapi.service.annotation.Optional;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,13 +17,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * The repository used to hold all public behaviors which can be reused
  * in other behavior.
  */
-@Service
+@Service(IBehaviorRepository.class)
+@Tag("Behavior")
 public class BehaviorRepository implements IBehaviorRepository {
 
     @Inject
+    @Optional
     protected Map<String, IAction> _actions = new ConcurrentHashMap<>();
 
     @Inject
+    @Optional
     protected Map<String, IBehavior> _behaviors = new ConcurrentHashMap<>();
 
     @Override
@@ -29,9 +34,20 @@ public class BehaviorRepository implements IBehaviorRepository {
         ArgumentChecker.required(behavior, "behavior");
         String name = behavior.name();
         if (this._behaviors.containsKey(name)) {
-            throw new KernelException("A behavior has been bind on name - {}", name);
+            throw new KernelException("A behavior has been bind wit name - {}", name);
         } else {
             this._behaviors.put(name, behavior);
+        }
+    }
+
+    @Override
+    public void register(IAction action) {
+        ArgumentChecker.required(action, "action");
+        String name = action.name();
+        if (this._actions.containsKey(name)) {
+            throw new KernelException("An action has been bind with name - {}", name);
+        } else {
+            this._actions.put(name, action);
         }
     }
 

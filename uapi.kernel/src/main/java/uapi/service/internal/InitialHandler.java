@@ -38,6 +38,7 @@ public final class InitialHandler extends AnnotationsHandler {
     private static final String TEMP_INIT           = "template/init_method.ftl";
     private static final String MODEL_INIT          = "ModelInit";
     private static final String VAR_METHODS         = "methods";
+    private static final String VAR_TARGET          = "target";
 
     @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] orderedAnnotations = new Class[] { Init.class };
@@ -87,18 +88,7 @@ public final class InitialHandler extends AnnotationsHandler {
                         "Multiple Init annotation was defined in the class {}",
                         classElemt.getSimpleName().toString());
             }
-            this._helper.addInitMethod(builderCtx, clsBuilder, methodName);
-//            Template tempInit = builderCtx.loadTemplate(TEMP_INIT);
-//            clsBuilder
-//                    .addImplement(IInitial.class.getCanonicalName())
-//                    .addMethodBuilder(MethodMeta.builder()
-//                            .addModifier(Modifier.PUBLIC)
-//                            .setName(METHOD_INIT_NAME)
-//                            .addAnnotationBuilder(AnnotationMeta.builder().setName("Override"))
-//                            .addCodeBuilder(CodeMeta.builder()
-//                                    .setTemplate(tempInit)
-//                                    .setModel(clsBuilder.getTransience(MODEL_INIT)))
-//                            .setReturnTypeName(Type.VOID));
+            this._helper.addInitMethod(builderCtx, clsBuilder, "super", methodName);
         });
     }
 
@@ -118,6 +108,7 @@ public final class InitialHandler extends AnnotationsHandler {
         public void addInitMethod(
                 final IBuilderContext builderContext,
                 final ClassMeta.Builder classBuilder,
+                final String target,
                 final String... methodNames) {
             ArgumentChecker.required(builderContext, "builderContext");
             ArgumentChecker.required(classBuilder, "classBuilder");
@@ -134,6 +125,7 @@ public final class InitialHandler extends AnnotationsHandler {
                 methods = tmpMethods.toArray(new String[tmpMethods.size()]);
             }
             tempInitModel.put(VAR_METHODS, methods);
+            tempInitModel.put(VAR_TARGET, target);
 
             List<MethodMeta.Builder> methodBuilders = classBuilder.findMethodBuilders(METHOD_INIT_NAME);
             if (methodBuilders.size() > 0) {

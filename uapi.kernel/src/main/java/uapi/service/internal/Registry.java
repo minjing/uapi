@@ -165,38 +165,42 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     }
 
     public void start() {
-        Observable.from(this._svcRepo.values())
-                .doOnNext(ServiceHolder::start)
-                .subscribe(ServiceHolder::tryInitService);
+        try {
+            Looper.from(this._svcRepo.values())
+                    .next(ServiceHolder::start)
+                    .foreach(ServiceHolder::tryInitService);
 
-        List<Dependency> unresolvedSvcs = Looper.from(this._svcRepo.values())
-                .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
-                .toList();
+            List<Dependency> unresolvedSvcs = Looper.from(this._svcRepo.values())
+                    .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
+                    .toList();
 
-        checkCycleDependency(unresolvedSvcs);
+            checkCycleDependency(unresolvedSvcs);
 
-        // If the unresolved service contains a required local service then throw exception
-        Iterator<Dependency> dependencies = unresolvedSvcs.iterator();
-        while (dependencies.hasNext()) {
-            Dependency dep = dependencies.next();
-            if (dep.getServiceId().getFrom().equalsIgnoreCase(QualifiedServiceId.FROM_LOCAL)) {
-                if (dep.isOptional()) {
-                    this._logger.debug("Found an optional unresolved service - {}, ignored", dep.getServiceId());
-                    dependencies.remove();
-                } else {
-                    throw new KernelException("The local dependency is not satisfied - {}", dep.getServiceId());
+            // If the unresolved service contains a required local service then throw exception
+            Iterator<Dependency> dependencies = unresolvedSvcs.iterator();
+            while (dependencies.hasNext()) {
+                Dependency dep = dependencies.next();
+                if (dep.getServiceId().getFrom().equalsIgnoreCase(QualifiedServiceId.FROM_LOCAL)) {
+                    if (dep.isOptional()) {
+                        this._logger.debug("Found an optional unresolved service - {}, ignored", dep.getServiceId());
+                        dependencies.remove();
+                    } else {
+                        throw new KernelException("The local dependency is not satisfied - {}", dep.getServiceId());
+                    }
                 }
             }
+
+            if (this._svcLoaders.size() > 0) {
+                this._orderedSvcLoaders.addAll(this._svcLoaders.values());
+            }
+
+            // If the unresolved service is optional then try to load it, if it can't be loaded no error
+            loadExternalServices(unresolvedSvcs);
+
+            this._started = true;
+        } catch (Exception ex) {
+            this._logger.error(ex);
         }
-
-        if (this._svcLoaders.size() > 0) {
-            this._orderedSvcLoaders.addAll(this._svcLoaders.values());
-        }
-
-        // If the unresolved service is optional then try to load it, if it can't be loaded no error
-        loadExternalServices(unresolvedSvcs);
-
-        this._started = true;
     }
 
     private void checkCycleDependency(List<Dependency> unresolvedSvcs) {

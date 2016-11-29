@@ -7,11 +7,13 @@ import uapi.behavior.IExecutionBuilder;
 import uapi.behavior.IExecutionBuilderFactory;
 import uapi.service.annotation.Inject;
 import uapi.service.annotation.Service;
+import uapi.service.annotation.Tag;
 
 /**
  * The implementation of IExecutionBuilderFactory
  */
-@Service
+@Service(IExecutionBuilderFactory.class)
+@Tag("Behavior")
 public class ExecutionBuilderFactory implements IExecutionBuilderFactory {
 
     @Inject
@@ -21,17 +23,8 @@ public class ExecutionBuilderFactory implements IExecutionBuilderFactory {
     public IExecutionBuilder from(String name) {
         IAction action = this._behaviorRepo.find(name);
         if (action == null) {
-            throw new KernelException("Can't find action/behavior {} in the repo");
+            throw new KernelException("Can't find action/behavior {} in the repo", name);
         }
         return new Execution(this._behaviorRepo, action);
     }
-
-//    @Override
-//    public IExecutionBuilder from(String name, boolean isBehavior) {
-//        IAction action = isBehavior ? this._behaviorRepo.findBehavior(name) : this._behaviorRepo.findAction(name);
-//        if (action == null) {
-//            throw new KernelException("Can't find action/behavior {} in the repo");
-//        }
-//        return new Execution(this._behaviorRepo, action, isBehavior);
-//    }
 }

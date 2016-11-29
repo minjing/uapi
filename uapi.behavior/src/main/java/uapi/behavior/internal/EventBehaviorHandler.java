@@ -159,7 +159,7 @@ public class EventBehaviorHandler extends AnnotationsHandler {
                     false, false, null, false);
 
             IInitialHandlerHelper initialHelper = (IInitialHandlerHelper) builderContext.getHelper(IInitialHandlerHelper.name);
-            initialHelper.addInitMethod(builderContext, clsBuilder, METHOD_EXECTUION_INIT);
+            initialHelper.addInitMethod(builderContext, clsBuilder, "this", METHOD_EXECTUION_INIT);
         });
     }
 }
