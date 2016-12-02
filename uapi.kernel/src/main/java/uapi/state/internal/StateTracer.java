@@ -5,7 +5,7 @@ import uapi.helper.ArgumentChecker;
 import uapi.rx.Looper;
 import uapi.state.IOperation;
 import uapi.state.IShifter;
-import uapi.state.IState;
+import uapi.state.IStateTracer;
 import uapi.state.IStateListener;
 
 import java.util.LinkedList;
@@ -14,9 +14,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * The implementation of IState interface
+ * The implementation of IStateTracer interface
  */
-public final class State<T> implements IState<T> {
+public final class StateTracer<T> implements IStateTracer<T> {
 
     private T _state;
     private IShifter<T> _shifter;
@@ -24,7 +24,7 @@ public final class State<T> implements IState<T> {
     private final List<IStateListener<T>> _listeners = new LinkedList<>();
     private final Lock _lock = new ReentrantLock();
 
-    public State(final IShifter<T> shifter, final T initState) {
+    public StateTracer(final IShifter<T> shifter, final T initState) {
         ArgumentChecker.required(shifter, "shifter");
         ArgumentChecker.notNull(initState, "initState");
 

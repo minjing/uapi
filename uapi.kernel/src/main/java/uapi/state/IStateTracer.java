@@ -3,7 +3,7 @@ package uapi.state;
 /**
  * The state hold state data and logic which used to change state based on specific operation
  */
-public interface IState<T> {
+public interface IStateTracer<T> {
 
     /**
      * Subscribe this state on specific listener

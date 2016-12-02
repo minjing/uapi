@@ -12,7 +12,7 @@ class StateCreatorTest extends Specification {
         def shifter = Mock(IShifter)
 
         when:
-        def state = StateCreator.createState(shifter, "init")
+        def state = StateCreator.createTracer(shifter, "init")
 
         then:
         state != null
