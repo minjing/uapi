@@ -21,7 +21,7 @@ import java.util.Stack;
 /**
  * The ServiceHolder hold specific service with its id and dependencies
  */
-public final class ServiceHolder2 implements IServiceReference {
+public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
 
     private static final String OP_RESOLVE  = "resolve";
     private static final String OP_INJECT   = "inject";
@@ -116,13 +116,46 @@ public final class ServiceHolder2 implements IServiceReference {
 
     @Override
     public Object getService() {
-        startup();
-        return this._svc;
+        if (tryActivate(false)) {
+            return this._svc;
+        }
+        return null;
     }
 
     @Override
     public void notifySatisfied() {
 
+    }
+
+    /*****************************************
+     * Methods implements for IServiceHolder *
+     *****************************************/
+
+    public boolean tryActivate() {
+        return tryActivate(true);
+    }
+
+    public boolean tryActivate(final boolean throwException) {
+        if (this._stateTracer.get().value() >= ServiceState.Activated.value()) {
+            return true;
+        }
+        try {
+            if (this._stateTracer.get().value() < ServiceState.Resolved.value()) {
+                this._stateTracer.shift(OP_RESOLVE);
+            }
+            if (this._stateTracer.get().value() < ServiceState.Injected.value()) {
+                this._stateTracer.shift(OP_INJECT);
+            }
+            if (this._stateTracer.get().value() < ServiceState.Satisfied.value()) {
+                this._stateTracer.shift(OP_SATISFY);
+            }
+        } catch (Exception ex) {
+            if (throwException) {
+                throw ex;
+            }
+            return false;
+        }
+        return true;
     }
 
     /*******************
@@ -153,18 +186,6 @@ public final class ServiceHolder2 implements IServiceReference {
         }
         this._dependencies.remove(dependency, null);
         this._dependencies.put(dependency, service);
-    }
-
-    void startup() {
-        if (this._stateTracer.get().value() < ServiceState.Resolved.value()) {
-            this._stateTracer.shift(OP_RESOLVE);
-        }
-        if (this._stateTracer.get().value() < ServiceState.Injected.value()) {
-            this._stateTracer.shift(OP_INJECT);
-        }
-        if (this._stateTracer.get().value() < ServiceState.Satisfied.value()) {
-            this._stateTracer.shift(OP_SATISFY);
-        }
     }
 
     /*******************
@@ -225,7 +246,7 @@ public final class ServiceHolder2 implements IServiceReference {
         if (this._stateTracer.get().value() >= ServiceState.Injected.value()) {
             return;
         }
-        if (_dependencies.size() > 0 && !(_svc instanceof IInjectable)) {
+        if (this._dependencies.size() > 0 && !(_svc instanceof IInjectable)) {
             throw new KernelException("The service {} does not implement IInjectable interface", _qualifiedSvcId);
         }
 
