@@ -2,7 +2,7 @@ package uapi.service;
 
 import uapi.KernelException;
 import uapi.rx.Looper;
-import uapi.service.internal.ServiceHolder2;
+import uapi.service.internal.IServiceHolder;
 
 import java.util.Stack;
 
@@ -11,10 +11,10 @@ import java.util.Stack;
  */
 public class CycleDependencyException extends KernelException {
 
-    private final Stack<ServiceHolder2> _dependencyStack;
+    private final Stack<IServiceHolder> _dependencyStack;
 
     public CycleDependencyException(
-            final Stack<ServiceHolder2> dependencyStack
+            final Stack<IServiceHolder> dependencyStack
     ) {
         super("Found dependency cycle");
         this._dependencyStack = dependencyStack;

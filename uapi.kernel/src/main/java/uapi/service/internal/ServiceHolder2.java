@@ -13,6 +13,7 @@ import uapi.state.IStateTracer;
 import uapi.state.StateCreator;
 import uapi.state.internal.StateTracer;
 
+import javax.xml.ws.FaultAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +33,10 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
     private final String _svcId;
     private final String _from;
     private QualifiedServiceId _qualifiedSvcId;
-    private final Multimap<Dependency, ServiceHolder2> _dependencies;
+    private final Multimap<Dependency, IServiceHolder> _dependencies;
     private final ISatisfyHook _satisfyHook;
 
-    private final List<ServiceHolder2> _injectedSvcs = new LinkedList<>();
+    private final List<IServiceHolder> _injectedSvcs = new LinkedList<>();
     private final IStateTracer<ServiceState> _stateTracer;
 
     private final IShifter<ServiceState> _stateShifter = (currentState, operation) -> {
@@ -158,31 +159,30 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         return true;
     }
 
-    /*******************
-     * Package methods *
-     *******************/
-
-    boolean isDependsOn(final String serviceId) {
+    @Override
+    public boolean isDependsOn(final String serviceId) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         return isDependsOn(new QualifiedServiceId(serviceId, QualifiedServiceId.FROM_LOCAL));
     }
 
-    boolean isDependsOn(QualifiedServiceId qualifiedServiceId) {
+    @Override
+    public boolean isDependsOn(QualifiedServiceId qualifiedServiceId) {
         ArgumentChecker.notNull(qualifiedServiceId, "qualifiedServiceId");
         return findDependencies(qualifiedServiceId) != null;
     }
 
-    void setDependency(ServiceHolder2 service) {
+    @Override
+    public void setDependency(IServiceHolder service) {
         ArgumentChecker.notNull(service, "service");
 
-        Stack<ServiceHolder2> dependencyStack = new Stack<>();
+        Stack<IServiceHolder> dependencyStack = new Stack<>();
         checkCycleDependency(this, dependencyStack);
 
         // remove null entry first
         Dependency dependency = findDependencies(service.getQualifiedId());
         if (dependency == null) {
             throw new KernelException(
-                    "The service {} does not depend on service {}", this._qualifiedSvcId, service._qualifiedSvcId);
+                    "The service {} does not depend on service {}", this._qualifiedSvcId, service.getQualifiedId());
         }
         this._dependencies.remove(dependency, null);
         this._dependencies.put(dependency, service);
@@ -192,9 +192,10 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
      * Private methods *
      *******************/
 
-    private void checkCycleDependency(
-            final ServiceHolder2 svcToCheck,
-            final Stack<ServiceHolder2> dependencyStack
+    @Override
+    public void checkCycleDependency(
+            final IServiceHolder svcToCheck,
+            final Stack<IServiceHolder> dependencyStack
     ) {
         dependencyStack.push(this);
         Looper.from(this._dependencies.entries())
@@ -208,7 +209,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
                 })
                 .foreach(dependency -> dependency.checkCycleDependency(svcToCheck, dependencyStack));
 
-        ServiceHolder2 svcHolder = dependencyStack.pop();
+        IServiceHolder svcHolder = dependencyStack.pop();
         if (svcHolder != this) {
             throw new KernelException("The last service item was not self - {}", this._qualifiedSvcId);
         }
@@ -221,7 +222,8 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
                 .first(null);
     }
 
-    private void resolve() {
+    @Override
+    public void resolve() {
         if (this._stateTracer.get().value() >= ServiceState.Resolved.value()) {
             return;
         }
@@ -239,10 +241,11 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         Looper.from(_dependencies.entries())
                 .filter(entry -> entry.getValue() != null)
                 .map(Map.Entry::getValue)
-                .foreach(ServiceHolder2::resolve);
+                .foreach(IServiceHolder::resolve);
     }
 
-    private void inject() {
+    @Override
+    public void inject() {
         if (this._stateTracer.get().value() >= ServiceState.Injected.value()) {
             return;
         }
@@ -253,7 +256,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         // Inject all dependent service
         Looper.from(_dependencies.entries())
                 .map(Map.Entry::getValue)
-                .foreach(ServiceHolder2::inject);
+                .foreach(IServiceHolder::inject);
 
         // Inject depended service
         Looper.from(_dependencies.values())
@@ -273,28 +276,29 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
                 });
     }
 
-    private void satisfy() {
+    public void satisfy() {
         if (this._stateTracer.get().value() >= ServiceState.Satisfied.value()) {
             return;
         }
 
         Looper.from(_dependencies.entries())
                 .map(Map.Entry::getValue)
-                .foreach(ServiceHolder2::satisfy);
+                .foreach(IServiceHolder::satisfy);
 
         if (! _satisfyHook.isSatisfied(ServiceHolder2.this)) {
             throw new KernelException("The service {} can'be satisfied", _qualifiedSvcId);
         }
     }
 
-    private void activate() {
+    @Override
+    public void activate() {
         if (this._stateTracer.get().value() >= ServiceState.Activated.value()) {
             return;
         }
 
         Looper.from(_dependencies.entries())
                 .map(Map.Entry::getValue)
-                .foreach(ServiceHolder2::activate);
+                .foreach(IServiceHolder::activate);
 
         if (_svc instanceof IInitial) {
             ((IInitial) _svc).init();
