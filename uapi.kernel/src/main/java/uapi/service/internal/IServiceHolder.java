@@ -1,7 +1,9 @@
 package uapi.service.internal;
 
+import uapi.service.Dependency;
 import uapi.service.IServiceReference;
 
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -65,6 +67,13 @@ public interface IServiceHolder extends IServiceReference {
             final IServiceHolder svcToCheck,
             final Stack<IServiceHolder> dependencyStack
     );
+
+    /**
+     * Receive unresolved services from the repo
+     *
+     * @return  Unresolved service list
+     */
+    List<Dependency> getUnresolvedServices();
 
     /*******************************************
      * Methods for service life cycle exchange *

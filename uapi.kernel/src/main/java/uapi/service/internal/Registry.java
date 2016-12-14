@@ -42,7 +42,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
 
     private final Lock _svcRepoLock;
     private final SatisfyDecider _satisfyDecider;
-    private final Multimap<String, ServiceHolder> _svcRepo;
+    private final Multimap<String, IServiceHolder> _svcRepo;
     private final List<WeakReference<ISatisfyHook>> _satisfyHooks;
     private final Map<String, IServiceLoader> _svcLoaders;
     private final SortedSet<IServiceLoader> _orderedSvcLoaders;
@@ -132,8 +132,8 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
         Guarder.by(this._svcRepoLock).run(() ->
             Observable.from(this._svcRepo.values())
                     .filter(svcHolder -> svcHolder.getId().equals(serviceId))
-                    .filter(ServiceHolder::tryInitService)
-                    .map(ServiceHolder::getService)
+                    .filter(IServiceHolder::tryActivate)
+                    .map(IServiceHolder::getService)
                     .subscribe(svcHolder -> resolvedSvcs.add((T) svcHolder), throwable -> { throw new KernelException(throwable); })
         );
         return resolvedSvcs;
@@ -146,8 +146,8 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
                 (List<T>) Observable.from(this._svcRepo.values())
                 .filter(svcHolder -> svcHolder.getId().equals(serviceId))
                 .filter(svcHolder -> svcHolder.getFrom().equals(serviceFrom))
-                .filter(ServiceHolder::tryInitService)
-                .map(ServiceHolder::getService)
+                .filter(IServiceHolder::tryActivate)
+                .map(IServiceHolder::getService)
                 .toList().toBlocking().single()
         );
         if (found == null || found.size() == 0) {
@@ -167,8 +167,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     public void start() {
         try {
             Looper.from(this._svcRepo.values())
-                    .next(ServiceHolder::start)
-                    .foreach(ServiceHolder::tryInitService);
+                    .foreach(IServiceHolder::tryActivate);
 
             List<Dependency> unresolvedSvcs = Looper.from(this._svcRepo.values())
                     .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
@@ -279,24 +278,37 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
             throw new InvalidArgumentException("The service id is required - {}", svc.getClass().getName());
         }
 
-        Observable.from(svcIds)
-                .map(svcId -> new ServiceHolder(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
-                .subscribe(svcHolder -> {
+        Looper.from(svcIds)
+                .map(svcId -> new ServiceHolder2(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
+                .foreach(svcHolder -> {
                     Guarder.by(this._svcRepoLock).run(() -> {
                         // Check whether the new register service depends on existing service
-                        Observable.from(this._svcRepo.values())
+                        Looper.from(this._svcRepo.values())
                                 .filter(existingSvc -> svcHolder.isDependsOn(existingSvc.getId()))
-                                .subscribe(svcHolder::setDependency);
+                                .foreach(svcHolder::setDependency);
                         // Check whether existing service depends on the new register service
-                        Observable.from(this._svcRepo.values())
+                        Looper.from(this._svcRepo.values())
                                 .filter(existingSvc -> existingSvc.isDependsOn(svcHolder.getQualifiedId()))
-                                .subscribe(existingSvc -> existingSvc.setDependency(svcHolder));
+                                .foreach(existingSvc -> existingSvc.setDependency(svcHolder));
                         this._svcRepo.put(svcHolder.getId(), svcHolder);
-                        if (this._started) {
-                            svcHolder.start();
-                        }
                     });
                 });
+
+//        Observable.from(svcIds)
+//                .map(svcId -> new ServiceHolder2(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
+//                .subscribe(svcHolder -> {
+//                    Guarder.by(this._svcRepoLock).run(() -> {
+//                        // Check whether the new register service depends on existing service
+//                        Observable.from(this._svcRepo.values())
+//                                .filter(existingSvc -> svcHolder.isDependsOn(existingSvc.getId()))
+//                                .subscribe(svcHolder::setDependency);
+//                        // Check whether existing service depends on the new register service
+//                        Observable.from(this._svcRepo.values())
+//                                .filter(existingSvc -> existingSvc.isDependsOn(svcHolder.getQualifiedId()))
+//                                .subscribe(existingSvc -> existingSvc.setDependency(svcHolder));
+//                        this._svcRepo.put(svcHolder.getId(), svcHolder);
+//                    });
+//                });
     }
 
     @Override
@@ -364,11 +376,12 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     }
 
     private void releaseHooks() {
-        for (Iterator<WeakReference<ISatisfyHook>> itor = this._satisfyHooks.iterator(); itor.hasNext(); ) {
-            if (itor.next().get() == null) {
-                itor.remove();
-            }
-        }
+        this._satisfyHooks.removeIf(it -> it.get() == null);
+//        for (Iterator<WeakReference<ISatisfyHook>> itor = this._satisfyHooks.iterator(); itor.hasNext(); ) {
+//            if (itor.next().get() == null) {
+//                itor.remove();
+//            }
+//        }
     }
 
     private final class SatisfyDecider implements ISatisfyHook {

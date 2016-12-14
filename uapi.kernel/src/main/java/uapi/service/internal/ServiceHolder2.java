@@ -111,6 +111,11 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
     }
 
     @Override
+    public String getFrom() {
+        return this._from;
+    }
+
+    @Override
     public QualifiedServiceId getQualifiedId() {
         return this._qualifiedSvcId;
     }
@@ -133,7 +138,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
      *****************************************/
 
     public boolean tryActivate() {
-        return tryActivate(true);
+        return tryActivate(false);
     }
 
     public boolean tryActivate(final boolean throwException) {
@@ -186,6 +191,14 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         }
         this._dependencies.remove(dependency, null);
         this._dependencies.put(dependency, service);
+    }
+
+    @Override
+    public List<Dependency> getUnresolvedServices() {
+        return Looper.from(this._dependencies.entries())
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
     /*******************

@@ -32,6 +32,13 @@ public interface IServiceReference {
     QualifiedServiceId getQualifiedId();
 
     /**
+     * Retrieve where is the service from
+     *
+     * @return  Where is the service from
+     */
+    String getFrom();
+
+    /**
      * Retrieve the service instance
      *
      * @return  The service instance
