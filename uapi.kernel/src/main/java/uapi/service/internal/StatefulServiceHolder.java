@@ -2,7 +2,6 @@ package uapi.service.internal;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import rx.Observable;
 import uapi.KernelException;
 import uapi.helper.ArgumentChecker;
 import uapi.helper.CollectionHelper;
@@ -11,9 +10,7 @@ import uapi.service.*;
 import uapi.state.IShifter;
 import uapi.state.IStateTracer;
 import uapi.state.StateCreator;
-import uapi.state.internal.StateTracer;
 
-import javax.xml.ws.FaultAction;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +19,7 @@ import java.util.Stack;
 /**
  * The ServiceHolder hold specific service with its id and dependencies
  */
-public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
+public final class StatefulServiceHolder implements IServiceReference, IServiceHolder {
 
     private static final String OP_RESOLVE  = "resolve";
     private static final String OP_INJECT   = "inject";
@@ -39,36 +36,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
     private final List<IServiceHolder> _injectedSvcs = new LinkedList<>();
     private final IStateTracer<ServiceState> _stateTracer;
 
-    private final IShifter<ServiceState> _stateShifter = (currentState, operation) -> {
-        if (currentState == ServiceState.Destroyed) {
-            throw new KernelException("The service {} is destroyed", this._qualifiedSvcId);
-        }
-
-        ServiceState newState;
-        switch(operation.type()) {
-            case OP_RESOLVE:
-                resolve();
-                newState = ServiceState.Resolved;
-                break;
-            case OP_INJECT:
-                inject();
-                newState = ServiceState.Injected;
-                break;
-            case OP_SATISFY:
-                satisfy();
-                newState = ServiceState.Satisfied;
-                break;
-            case OP_ACTIVATE:
-                activate();
-                newState = ServiceState.Activated;
-                break;
-            default:
-                throw new KernelException("Unsupported operation type - {}", operation.type());
-        }
-        return newState;
-    };
-
-    ServiceHolder2(
+    StatefulServiceHolder(
             final String from,
             final Object service,
             final String serviceId,
@@ -77,7 +45,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         this(from, service, serviceId, new Dependency[0], satisfyHook);
     }
 
-    ServiceHolder2(
+    StatefulServiceHolder(
             final String from,
             final Object service,
             final String serviceId,
@@ -96,10 +64,39 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
         this._satisfyHook = satisfyHook;
         this._dependencies = LinkedListMultimap.create();
 
-        Observable.from(dependencies)
-                .subscribe(dependency -> this._dependencies.put(dependency, null));
+        Looper.from(dependencies)
+                .foreach(dependency -> this._dependencies.put(dependency, null));
 
-        this._stateTracer = StateCreator.createTracer(this._stateShifter, ServiceState.Unresolved);
+        // Create state convert rule
+        IShifter<ServiceState> stateShifter = (currentState, operation) -> {
+            if (currentState == ServiceState.Destroyed) {
+                throw new KernelException("The service {} is destroyed", this._qualifiedSvcId);
+            }
+
+            ServiceState newState;
+            switch(operation.type()) {
+                case OP_RESOLVE:
+                    resolve();
+                    newState = ServiceState.Resolved;
+                    break;
+                case OP_INJECT:
+                    inject();
+                    newState = ServiceState.Injected;
+                    break;
+                case OP_SATISFY:
+                    satisfy();
+                    newState = ServiceState.Satisfied;
+                    break;
+                case OP_ACTIVATE:
+                    activate();
+                    newState = ServiceState.Activated;
+                    break;
+                default:
+                    throw new KernelException("Unsupported operation type - {}", operation.type());
+            }
+            return newState;
+        };
+        this._stateTracer = StateCreator.createTracer(stateShifter, ServiceState.Unresolved);
     }
 
     /********************************************
@@ -130,7 +127,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
 
     @Override
     public void notifySatisfied() {
-
+        // TODO: Do we need this method?
     }
 
     /*****************************************
@@ -231,7 +228,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
     private Dependency findDependencies(QualifiedServiceId qsId) {
         return Looper.from(this._dependencies.keySet())
                 .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
-                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().equals(qsId))
+                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().getFrom().equals(qsId.getFrom()))
                 .first(null);
     }
 
@@ -298,7 +295,7 @@ public final class ServiceHolder2 implements IServiceReference, IServiceHolder {
                 .map(Map.Entry::getValue)
                 .foreach(IServiceHolder::satisfy);
 
-        if (! _satisfyHook.isSatisfied(ServiceHolder2.this)) {
+        if (! _satisfyHook.isSatisfied(StatefulServiceHolder.this)) {
             throw new KernelException("The service {} can'be satisfied", _qualifiedSvcId);
         }
     }

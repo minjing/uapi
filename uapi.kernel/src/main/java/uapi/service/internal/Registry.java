@@ -279,7 +279,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
         }
 
         Looper.from(svcIds)
-                .map(svcId -> new ServiceHolder2(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
+                .map(svcId -> new StatefulServiceHolder(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
                 .foreach(svcHolder -> {
                     Guarder.by(this._svcRepoLock).run(() -> {
                         // Check whether the new register service depends on existing service
@@ -295,7 +295,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
                 });
 
 //        Observable.from(svcIds)
-//                .map(svcId -> new ServiceHolder2(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
+//                .map(svcId -> new StatefulServiceHolder(svcFrom, svc, svcId, dependencies, this._satisfyDecider))
 //                .subscribe(svcHolder -> {
 //                    Guarder.by(this._svcRepoLock).run(() -> {
 //                        // Check whether the new register service depends on existing service
