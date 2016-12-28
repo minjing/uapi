@@ -67,7 +67,7 @@ class ServiceHolderTest extends Specification {
         given:
         IInitial initialSvc = Mock(IInitial)
         ISatisfyHook mockHook = Mock(ISatisfyHook) {
-            isSatisfied(_) >> true;
+            isSatisfied(_) >> true
         }
         ServiceHolder holder = new ServiceHolder(from, initialSvc, serviceId, mockHook)
 

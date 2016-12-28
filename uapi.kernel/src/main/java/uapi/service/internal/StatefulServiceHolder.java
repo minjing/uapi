@@ -227,8 +227,9 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
 
     private Dependency findDependencies(QualifiedServiceId qsId) {
         return Looper.from(this._dependencies.keySet())
-                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
-                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().getFrom().equals(qsId.getFrom()))
+                .filter(dependQsvcId -> qsId.isAssignTo(dependQsvcId.getServiceId()))
+//                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
+//                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().getFrom().equals(qsId.getFrom()))
                 .first(null);
     }
 
@@ -270,19 +271,19 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
 
         // Inject depended service
         Looper.from(_dependencies.values())
-                .filter(dependency -> dependency != null)
-                .foreach(dependency -> {
+                .filter(dependSvcHolder -> dependSvcHolder != null)
+                .foreach(dependSvcHolder -> {
                     // if the service was injected before, it is not necessary to inject again
-                    if (CollectionHelper.isStrictContains(this._injectedSvcs, dependency)) {
+                    if (CollectionHelper.isStrictContains(this._injectedSvcs, dependSvcHolder)) {
                         return;
                     }
-                    Object injectedSvc = dependency.getService();
+                    Object injectedSvc = dependSvcHolder.getService();
                     if (injectedSvc instanceof IServiceFactory) {
                         // Create service from service factory
                         injectedSvc = ((IServiceFactory) injectedSvc).createService(_svc);
                     }
-                    ((IInjectable) _svc).injectObject(new Injection(dependency.getId(), injectedSvc));
-                    this._injectedSvcs.add(dependency);
+                    ((IInjectable) _svc).injectObject(new Injection(dependSvcHolder.getId(), injectedSvc));
+                    this._injectedSvcs.add(dependSvcHolder);
                 });
     }
 

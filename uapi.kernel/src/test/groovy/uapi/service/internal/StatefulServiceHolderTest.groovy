@@ -42,14 +42,13 @@ class StatefulServiceHolderTest extends Specification {
         'Local' | 'Service' | 'svcid'       | Mock(ISatisfyHook) { isSatisfied(_) >> true }
     }
 
-    @Ignore
     def 'Activate service with dependencies'() {
         given:
         def dependencies = [
                 Mock(Dependency) {
-                    getServiceId() >>> Mock(QualifiedServiceId) {
-                        getId() >>> depSvcId
-                        getFrom() >>> from
+                    getServiceId() >> Mock(QualifiedServiceId) {
+                        getId() >> depSvcId
+                        getFrom() >> from
                     }
                 }
         ] as Dependency[]
@@ -58,6 +57,8 @@ class StatefulServiceHolderTest extends Specification {
         when:
         svcHolder.setDependency(Mock(IServiceHolder) {
             getQualifiedId() >> new QualifiedServiceId(depSvcId, from)
+            getService() >> new Object()
+            getId() >> svcId
         })
         boolean success = svcHolder.tryActivate(true)
 
