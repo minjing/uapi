@@ -56,7 +56,7 @@ class StatefulServiceHolderTest extends Specification {
         StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, dependencies, satisfyHook)
 
         when:
-        def unsetDependencies = svcHolder.getUnsetDependencies();
+        def unsetDependencies = svcHolder.getUnsetDependencies()
 
         then:
         assert unsetDependencies.size() == 1
