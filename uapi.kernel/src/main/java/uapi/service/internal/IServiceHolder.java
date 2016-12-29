@@ -73,11 +73,11 @@ public interface IServiceHolder extends IServiceReference {
      *
      * @return  Unresolved service list
      */
-    List<Dependency> getUnresolvedServices();
+    List<Dependency> getUnsetDependencies();
 
-    /*******************************************
-     * Methods for service life cycle exchange *
-     *******************************************/
+    /////////////////////////////////////////////
+    // Methods for service life cycle exchange //
+    /////////////////////////////////////////////
 
     /**
      * Resolve this service

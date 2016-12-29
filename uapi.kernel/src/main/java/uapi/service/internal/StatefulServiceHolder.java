@@ -152,6 +152,9 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
             if (this._stateTracer.get().value() < ServiceState.Satisfied.value()) {
                 this._stateTracer.shift(OP_SATISFY);
             }
+            if (this._stateTracer.get().value() < ServiceState.Activated.value()) {
+                this._stateTracer.shift(OP_ACTIVATE);
+            }
         } catch (Exception ex) {
             if (throwException) {
                 throw ex;
@@ -191,7 +194,7 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
     }
 
     @Override
-    public List<Dependency> getUnresolvedServices() {
+    public List<Dependency> getUnsetDependencies() {
         return Looper.from(this._dependencies.entries())
                 .filter(entry -> entry.getValue() == null)
                 .map(Map.Entry::getKey)
@@ -228,8 +231,6 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
     private Dependency findDependencies(QualifiedServiceId qsId) {
         return Looper.from(this._dependencies.keySet())
                 .filter(dependQsvcId -> qsId.isAssignTo(dependQsvcId.getServiceId()))
-//                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getId().equals(qsId.getId()))
-//                .filter(dpendQsvcId -> dpendQsvcId.getServiceId().getFrom().equals(QualifiedServiceId.FROM_ANY) || dpendQsvcId.getServiceId().getFrom().equals(qsId.getFrom()))
                 .first(null);
     }
 

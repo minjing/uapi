@@ -169,14 +169,16 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
             Looper.from(this._svcRepo.values())
                     .foreach(IServiceHolder::tryActivate);
 
-            List<Dependency> unresolvedSvcs = Looper.from(this._svcRepo.values())
-                    .flatmap(svcHolder -> Looper.from(svcHolder.getUnresolvedServices()))
+            List<Dependency> unsetSvcs = Looper.from(this._svcRepo.values())
+                    .flatmap(svcHolder -> Looper.from(svcHolder.getUnsetDependencies()))
                     .toList();
 
-            checkCycleDependency(unresolvedSvcs);
+            // TODO: Remove duplicated dependencies
+
+            checkCycleDependency(unsetSvcs);
 
             // If the unresolved service contains a required local service then throw exception
-            Iterator<Dependency> dependencies = unresolvedSvcs.iterator();
+            Iterator<Dependency> dependencies = unsetSvcs.iterator();
             while (dependencies.hasNext()) {
                 Dependency dep = dependencies.next();
                 if (dep.getServiceId().getFrom().equalsIgnoreCase(QualifiedServiceId.FROM_LOCAL)) {
@@ -194,7 +196,7 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
             }
 
             // If the unresolved service is optional then try to load it, if it can't be loaded no error
-            loadExternalServices(unresolvedSvcs);
+            loadExternalServices(unsetSvcs);
 
             this._started = true;
         } catch (Exception ex) {

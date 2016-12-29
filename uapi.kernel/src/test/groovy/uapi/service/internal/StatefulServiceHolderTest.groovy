@@ -2,7 +2,9 @@ package uapi.service.internal
 
 import spock.lang.Ignore
 import spock.lang.Specification
+import uapi.KernelException
 import uapi.service.Dependency
+import uapi.service.IInitial
 import uapi.service.IInjectable
 import uapi.service.ISatisfyHook
 import uapi.service.IService
@@ -42,6 +44,29 @@ class StatefulServiceHolderTest extends Specification {
         'Local' | 'Service' | 'svcid'       | Mock(ISatisfyHook) { isSatisfied(_) >> true }
     }
 
+    def 'Activate service with unset dependencies'() {
+        given:
+        def dependency = Mock(Dependency) {
+            getServiceId() >> Mock(QualifiedServiceId) {
+                getId() >> depSvcId
+                getFrom() >> from
+            }
+        }
+        def dependencies = [dependency] as Dependency[]
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, dependencies, satisfyHook)
+
+        when:
+        def unsetDependencies = svcHolder.getUnsetDependencies();
+
+        then:
+        assert unsetDependencies.size() == 1
+        assert unsetDependencies.get(0) == dependency
+
+        where:
+        from    | svc               | svcId     | depSvcId  | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
+    }
+
     def 'Activate service with dependencies'() {
         given:
         def dependencies = [
@@ -70,5 +95,95 @@ class StatefulServiceHolderTest extends Specification {
         'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
     }
 
-    interface MockService extends IService, IInjectable { }
+    def 'Activate initial service with dependencies'() {
+        given:
+        def dependencies = [
+                Mock(Dependency) {
+                    getServiceId() >> Mock(QualifiedServiceId) {
+                        getId() >> depSvcId
+                        getFrom() >> from
+                    }
+                }
+        ] as Dependency[]
+        def mockSvc = Mock(MockService)
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, mockSvc, svcId, dependencies, satisfyHook)
+
+        when:
+        svcHolder.setDependency(Mock(IServiceHolder) {
+            getQualifiedId() >> new QualifiedServiceId(depSvcId, from)
+            getService() >> svc
+            getId() >> svcId
+        })
+        boolean success = svcHolder.tryActivate(true)
+
+        then:
+        assert success
+        1 * mockSvc.init()
+
+        where:
+        from    | svc               | svcId     | depSvcId  | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
+    }
+
+    def 'Activate service when satisfy failed'() {
+        given:
+        def dependencies = [
+                Mock(Dependency) {
+                    getServiceId() >> Mock(QualifiedServiceId) {
+                        getId() >> depSvcId
+                        getFrom() >> from
+                    }
+                }
+        ] as Dependency[]
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, dependencies, satisfyHook)
+
+        when:
+        svcHolder.setDependency(Mock(IServiceHolder) {
+            getQualifiedId() >> new QualifiedServiceId(depSvcId, from)
+            getService() >> new Object()
+            getId() >> svcId
+        })
+        boolean success = svcHolder.tryActivate(false)
+
+        then:
+        assert ! success
+
+        where:
+        from    | svc               | svcId     | depSvcId  | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> false }
+    }
+
+    def 'Throw exception when activate service when satisfy failed'() {
+        given:
+        def dependencies = [
+                Mock(Dependency) {
+                    getServiceId() >> Mock(QualifiedServiceId) {
+                        getId() >> depSvcId
+                        getFrom() >> from
+                    }
+                }
+        ] as Dependency[]
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, dependencies, satisfyHook)
+
+        when:
+        svcHolder.setDependency(Mock(IServiceHolder) {
+            getQualifiedId() >> new QualifiedServiceId(depSvcId, from)
+            getService() >> new Object()
+            getId() >> svcId
+        })
+        svcHolder.tryActivate(true)
+
+        then:
+        thrown(KernelException)
+
+        where:
+        from    | svc               | svcId     | depSvcId  | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> false }
+    }
+
+    def 'Test get unresolved services'() {
+
+    }
+
+    interface MockService extends IService, IInjectable, IInitial { }
 }

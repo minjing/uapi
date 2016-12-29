@@ -148,7 +148,7 @@ class RegistryTest extends Specification {
 
     static interface IInjectableService extends IService, IInjectable {}
 
-//    def 'Test getUnresolvedServices method'() {
+//    def 'Test getUnsetDependencies method'() {
 //        def svc = Mock(IInjectableService) {
 //            getIds() >> ["1"]
 //            getDependencies() >> [dependQSvcId]

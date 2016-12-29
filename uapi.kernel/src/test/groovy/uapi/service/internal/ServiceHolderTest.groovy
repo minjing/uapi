@@ -177,7 +177,7 @@ class ServiceHolderTest extends Specification {
         then:
         holder.id == serviceId
         holder.inited == inited
-//        holder.getUnresolvedServices('Local') == ['dep01']
+//        holder.getUnsetDependencies('Local') == ['dep01']
 
         where:
         serviceId   | from                          | inited
