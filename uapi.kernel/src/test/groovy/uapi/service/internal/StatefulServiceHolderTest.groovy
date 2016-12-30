@@ -180,8 +180,58 @@ class StatefulServiceHolderTest extends Specification {
         'Local' | Mock(MockService) | 'svcid'   | 'depid'   | Mock(ISatisfyHook) { isSatisfied(_) >> false }
     }
 
-    def 'Test get unresolved services'() {
+    def 'Test do inject before resolved'() {
+        given:
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, satisfyHook)
 
+        when:
+        svcHolder.inject()
+
+        then:
+        noExceptionThrown()
+        assert svcHolder.isResolved()
+        assert svcHolder.isInjected()
+
+        where:
+        from    | svc               | svcId     | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
+    }
+
+    def 'Test do satisfy before resolved'() {
+        given:
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, satisfyHook)
+
+        when:
+        svcHolder.satisfy()
+
+        then:
+        noExceptionThrown()
+        assert svcHolder.isResolved()
+        assert svcHolder.isInjected()
+        assert svcHolder.isSatisfied()
+
+        where:
+        from    | svc               | svcId     | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
+    }
+
+    def 'Test do activate before resolved'() {
+        given:
+        StatefulServiceHolder svcHolder = new StatefulServiceHolder(from, svc, svcId, satisfyHook)
+
+        when:
+        svcHolder.activate()
+
+        then:
+        noExceptionThrown()
+        assert svcHolder.isResolved()
+        assert svcHolder.isInjected()
+        assert svcHolder.isSatisfied()
+        assert svcHolder.isActivated()
+
+        where:
+        from    | svc               | svcId     | satisfyHook
+        'Local' | Mock(MockService) | 'svcid'   | Mock(ISatisfyHook) { isSatisfied(_) >> true }
     }
 
     interface MockService extends IService, IInjectable, IInitial { }

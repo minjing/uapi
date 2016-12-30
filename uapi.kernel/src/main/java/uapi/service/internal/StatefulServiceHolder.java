@@ -76,19 +76,31 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
             ServiceState newState;
             switch(operation.type()) {
                 case OP_RESOLVE:
-                    resolve();
+                    innerResolve();
                     newState = ServiceState.Resolved;
                     break;
                 case OP_INJECT:
-                    inject();
+                    if (currentState.value() < ServiceState.Resolved.value()) {
+                        innerResolve();
+                    }
+                    innerInject();
                     newState = ServiceState.Injected;
                     break;
                 case OP_SATISFY:
-                    satisfy();
+                    if (currentState.value() < ServiceState.Injected.value()) {
+                        innerResolve();
+                        innerInject();
+                    }
+                    innerSatisfy();
                     newState = ServiceState.Satisfied;
                     break;
                 case OP_ACTIVATE:
-                    activate();
+                    if (currentState.value() < ServiceState.Satisfied.value()) {
+                        innerResolve();
+                        innerInject();
+                        innerSatisfy();
+                    }
+                    innerActivate();
                     newState = ServiceState.Activated;
                     break;
                 default:
@@ -99,9 +111,10 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
         this._stateTracer = StateCreator.createTracer(stateShifter, ServiceState.Unresolved);
     }
 
-    /********************************************
-     * Methods implements for IServiceReference *
-     ********************************************/
+    ///////////////////////////////////////////////
+    // Methods implements from IServiceReference //
+    ///////////////////////////////////////////////
+
     @Override
     public String getId() {
         return this._svcId;
@@ -130,9 +143,9 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
         // TODO: Do we need this method?
     }
 
-    /*****************************************
-     * Methods implements for IServiceHolder *
-     *****************************************/
+    ////////////////////////////////////////////
+    // Methods implements from IServiceHolder //
+    ////////////////////////////////////////////
 
     public boolean tryActivate() {
         return tryActivate(false);
@@ -143,18 +156,7 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
             return true;
         }
         try {
-            if (this._stateTracer.get().value() < ServiceState.Resolved.value()) {
-                this._stateTracer.shift(OP_RESOLVE);
-            }
-            if (this._stateTracer.get().value() < ServiceState.Injected.value()) {
-                this._stateTracer.shift(OP_INJECT);
-            }
-            if (this._stateTracer.get().value() < ServiceState.Satisfied.value()) {
-                this._stateTracer.shift(OP_SATISFY);
-            }
-            if (this._stateTracer.get().value() < ServiceState.Activated.value()) {
-                this._stateTracer.shift(OP_ACTIVATE);
-            }
+            this._stateTracer.shift(OP_ACTIVATE);
         } catch (Exception ex) {
             if (throwException) {
                 throw ex;
@@ -201,10 +203,6 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
                 .toList();
     }
 
-    /*******************
-     * Private methods *
-     *******************/
-
     @Override
     public void checkCycleDependency(
             final IServiceHolder svcToCheck,
@@ -236,6 +234,49 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
 
     @Override
     public void resolve() {
+        this._stateTracer.shift(OP_RESOLVE);
+    }
+
+    @Override
+    public void inject() {
+        this._stateTracer.shift(OP_INJECT);
+    }
+
+    @Override
+    public void satisfy() {
+        this._stateTracer.shift(OP_SATISFY);
+    }
+
+    @Override
+    public void activate() {
+        this._stateTracer.shift(OP_ACTIVATE);
+    }
+
+    /////////////////////
+    // Package methods //
+    /////////////////////
+
+    boolean isResolved() {
+        return this._stateTracer.get().value() >= ServiceState.Resolved.value();
+    }
+
+    boolean isInjected() {
+        return this._stateTracer.get().value() >= ServiceState.Injected.value();
+    }
+
+    boolean isSatisfied() {
+        return this._stateTracer.get().value() >= ServiceState.Satisfied.value();
+    }
+
+    boolean isActivated() {
+        return this._stateTracer.get().value() >= ServiceState.Activated.value();
+    }
+
+    /////////////////////
+    // Private methods //
+    /////////////////////
+
+    private void innerResolve() {
         if (this._stateTracer.get().value() >= ServiceState.Resolved.value()) {
             return;
         }
@@ -256,8 +297,7 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
                 .foreach(IServiceHolder::resolve);
     }
 
-    @Override
-    public void inject() {
+    private void innerInject() {
         if (this._stateTracer.get().value() >= ServiceState.Injected.value()) {
             return;
         }
@@ -288,7 +328,7 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
                 });
     }
 
-    public void satisfy() {
+    private void innerSatisfy() {
         if (this._stateTracer.get().value() >= ServiceState.Satisfied.value()) {
             return;
         }
@@ -298,12 +338,11 @@ public final class StatefulServiceHolder implements IServiceReference, IServiceH
                 .foreach(IServiceHolder::satisfy);
 
         if (! _satisfyHook.isSatisfied(StatefulServiceHolder.this)) {
-            throw new KernelException("The service {} can'be satisfied", _qualifiedSvcId);
+            throw new KernelException("The service {} can'be satisfied", this._qualifiedSvcId);
         }
     }
 
-    @Override
-    public void activate() {
+    private void innerActivate() {
         if (this._stateTracer.get().value() >= ServiceState.Activated.value()) {
             return;
         }

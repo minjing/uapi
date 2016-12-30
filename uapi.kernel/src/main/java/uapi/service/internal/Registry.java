@@ -99,14 +99,18 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     }
 
     @Override
-    public <T> T findService(final Class<T> serviceType) {
+    public <T> T findService(
+            final Class<T> serviceType
+    ) {
         ArgumentChecker.notNull(serviceType, "serviceType");
         return findService(serviceType.getName());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T findService(final String serviceId) {
+    public <T> T findService(
+            final String serviceId
+    ) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         List<Object> svcs = findServices(serviceId);
         if (svcs.size() == 0) {
@@ -119,14 +123,18 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     }
 
     @Override
-    public <T> List<T> findServices(final Class<T> serviceType) {
+    public <T> List<T> findServices(
+            final Class<T> serviceType
+    ) {
         ArgumentChecker.notNull(serviceType, "serviceType");
         return findServices(serviceType.getName());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<T> findServices(final String serviceId) {
+    public <T> List<T> findServices(
+            final String serviceId
+    ) {
         ArgumentChecker.notEmpty(serviceId, "serviceId");
         List<T> resolvedSvcs = new ArrayList<>();
         Guarder.by(this._svcRepoLock).run(() ->
@@ -141,7 +149,10 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T findService(final String serviceId, final String serviceFrom) {
+    public <T> T findService(
+            final String serviceId,
+            final String serviceFrom
+    ) {
         List<T> found = Guarder.by(this._svcRepoLock).runForResult(() ->
                 (List<T>) Observable.from(this._svcRepo.values())
                 .filter(svcHolder -> svcHolder.getId().equals(serviceId))
@@ -205,12 +216,16 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
         }
     }
 
-    private void checkCycleDependency(List<Dependency> unresolvedSvcs) {
+    private void checkCycleDependency(
+            List<Dependency> unresolvedSvcs
+    ) {
         // TODO: Check cycle dependency
         this._logger.info("Check cycle dependency for unresolved services: {}", CollectionHelper.asString(unresolvedSvcs));
     }
 
-    private void loadExternalServices(List<Dependency> unresolvedSvcs) {
+    private void loadExternalServices(
+            List<Dependency> unresolvedSvcs
+    ) {
         try {
             Looper.from(unresolvedSvcs).foreach(this::loadExternalService);
         } catch (Exception ex) {
@@ -218,7 +233,9 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
         }
     }
 
-    private Object loadExternalService(Dependency dependency) {
+    private Object loadExternalService(
+            Dependency dependency
+    ) {
         QualifiedServiceId qSvcId = dependency.getServiceId();
         String from = qSvcId.getFrom();
         if (from.equals(QualifiedServiceId.FROM_ANY)) {
@@ -365,7 +382,9 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
     }
 
     @Override
-    public boolean isOptional(String id) throws InvalidArgumentException {
+    public boolean isOptional(
+            String id
+    ) throws InvalidArgumentException {
         if (ISatisfyHook.class.getName().equals(id)) {
             return true;
         }
