@@ -1,6 +1,5 @@
 package uapi.service.internal
 
-import spock.lang.Ignore
 import spock.lang.Specification
 import uapi.KernelException
 import uapi.service.Dependency

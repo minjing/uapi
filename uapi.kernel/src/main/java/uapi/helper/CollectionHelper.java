@@ -9,6 +9,8 @@
 
 package uapi.helper;
 
+import uapi.rx.Looper;
+
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -391,5 +393,18 @@ public final class CollectionHelper {
             }
         }
         return true;
+    }
+
+    /**
+     * Remove duplicated item in the list
+     *
+     * @param   list
+     *          The list which will be checked
+     */
+    public static <T> void removeDuplicate(final List<T> list) {
+        ArgumentChecker.required(list, "list");
+        HashSet<T> set = new HashSet<>(list);
+        list.clear();
+        list.addAll(set);
     }
 }

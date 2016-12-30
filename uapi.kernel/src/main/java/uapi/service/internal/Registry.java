@@ -173,7 +173,8 @@ public class Registry implements IRegistry, IService, ITagged, IInjectable {
                     .flatmap(svcHolder -> Looper.from(svcHolder.getUnsetDependencies()))
                     .toList();
 
-            // TODO: Remove duplicated dependencies
+            // Remove duplicated dependencies
+            CollectionHelper.removeDuplicate(unsetSvcs);
 
             checkCycleDependency(unsetSvcs);
 

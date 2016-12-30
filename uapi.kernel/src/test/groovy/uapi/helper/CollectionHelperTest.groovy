@@ -153,4 +153,17 @@ class CollectionHelperTest extends Specification {
         ['1', '2', '3'] as String[] | ['1', '3'] as String[]        | true
         ['1', '2', '3'] as String[] | ['5', '3'] as String[]        | false
     }
+
+    def 'Test removeDuplicate'() {
+        when:
+        CollectionHelper.removeDuplicate(list)
+
+        then:
+        list == expectList
+
+        where:
+        list            | expectList
+        ['1', '2', '1'] | ['1', '2']
+        [1, 2, 1]       | [1, 2]
+    }
 }
