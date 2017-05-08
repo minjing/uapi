@@ -5,6 +5,8 @@
 |____/_/ \_|_|  _|_
 ```
 
+## Note the project was moved to [Inactionware repo](https://github.com/Inactionware) and seprated as more subprojects, many codes were rewrited, have fun!
+
 ## UAPI (Universal Application Platform Infrastructure)
 
 [![Join the chat at https://gitter.im/minjing/uapi](https://badges.gitter.im/minjing/uapi.svg)](https://gitter.im/minjing/uapi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
