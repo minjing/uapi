@@ -5,7 +5,7 @@
 |____/_/ \_|_|  _|_
 ```
 
-## Note the project was moved to [Inactionware repo](https://github.com/Inactionware) and seprated as more subprojects, many codes were rewrited, have fun!
+## Note the project was moved to [Inactionware repo](https://github.com/Inactionware) and separated as more subprojects, many codes were rewrited, have fun!
 
 ## UAPI (Universal Application Platform Infrastructure)
 
